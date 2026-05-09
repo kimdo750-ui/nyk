@@ -1546,12 +1546,13 @@ async function sendAiMessage() {
   addTypingDots();
 
   try {
+    const cfg = JSON.parse(localStorage.getItem('gs_config')||'{}');
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         messages: aiHistory.slice(-10),
-        systemContext: buildInventoryContext(),
+        appsScriptUrl: cfg.url || '',   // 구글시트 4탭 데이터 조회용
       }),
     });
 
