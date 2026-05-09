@@ -838,22 +838,28 @@ body{
 </div>
 
 <!-- CONFIG MODAL -->
-<div class="modal-overlay" id="config-modal" onclick="closeConfig(event)">
+<div class="modal-overlay" id="config-modal">
   <div class="modal-sheet">
-    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div class="modal-handle" style="margin:0"></div>
+      <button onclick="closeConfigBtn()" style="background:none;border:none;font-size:22px;color:var(--ink3);cursor:pointer;padding:0 0 0 16px;line-height:1">×</button>
+    </div>
     <div class="modal-title">⚙️ 구글시트 연결 설정</div>
-    <div class="modal-sub">Apps Script 웹앱 URL 입력 → 저장 → 🔧 시트초기화 클릭</div>
+    <div class="modal-sub">Apps Script 웹앱 URL 입력 후 저장 버튼 누르세요</div>
     <div class="modal-field">
       <div class="modal-label">📋 Apps Script 웹앱 URL</div>
-      <input class="modal-input" id="cfg-url" placeholder="https://script.google.com/macros/s/...">
+      <input class="modal-input" id="cfg-url"
+        placeholder="https://script.google.com/macros/s/..."
+        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
     </div>
-    <div style="background:#f0f8ff;border:1px solid #c0d8f0;border-radius:8px;padding:10px 12px;font-size:11px;line-height:1.7;color:#1a3a6a;margin-bottom:14px">
+    <div style="background:#f0f8ff;border:1px solid #c0d8f0;border-radius:8px;padding:10px 12px;font-size:11px;line-height:1.8;color:#1a3a6a;margin-bottom:16px">
       📌 <strong>URL 얻는 방법:</strong><br>
-      구글시트 → 확장프로그램 → Apps Script → Code.gs 붙여넣기<br>
-      → 저장 → <strong>배포 → 새 배포 → 웹앱</strong><br>
+      구글시트 → 확장프로그램 → Apps Script<br>
+      → 배포 → 새 배포 → 웹앱<br>
       → 액세스: <strong>모든 사용자</strong> → 배포 → URL 복사
     </div>
-    <button class="modal-save" onclick="saveConfig()">저장 및 연결 테스트</button>
+    <button class="modal-save" id="modal-save-btn" onclick="saveConfig()">✅ 저장하기</button>
+    <div id="cfg-result" style="text-align:center;font-size:12px;color:var(--ink3);margin-top:10px;min-height:18px"></div>
   </div>
 </div>
 
@@ -1241,34 +1247,51 @@ function switchTab(tab) {
 
 // ══════════════════════════ CONFIG ══════════════════════════
 function openConfig() {
-  document.getElementById('config-modal').classList.add('show');
+  const modal = document.getElementById('config-modal');
+  modal.classList.add('show');
   const cfg = JSON.parse(localStorage.getItem('gs_config')||'{}');
   document.getElementById('cfg-url').value = cfg.url || '';
-  document.getElementById('cfg-sheet-id').value = cfg.sheetId || '';
+  document.getElementById('cfg-result').textContent = cfg.url ? '✅ URL 저장됨' : '';
+  // 키보드 열리도록 약간 딜레이 후 포커스
+  setTimeout(() => document.getElementById('cfg-url').focus(), 300);
+}
+function closeConfigBtn() {
+  document.getElementById('config-modal').classList.remove('show');
 }
 function closeConfig(e) {
-  if (e.target.id === 'config-modal') document.getElementById('config-modal').classList.remove('show');
+  // 더 이상 오버레이 클릭으로 닫히지 않음 (모바일 키보드 내려갈 때 오작동 방지)
 }
-async function saveConfig() {
+function saveConfig() {
   const url = document.getElementById('cfg-url').value.trim();
-  const sheetId = document.getElementById('cfg-sheet-id').value.trim();
-  if (!url) { toast('⚠️ 웹앱 URL을 입력하세요'); return; }
-  localStorage.setItem('gs_config', JSON.stringify({url, sheetId}));
-
-  // 연결 테스트
-  const saveBtn = document.querySelector('.modal-save');
-  saveBtn.textContent = '⏳ 연결 테스트 중...';
-  try {
-    await fetch(url + '?action=ping', {mode:'no-cors'});
-    setStatus(true);
-    toast('✅ 연결 성공! 설정 저장됨');
-  } catch(e) {
-    setStatus(false);
-    toast('⚠️ 저장됨 (연결 확인 필요)');
-  } finally {
-    saveBtn.textContent = '저장 및 연결 테스트';
+  if (!url) {
+    document.getElementById('cfg-result').textContent = '⚠️ URL을 입력해주세요';
+    document.getElementById('cfg-result').style.color = 'var(--orange)';
+    return;
   }
-  document.getElementById('config-modal').classList.remove('show');
+
+  // URL 형식 간단 검증
+  if (!url.startsWith('https://script.google.com/macros/')) {
+    document.getElementById('cfg-result').textContent = '⚠️ Google Apps Script URL이 맞는지 확인하세요';
+    document.getElementById('cfg-result').style.color = 'var(--orange)';
+    return;
+  }
+
+  // 즉시 저장 (fetch 테스트 없이)
+  localStorage.setItem('gs_config', JSON.stringify({url}));
+  setStatus(true);
+
+  const btn = document.getElementById('modal-save-btn');
+  btn.textContent = '✅ 저장됨!';
+  btn.style.background = 'var(--green)';
+  document.getElementById('cfg-result').textContent = 'URL이 저장되었습니다. 이제 🔧 시트초기화를 눌러주세요';
+  document.getElementById('cfg-result').style.color = 'var(--green)';
+
+  setTimeout(() => {
+    document.getElementById('config-modal').classList.remove('show');
+    btn.textContent = '✅ 저장하기';
+    btn.style.background = '';
+    toast('✅ URL 저장 완료! 🔧 시트초기화 버튼을 눌러주세요');
+  }, 1200);
 }
 
 // 구글시트 4개 탭 초기화
@@ -1300,6 +1323,17 @@ function setStatus(ok) {
 }
 
 // ══════════════════════════ SYNC ══════════════════════════
+// no-cors 모드에서는 application/json 헤더가 차단됨 → text/plain 사용
+async function postToSheets(url, payload) {
+  return fetch(url, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain' },  // ← 핵심: text/plain만 no-cors에서 허용
+    body: JSON.stringify(payload),
+    redirect: 'follow',
+  });
+}
+
 async function syncToSheets() {
   const cfg = JSON.parse(localStorage.getItem('gs_config')||'{}');
   if (!cfg.url) { toast('⚠️ 먼저 ⚙️ 설정에서 URL 입력하세요'); openConfig(); return; }
@@ -1308,7 +1342,7 @@ async function syncToSheets() {
   if (totalItems === 0) { toast('⚠️ 동기화할 재고 데이터가 없습니다'); return; }
 
   const btn = document.getElementById('sync-btn');
-  btn.textContent = '⏳ 동기화 중...';
+  btn.textContent = '⏳ 전송 중...';
 
   const payload = {
     action: 'updateInventory',
@@ -1319,19 +1353,36 @@ async function syncToSheets() {
   };
 
   try {
-    await fetch(cfg.url, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(payload),
-    });
-    toast(`✅ 동기화 완료! 무지${invData.blank.length}·전사지${invData.transfer.length}·완제품${invData.finished.length}건`);
+    await postToSheets(cfg.url, payload);
+    // no-cors라 응답 확인 불가 → 전송 성공으로 처리
+    const msg = `☁️ 전송완료! 무지 ${invData.blank.length}건 · 전사지 ${invData.transfer.length}건 · 완제품 ${invData.finished.length}건\n구글시트에서 확인하세요`;
+    toast(msg);
     setStatus(true);
   } catch(e) {
-    toast('❌ 동기화 실패: ' + e.message);
+    toast('❌ 전송 실패: ' + e.message + '\nURL을 다시 확인하세요');
     setStatus(false);
   } finally {
     btn.textContent = '☁️ 동기화';
+  }
+}
+
+// setupSheets도 동일 방식으로 수정
+async function setupSheets() {
+  const cfg = JSON.parse(localStorage.getItem('gs_config')||'{}');
+  if (!cfg.url) { toast('⚠️ 먼저 ⚙️ 설정에서 URL을 입력하세요'); openConfig(); return; }
+
+  const btn = document.getElementById('setup-btn');
+  btn.textContent = '⏳ 초기화 중...';
+
+  try {
+    await postToSheets(cfg.url, { action: 'setup' });
+    toast('🔧 초기화 요청 전송됨!\n구글시트에서 탭 4개 생성 확인하세요\n(주문확인·무지상품·전사지·완제품)');
+    setStatus(true);
+  } catch(e) {
+    toast('❌ 실패: ' + e.message);
+    setStatus(false);
+  } finally {
+    btn.textContent = '🔧 시트초기화';
   }
 }
 
