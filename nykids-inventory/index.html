@@ -74,7 +74,7 @@ body{
 
 /* ── TABS ── */
 .tabs{
-  display:grid;grid-template-columns:repeat(3,1fr);
+  display:grid;grid-template-columns:repeat(4,1fr);
   background:var(--ink);
   border-bottom:2px solid rgba(255,255,255,.08);
   position:sticky;top:var(--header-h);z-index:99;
@@ -102,6 +102,7 @@ body{
 .panel{display:none;padding:14px 14px 120px;min-height:calc(100vh - 100px)}
 .panel.active{display:block;animation:fadeUp .2s ease}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes aiDot{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
 
 /* ── SECTION CARDS ── */
 .sec{
@@ -538,6 +539,10 @@ body{
     <span class="tab-ic">📦</span>
     <span class="tab-lbl">완제품</span>
   </button>
+  <button class="tab-btn" onclick="switchTab('ai')" id="top-tab-ai">
+    <span class="tab-ic">🤖</span>
+    <span class="tab-lbl">AI분석</span>
+  </button>
 </div>
 
 <!-- ═══ PANEL: 무지상품 ═══ -->
@@ -828,6 +833,57 @@ body{
     </div>
   </div>
 
+</div>
+
+<!-- ═══ PANEL: AI 분석 ═══ -->
+<div id="panel-ai" class="panel">
+
+  <div class="sec" style="margin-bottom:10px">
+    <div class="sec-head">🤖 AI 재고 분석 채팅</div>
+    <div class="sec-body" style="padding:10px 14px">
+      <div style="font-size:11px;color:var(--ink3);margin-bottom:10px">
+        현재 앱에 입력된 재고 데이터를 기반으로 분석합니다
+      </div>
+      <!-- 빠른 질문 -->
+      <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:4px">
+        <button class="qqty-btn" style="font-family:var(--sans);font-size:11px;height:auto;padding:6px 10px;white-space:normal;text-align:left;min-width:0" onclick="quickAsk('생산 불가능한 제품 있어?')">생산불가 확인</button>
+        <button class="qqty-btn" style="font-family:var(--sans);font-size:11px;height:auto;padding:6px 10px;white-space:normal;text-align:left;min-width:0" onclick="quickAsk('무지상품 재고 부족한 것 알려줘')">무지 부족</button>
+        <button class="qqty-btn" style="font-family:var(--sans);font-size:11px;height:auto;padding:6px 10px;white-space:normal;text-align:left;min-width:0" onclick="quickAsk('전사지 재고 긴급한 것 있어?')">전사지 긴급</button>
+        <button class="qqty-btn" style="font-family:var(--sans);font-size:11px;height:auto;padding:6px 10px;white-space:normal;text-align:left;min-width:0" onclick="quickAsk('당장 발주해야 할 품목은?')">발주 추천</button>
+        <button class="qqty-btn" style="font-family:var(--sans);font-size:11px;height:auto;padding:6px 10px;white-space:normal;text-align:left;min-width:0" onclick="quickAsk('전체 생산가능수량 계산해줘')">생산량 계산</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 채팅 메시지 영역 -->
+  <div id="ai-messages" style="
+    background:var(--surface);border:1px solid var(--border);border-radius:14px;
+    padding:14px;min-height:300px;max-height:420px;overflow-y:auto;
+    display:flex;flex-direction:column;gap:10px;margin-bottom:10px
+  ">
+    <div id="ai-welcome" style="text-align:center;padding:30px 10px;color:var(--ink3)">
+      <div style="font-size:32px;margin-bottom:8px">🤖</div>
+      <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px">AI 재고 분석</div>
+      <div style="font-size:12px;line-height:1.6">재고를 입력하고 동기화한 뒤<br>궁금한 것을 물어보세요</div>
+    </div>
+  </div>
+
+  <!-- 입력창 -->
+  <div style="display:flex;gap:8px;align-items:flex-end;padding-bottom:100px">
+    <textarea id="ai-input"
+      style="flex:1;border:2px solid var(--border);border-radius:10px;padding:10px 12px;
+             font-size:13px;font-family:var(--sans);resize:none;outline:none;
+             min-height:44px;max-height:100px;line-height:1.5;color:var(--ink)"
+      placeholder="재고에 대해 물어보세요..."
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAiMessage()}"
+      oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"
+    ></textarea>
+    <button onclick="sendAiMessage()" id="ai-send-btn" style="
+      width:44px;height:44px;border-radius:10px;
+      background:var(--ink);color:#fff;border:none;font-size:18px;
+      cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center
+    ">➤</button>
+  </div>
 </div>
 
 <!-- ADD BUTTON -->
@@ -1241,7 +1297,9 @@ function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('panel-'+tab).classList.add('active');
   document.getElementById('top-tab-'+tab).classList.add('active');
-  updateSummary(tab);
+  // AI 탭일 때 추가 버튼 숨기기
+  document.getElementById('add-btn-wrap').style.display = tab === 'ai' ? 'none' : '';
+  if (tab !== 'ai') updateSummary(tab);
   window.scrollTo(0,0);
 }
 
@@ -1403,6 +1461,123 @@ function toast(msg) {
     updateSummary(type);
   });
 });
+
+// ══════════════════════════ AI 채팅 ══════════════════════════
+let aiHistory = [];
+let aiLoading = false;
+
+function buildInventoryContext() {
+  let ctx = '너는 뉴욕꼬맹이 커스텀 유아복 재고 분석 AI다.\n아래는 현재 입력된 재고 현황이다.\n\n';
+
+  if (invData.blank.length > 0) {
+    ctx += '[무지상품재고]\n';
+    invData.blank.forEach(r => { ctx += `${r.garment} ${r.color} ${r.size}: ${r.qty}개\n`; });
+  } else { ctx += '[무지상품재고] 데이터 없음\n'; }
+
+  if (invData.transfer.length > 0) {
+    ctx += '\n[전사지재고]\n';
+    invData.transfer.forEach(r => { ctx += `${r.code}: ${r.qty}매\n`; });
+  } else { ctx += '\n[전사지재고] 데이터 없음\n'; }
+
+  if (invData.finished.length > 0) {
+    ctx += '\n[완제품재고]\n';
+    invData.finished.forEach(r => { ctx += `${r.code} ${r.color} ${r.size}: ${r.qty}개\n`; });
+  } else { ctx += '\n[완제품재고] 데이터 없음\n'; }
+
+  ctx += '\n분석 원칙: 생산가능수량 = MIN(무지재고, 전사지재고). 숫자 구체적으로. 한국어로 핵심만 간결하게 답해라.';
+  return ctx;
+}
+
+function addAiMsg(role, text) {
+  const wrap = document.getElementById('ai-messages');
+  const welcome = document.getElementById('ai-welcome');
+  if (welcome) welcome.remove();
+
+  const div = document.createElement('div');
+  const isUser = role === 'user';
+  div.style.cssText = `display:flex;flex-direction:${isUser?'row-reverse':'row'};gap:8px;align-items:flex-start`;
+
+  const avatar = document.createElement('div');
+  avatar.style.cssText = `width:28px;height:28px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;margin-top:2px;background:${isUser?'var(--ink)':'var(--accent)'};color:#fff`;
+  avatar.textContent = isUser ? '👤' : '🤖';
+
+  const bubble = document.createElement('div');
+  bubble.style.cssText = `max-width:82%;padding:10px 13px;border-radius:12px;font-size:12px;line-height:1.7;${isUser?'background:var(--ink);color:#fff;border-top-right-radius:3px':'background:var(--surface);border:1px solid var(--border);border-top-left-radius:3px;color:var(--ink)'}`;
+  bubble.innerHTML = text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+
+  div.appendChild(avatar);
+  div.appendChild(bubble);
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+  return div;
+}
+
+function addTypingDots() {
+  const wrap = document.getElementById('ai-messages');
+  const div = document.createElement('div');
+  div.id = 'ai-typing';
+  div.style.cssText = 'display:flex;gap:8px;align-items:flex-start';
+  div.innerHTML = `
+    <div style="width:28px;height:28px;border-radius:8px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:2px">🤖</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;border-top-left-radius:3px;padding:12px 16px">
+      <div style="display:flex;gap:5px;align-items:center">
+        <span style="width:7px;height:7px;border-radius:50%;background:var(--ink3);animation:aiDot 1.2s infinite"></span>
+        <span style="width:7px;height:7px;border-radius:50%;background:var(--ink3);animation:aiDot 1.2s infinite 0.2s"></span>
+        <span style="width:7px;height:7px;border-radius:50%;background:var(--ink3);animation:aiDot 1.2s infinite 0.4s"></span>
+      </div>
+    </div>`;
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+async function sendAiMessage() {
+  if (aiLoading) return;
+  const input = document.getElementById('ai-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  addAiMsg('user', text);
+  aiHistory.push({ role: 'user', content: text });
+  input.value = '';
+  input.style.height = 'auto';
+
+  aiLoading = true;
+  document.getElementById('ai-send-btn').disabled = true;
+  addTypingDots();
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: aiHistory.slice(-10),
+        systemContext: buildInventoryContext(),
+      }),
+    });
+
+    document.getElementById('ai-typing')?.remove();
+
+    const data = await res.json();
+    if (data.error) {
+      addAiMsg('ai', '❌ 오류: ' + data.error);
+    } else {
+      addAiMsg('ai', data.text);
+      aiHistory.push({ role: 'assistant', content: data.text });
+      if (aiHistory.length > 20) aiHistory = aiHistory.slice(-20);
+    }
+  } catch(e) {
+    document.getElementById('ai-typing')?.remove();
+    addAiMsg('ai', '❌ 연결 오류: ' + e.message + '\n\nVercel 환경변수에 ANTHROPIC_API_KEY가 설정되어 있는지 확인하세요.');
+  } finally {
+    aiLoading = false;
+    document.getElementById('ai-send-btn').disabled = false;
+  }
+}
+
+function quickAsk(text) {
+  document.getElementById('ai-input').value = text;
+  sendAiMessage();
+}
 
 // ══════════════════════════ START ══════════════════════════
 init();
