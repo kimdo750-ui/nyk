@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>나염 인쇄 큐 — 뉴욕꼬맹이</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+
+:root {
+  --bg: #0f0f0f;
+  --surface: #1a1a1a;
+  --card: #222;
+  --border: #333;
+  --ink: #f0f0f0;
+  --ink2: #aaa;
+  --ink3: #666;
+  --pc1: #e8a020;     /* PC1→DTP1 황금색 */
+  --pc1-bg: #1a1500;
+  --pc1-lt: #2a2000;
+  --pc2: #20a0e8;     /* PC2→DTP2 청색 */
+  --pc2-bg: #001520;
+  --pc2-lt: #001e2d;
+  --done: #2a2a2a;
+  --done-ink: #555;
+  --green: #2ed573;
+  --red: #ff4757;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'Noto Sans KR', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { font-size: 14px; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+}
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-ic {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: var(--pc1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.logo-title { font-size: 14px; font-weight: 900; }
+.logo-sub { font-size: 10px; color: var(--ink3); font-family: var(--mono); margin-top: 1px; }
+.header-date { font-family: var(--mono); font-size: 11px; color: var(--ink3); text-align: right; }
+
+/* ── PROGRESS BAR ── */
+.progress-wrap {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  display: flex; gap: 12px; align-items: center;
+}
+.prog-item { flex: 1; }
+.prog-label { font-size: 10px; color: var(--ink3); font-family: var(--mono); margin-bottom: 4px; display: flex; justify-content: space-between; }
+.prog-bar { height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 2px; transition: width .4s ease; }
+.prog-fill.pc1 { background: var(--pc1); }
+.prog-fill.pc2 { background: var(--pc2); }
+
+/* ── MAIN LAYOUT ── */
+.main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  min-height: calc(100vh - 120px);
+}
+
+/* ── COLUMN ── */
+.col { border-right: 1px solid var(--border); }
+.col:last-child { border-right: none; }
+.col-header {
+  padding: 12px 14px;
+  display: flex; align-items: center; gap: 10px;
+  border-bottom: 2px solid;
+  position: sticky; top: 97px; z-index: 90;
+}
+.col.pc1 .col-header { border-color: var(--pc1); background: var(--pc1-bg); }
+.col.pc2 .col-header { border-color: var(--pc2); background: var(--pc2-bg); }
+
+.col-badge {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 12px; font-weight: 700;
+  flex-shrink: 0;
+}
+.pc1 .col-badge { background: var(--pc1); color: #000; }
+.pc2 .col-badge { background: var(--pc2); color: #000; }
+
+.col-title { font-size: 13px; font-weight: 900; }
+.col-sub { font-size: 10px; color: var(--ink3); margin-top: 1px; }
+.col-count {
+  margin-left: auto;
+  font-family: var(--mono); font-size: 11px; color: var(--ink3);
+  background: var(--border);
+  padding: 2px 8px; border-radius: 4px;
+}
+
+/* ── PRINT ITEMS ── */
+.items-wrap { padding: 10px; }
+
+.print-item {
+  border-radius: 10px;
+  margin-bottom: 8px;
+  overflow: hidden;
+  border: 1.5px solid var(--border);
+  transition: all .2s;
+  cursor: pointer;
+  user-select: none;
+}
+.print-item:active { transform: scale(.98); }
+.print-item.done {
+  border-color: #333;
+  opacity: .5;
+}
+
+.item-main {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 12px;
+}
+.pc1 .print-item:not(.done) { background: var(--pc1-lt); border-color: rgba(232,160,32,.3); }
+.pc2 .print-item:not(.done) { background: var(--pc2-lt); border-color: rgba(32,160,232,.3); }
+.print-item.done { background: var(--done); }
+
+.item-check {
+  width: 26px; height: 26px; border-radius: 7px;
+  border: 2px solid;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 14px;
+  transition: all .15s;
+}
+.pc1 .print-item:not(.done) .item-check { border-color: var(--pc1); }
+.pc2 .print-item:not(.done) .item-check { border-color: var(--pc2); }
+.print-item.done .item-check {
+  background: var(--green); border-color: var(--green); color: #000;
+}
+
+.item-code {
+  font-family: var(--mono); font-size: 13px; font-weight: 700;
+  flex-shrink: 0; min-width: 52px;
+}
+.pc1 .print-item:not(.done) .item-code { color: var(--pc1); }
+.pc2 .print-item:not(.done) .item-code { color: var(--pc2); }
+.print-item.done .item-code { color: var(--done-ink); }
+
+.item-info { flex: 1; min-width: 0; }
+.item-color {
+  font-size: 12px; font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.item-size { font-family: var(--mono); font-size: 11px; color: var(--ink3); margin-top: 1px; }
+.print-item.done .item-color,
+.print-item.done .item-size { color: var(--done-ink); }
+
+.item-qty {
+  font-family: var(--mono); font-size: 20px; font-weight: 700;
+  text-align: right; flex-shrink: 0;
+}
+.pc1 .print-item:not(.done) .item-qty { color: var(--pc1); }
+.pc2 .print-item:not(.done) .item-qty { color: var(--pc2); }
+.print-item.done .item-qty { color: var(--done-ink); }
+
+.item-unit { font-size: 10px; color: var(--ink3); font-family: var(--mono); }
+
+/* ── EMPTY STATE ── */
+.empty {
+  padding: 30px 16px;
+  text-align: center;
+  color: var(--ink3);
+  font-size: 12px;
+  line-height: 1.8;
+}
+.empty-ic { font-size: 28px; margin-bottom: 8px; }
+
+/* ── BOTTOM TOOLBAR ── */
+.toolbar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 10px 12px;
+  display: flex; gap: 8px;
+  z-index: 100;
+}
+.btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  height: 44px;
+  border: none; border-radius: 10px;
+  font-size: 12px; font-weight: 700;
+  cursor: pointer; font-family: var(--sans);
+  transition: all .15s;
+}
+.btn:active { transform: scale(.97); }
+.btn-paste { flex: 1; background: var(--card); color: var(--ink); border: 1px solid var(--border); }
+.btn-paste:hover { background: var(--border); }
+.btn-clear { background: var(--card); color: var(--red); border: 1px solid var(--border); padding: 0 14px; }
+.btn-reset { background: var(--card); color: var(--ink2); border: 1px solid var(--border); padding: 0 14px; }
+
+/* ── INPUT MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.8);
+  backdrop-filter: blur(6px);
+  z-index: 200;
+  display: none; align-items: flex-end;
+}
+.modal-overlay.show { display: flex; }
+.modal-sheet {
+  width: 100%; max-width: 768px; margin: 0 auto;
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  border-top: 1px solid var(--border);
+  padding: 18px 16px 32px;
+  animation: slideUp .2s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-handle {
+  width: 40px; height: 4px; background: var(--border);
+  border-radius: 2px; margin: 0 auto 16px;
+}
+.modal-title { font-size: 16px; font-weight: 900; margin-bottom: 4px; }
+.modal-sub { font-size: 11px; color: var(--ink3); margin-bottom: 14px; line-height: 1.6; }
+
+.tab-row { display: flex; gap: 6px; margin-bottom: 12px; }
+.tab-btn {
+  flex: 1; height: 36px; border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: var(--card); color: var(--ink2);
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  font-family: var(--sans); transition: all .15s;
+}
+.tab-btn.active { background: var(--pc1); color: #000; border-color: var(--pc1); }
+
+.textarea {
+  width: 100%; height: 140px;
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: var(--ink);
+  font-size: 12px; font-family: var(--mono);
+  resize: none; outline: none;
+  line-height: 1.7;
+}
+.textarea:focus { border-color: var(--pc1); }
+.textarea-hint { font-size: 10px; color: var(--ink3); margin-top: 6px; line-height: 1.7; }
+.modal-actions { display: flex; gap: 8px; margin-top: 12px; }
+.btn-parse {
+  flex: 1; height: 46px; background: var(--pc1); color: #000;
+  font-size: 14px; font-weight: 900; border: none; border-radius: 10px;
+  cursor: pointer; font-family: var(--sans);
+}
+.btn-close {
+  height: 46px; padding: 0 18px;
+  background: var(--card); color: var(--ink2);
+  border: 1.5px solid var(--border); border-radius: 10px;
+  cursor: pointer; font-size: 13px; font-weight: 700; font-family: var(--sans);
+}
+
+/* ── PC 설정 ── */
+.cfg-codes {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;
+}
+.cfg-code {
+  padding: 4px 10px; border-radius: 6px;
+  font-family: var(--mono); font-size: 12px; font-weight: 700;
+  cursor: pointer; border: 1.5px solid var(--border);
+  transition: all .15s;
+}
+.cfg-code.pc1 { background: var(--pc1-lt); color: var(--pc1); border-color: var(--pc1); }
+.cfg-code.pc2 { background: var(--pc2-lt); color: var(--pc2); border-color: var(--pc2); }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+@media (max-width: 500px) {
+  .main { grid-template-columns: 1fr; }
+  .col { border-right: none; border-bottom: 1px solid var(--border); }
+  .col-header { top: 97px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">
+    <div class="logo-ic">🖨️</div>
+    <div>
+      <div class="logo-title">나염 인쇄 큐</div>
+      <div class="logo-sub">PC1→DTP1 &nbsp;|&nbsp; PC2→DTP2</div>
+    </div>
+  </div>
+  <div class="header-date" id="header-date"></div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap">
+  <div class="prog-item">
+    <div class="prog-label">
+      <span style="color:var(--pc1)">DTP1</span>
+      <span id="prog1-text">0 / 0</span>
+    </div>
+    <div class="prog-bar"><div class="prog-fill pc1" id="prog1-bar" style="width:0%"></div></div>
+  </div>
+  <div class="prog-item">
+    <div class="prog-label">
+      <span style="color:var(--pc2)">DTP2</span>
+      <span id="prog2-text">0 / 0</span>
+    </div>
+    <div class="prog-bar"><div class="prog-fill pc2" id="prog2-bar" style="width:0%"></div></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- PC1 → DTP1 -->
+  <div class="col pc1">
+    <div class="col-header">
+      <div class="col-badge">PC1</div>
+      <div>
+        <div class="col-title">DTP 1번 프린터</div>
+        <div class="col-sub" id="pc1-codes-label">W, A 시리즈</div>
+      </div>
+      <div class="col-count" id="pc1-count">0건</div>
+    </div>
+    <div class="items-wrap" id="pc1-list">
+      <div class="empty">
+        <div class="empty-ic">📋</div>
+        <div>아래 버튼을 눌러<br>주문 데이터를 붙여넣으세요</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PC2 → DTP2 -->
+  <div class="col pc2">
+    <div class="col-header">
+      <div class="col-badge">PC2</div>
+      <div>
+        <div class="col-title">DTP 2번 프린터</div>
+        <div class="col-sub" id="pc2-codes-label">IT 시리즈</div>
+      </div>
+      <div class="col-count" id="pc2-count">0건</div>
+    </div>
+    <div class="items-wrap" id="pc2-list">
+      <div class="empty">
+        <div class="empty-ic">📋</div>
+        <div>아래 버튼을 눌러<br>주문 데이터를 붙여넣으세요</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar" style="padding-bottom: max(10px, env(safe-area-inset-bottom))">
+  <button class="btn btn-paste" onclick="openModal()">📋 주문 데이터 붙여넣기</button>
+  <button class="btn btn-reset" onclick="resetChecks()" title="체크 초기화">↺</button>
+  <button class="btn btn-clear" onclick="clearAll()" title="전체 삭제">🗑</button>
+</div>
+
+<!-- INPUT MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModalBg(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📋 주문 데이터 입력</div>
+    <div class="modal-sub">
+      사방넷 또는 구글시트에서 복사한 주문 데이터를 붙여넣으세요.<br>
+      <strong style="color:var(--pc1)">형식:</strong> 제품코드 &nbsp;컬러 &nbsp;사이즈 &nbsp;수량 (탭 또는 쉼표 구분)
+    </div>
+
+    <div class="tab-row">
+      <button class="tab-btn active" id="tab-paste" onclick="switchInputTab('paste')">📋 붙여넣기</button>
+      <button class="tab-btn" id="tab-sheets" onclick="switchInputTab('sheets')">📊 구글시트</button>
+      <button class="tab-btn" id="tab-direct" onclick="switchInputTab('direct')">✏️ 직접입력</button>
+      <button class="tab-btn" id="tab-cfg" onclick="switchInputTab('cfg')">⚙️ PC설정</button>
+    </div>
+
+    <!-- 붙여넣기 탭 -->
+    <div id="tab-content-paste">
+      <textarea class="textarea" id="paste-input"
+        placeholder="예시:
+W281	백멜란지	130	5
+IT024	화이트	150	8
+IT007	블랙	140	6
+W285	블랙	120	3
+IT028	오렌지	140	5"></textarea>
+      <div class="textarea-hint">
+        💡 사방넷 파싱 후 <strong>제품코드·컬러·사이즈·수량</strong> 4개 컬럼을 복사해서 붙여넣으세요<br>
+        💡 같은 코드+컬러+사이즈는 자동으로 수량 합산됩니다
+      </div>
+    </div>
+
+    <!-- 구글시트 탭 -->
+    <div id="tab-content-sheets" style="display:none">
+      <div style="font-size:11px;color:var(--ink3);margin-bottom:10px;line-height:1.7">
+        Apps Script Web App URL을 입력하면 <strong style="color:var(--pc1)">주문확인(원본)</strong> 시트에서<br>
+        파싱 완료된 주문을 자동으로 불러옵니다.
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <input id="sheets-url" type="url"
+          placeholder="https://script.google.com/macros/s/.../exec"
+          style="flex:1;background:var(--card);border:1.5px solid var(--border);border-radius:8px;
+                 padding:9px 12px;color:var(--ink);font-size:12px;font-family:var(--mono);outline:none"
+          onfocus="this.style.borderColor='var(--pc1)'" onblur="this.style.borderColor='var(--border)'">
+        <button onclick="saveSheetUrl()" style="background:var(--border);color:var(--ink);border:none;
+          border-radius:8px;padding:0 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--sans);white-space:nowrap">저장</button>
+      </div>
+
+      <!-- 데이터 소스 선택 -->
+      <div style="display:flex;gap:6px;margin-bottom:10px">
+        <button class="source-btn active" id="src-order" onclick="setSource('order')"
+          style="flex:1;height:36px;border-radius:8px;border:1.5px solid var(--pc1);
+                 background:var(--pc1-lt);color:var(--pc1);font-size:11px;font-weight:700;
+                 cursor:pointer;font-family:var(--sans)">
+          📋 주문확인(원본)
+        </button>
+        <button class="source-btn" id="src-coupang" onclick="setSource('coupang')"
+          style="flex:1;height:36px;border-radius:8px;border:1.5px solid var(--border);
+                 background:var(--card);color:var(--ink3);font-size:11px;font-weight:700;
+                 cursor:pointer;font-family:var(--sans)">
+          🛒 쿠팡윙 붙여넣기
+        </button>
+      </div>
+
+      <!-- 구글시트 불러오기 -->
+      <div id="src-order-section">
+        <button onclick="loadFromSheets()" id="load-btn"
+          style="width:100%;height:44px;background:var(--pc2-lt);border:1.5px solid var(--pc2);
+                 color:var(--pc2);border-radius:10px;font-size:13px;font-weight:700;
+                 cursor:pointer;font-family:var(--sans);margin-bottom:8px">
+          📊 구글시트에서 주문 불러오기
+        </button>
+        <div id="sheets-status" style="font-size:11px;color:var(--ink3);text-align:center;min-height:18px"></div>
+      </div>
+
+      <!-- 쿠팡윙 붙여넣기 -->
+      <div id="src-coupang-section" style="display:none">
+        <textarea class="textarea" id="coupang-input" style="height:110px"
+          placeholder="쿠팡윙 → 주문 목록 → 엑셀 다운로드 후 붙여넣기
+상품명(옵션 포함) 형식으로 붙여넣으면 자동 파싱됩니다.
+예: [IT024] NY반팔 화이트 150 / 수량: 5"></textarea>
+        <div class="textarea-hint">💡 쿠팡윙 엑셀의 상품명+옵션+수량 컬럼을 복사해서 붙여넣으세요</div>
+      </div>
+    </div>
+    <div id="tab-content-direct" style="display:none">
+      <textarea class="textarea" id="direct-input"
+        placeholder="예시:
+W281 백멜란지 130 5
+IT024 화이트 150 8
+W281 화이트 140 3"></textarea>
+      <div class="textarea-hint">💡 공백으로 구분해서 입력 가능합니다</div>
+    </div>
+
+    <!-- PC 배분 설정 탭 -->
+    <div id="tab-content-cfg" style="display:none">
+      <div style="font-size:12px;color:var(--ink3);margin-bottom:8px">클릭해서 PC1/PC2 배분을 변경하세요</div>
+      <div style="font-size:12px;font-weight:700;color:var(--pc1);margin-bottom:6px">🟡 PC1 → DTP1 담당</div>
+      <div class="cfg-codes" id="cfg-pc1"></div>
+      <div style="font-size:12px;font-weight:700;color:var(--pc2);margin-top:12px;margin-bottom:6px">🔵 PC2 → DTP2 담당</div>
+      <div class="cfg-codes" id="cfg-pc2"></div>
+      <div style="font-size:10px;color:var(--ink3);margin-top:10px">
+        * 새로운 코드가 자동 감지되면 PC2로 배정됩니다. 필요 시 위에서 변경하세요.
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-close" onclick="closeModal()">닫기</button>
+      <button class="btn-parse" id="parse-btn" onclick="handleParse()">🖨️ 인쇄 큐 생성</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════ STATE ═══════════════════════
+// PC 배분 기본 설정
+let pcMap = JSON.parse(localStorage.getItem('pcMap') || 'null') || {
+  pc1: ['W','A','G','TJ','NKM'],  // 코드 접두사
+  pc2: ['IT','P','AS'],
+};
+
+// 인쇄 큐
+let queue = { pc1: [], pc2: [] };
+let doneSet = new Set(JSON.parse(localStorage.getItem('done') || '[]'));
+let inputTab = 'paste';
+
+// ═══════════════════════ INIT ═══════════════════════
+function init() {
+  // 날짜 표시
+  const now = new Date();
+  document.getElementById('header-date').innerHTML =
+    now.toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'}) +
+    '<br>' + now.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+
+  // 저장된 큐 복원
+  const saved = localStorage.getItem('printQueue');
+  if (saved) {
+    queue = JSON.parse(saved);
+    render();
+  }
+  renderCfg();
+  // 저장된 URL 복원
+  const cfg = JSON.parse(localStorage.getItem('gs_config')||'{}');
+  if (cfg.url) {
+    const urlInput = document.getElementById('sheets-url');
+    if (urlInput) urlInput.value = cfg.url;
+  }
+}
+
+// ═══════════════════════ PC 배분 ═══════════════════════
+function getPC(code) {
+  const upper = code.toUpperCase();
+  for (const prefix of pcMap.pc1) {
+    if (upper.startsWith(prefix)) return 'pc1';
+  }
+  return 'pc2';
+}
+
+function renderCfg() {
+  const allPrefixes = [...pcMap.pc1, ...pcMap.pc2];
+  const c1 = document.getElementById('cfg-pc1');
+  const c2 = document.getElementById('cfg-pc2');
+  c1.innerHTML = '';
+  c2.innerHTML = '';
+
+  pcMap.pc1.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'cfg-code pc1';
+    btn.textContent = p + '*';
+    btn.onclick = () => togglePC(p, 'pc1');
+    c1.appendChild(btn);
+  });
+  pcMap.pc2.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'cfg-code pc2';
+    btn.textContent = p + '*';
+    btn.onclick = () => togglePC(p, 'pc2');
+    c2.appendChild(btn);
+  });
+
+  document.getElementById('pc1-codes-label').textContent = pcMap.pc1.map(p=>p+'*').join(', ') + ' 시리즈';
+  document.getElementById('pc2-codes-label').textContent = pcMap.pc2.map(p=>p+'*').join(', ') + ' 시리즈';
+}
+
+function togglePC(prefix, currentPC) {
+  if (currentPC === 'pc1') {
+    pcMap.pc1 = pcMap.pc1.filter(p => p !== prefix);
+    pcMap.pc2.push(prefix);
+  } else {
+    pcMap.pc2 = pcMap.pc2.filter(p => p !== prefix);
+    pcMap.pc1.push(prefix);
+  }
+  localStorage.setItem('pcMap', JSON.stringify(pcMap));
+  renderCfg();
+  if (queue.pc1.length || queue.pc2.length) {
+    reclassify();
+  }
+}
+
+function reclassify() {
+  const all = [...queue.pc1, ...queue.pc2];
+  queue.pc1 = [];
+  queue.pc2 = [];
+  all.forEach(item => {
+    const pc = getPC(item.code);
+    queue[pc].push(item);
+  });
+  localStorage.setItem('printQueue', JSON.stringify(queue));
+  render();
+}
+
+// ═══════════════════════ PARSE ═══════════════════════
+function handleParse() {
+  if (inputTab === 'sheets' && dataSource === 'order') {
+    loadFromSheets();
+  } else {
+    parseAndLoad();
+  }
+}
+
+function parseAndLoad() {
+  const raw = inputTab === 'paste'
+    ? document.getElementById('paste-input').value.trim()
+    : inputTab === 'direct'
+    ? document.getElementById('direct-input').value.trim()
+    : inputTab === 'sheets' && dataSource === 'coupang'
+    ? document.getElementById('coupang-input').value.trim()
+    : '';
+
+  if (!raw) { alert('데이터를 입력해주세요'); return; }
+
+  const CODE_RE = /\b([A-Z]{1,4}\d{2,4})\b/i;
+  const SIZE_RE  = /\b(70|80|90|100|110|120|130|140|150|160|170|180|S|M|L|XL)\b/i;
+  const COLOR_RE = /(블랙|화이트|그레이|네이비|베이지|카멜|레드|핑크|민트|카키|옐로우|바이올렛|스틸블루|인디핑크|네온핑크|그린|오렌지|스카이블루|아이보리|백멜란지|멜란지)/;
+
+  const map = {}; // key → {code,color,size,qty}
+
+  raw.split('\n').forEach(line => {
+    if (!line.trim()) return;
+    const parts = line.trim().split(/\t|,/);
+
+    let code='', color='', size='', qty=1;
+
+    if (parts.length >= 4) {
+      // 컬럼 형식: 코드 색상 사이즈 수량
+      code  = parts[0].trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+      color = parts[1].trim();
+      size  = parts[2].trim();
+      qty   = parseInt(parts[3]) || 1;
+    } else {
+      // 공백 형식
+      const tokens = line.trim().split(/\s+/);
+      const codeM  = line.match(CODE_RE);
+      const colorM = line.match(COLOR_RE);
+      const sizeM  = line.match(SIZE_RE);
+      const qtyM   = line.match(/(\d+)\s*(?:개|매|장|pcs?)?(?:\s*$)/i);
+
+      code  = codeM  ? codeM[1].toUpperCase() : '';
+      color = colorM ? colorM[1] : tokens[1] || '';
+      size  = sizeM  ? sizeM[1] : tokens[2] || '';
+      qty   = qtyM   ? parseInt(qtyM[1]) : parseInt(tokens[3]) || 1;
+    }
+
+    if (!code) return;
+
+    // 새 접두사 감지 → 자동 배분
+    const prefix = code.match(/^([A-Z]+)/)?.[1] || '';
+    if (prefix && !pcMap.pc1.includes(prefix) && !pcMap.pc2.includes(prefix)) {
+      pcMap.pc2.push(prefix);
+      localStorage.setItem('pcMap', JSON.stringify(pcMap));
+      renderCfg();
+    }
+
+    const key = `${code}||${color}||${size}`;
+    if (!map[key]) map[key] = { code, color, size, qty: 0 };
+    map[key].qty += qty;
+  });
+
+  if (!Object.keys(map).length) {
+    alert('파싱된 데이터가 없습니다. 형식을 확인해주세요.');
+    return;
+  }
+
+  // 기존 큐에 병합 (중복 합산)
+  Object.values(map).forEach(item => {
+    const pc = getPC(item.code);
+    const existing = queue[pc].find(r =>
+      r.code === item.code && r.color === item.color && r.size === item.size
+    );
+    if (existing) {
+      existing.qty += item.qty;
+    } else {
+      queue[pc].push({ ...item, id: Date.now() + Math.random() });
+    }
+  });
+
+  // 수량 내림차순 정렬
+  queue.pc1.sort((a,b) => b.qty - a.qty || a.code.localeCompare(b.code));
+  queue.pc2.sort((a,b) => b.qty - a.qty || a.code.localeCompare(b.code));
+
+  localStorage.setItem('printQueue', JSON.stringify(queue));
+  render();
+  closeModal();
+  toast(`✅ ${Object.keys(map).length}건 인쇄 큐 생성 완료`);
+
+  // 입력창 초기화
+  document.getElementById('paste-input').value = '';
+  document.getElementById('direct-input').value = '';
+}
+
+// ═══════════════════════ RENDER ═══════════════════════
+function render() {
+  renderCol('pc1');
+  renderCol('pc2');
+  updateProgress();
+}
+
+function renderCol(pc) {
+  const list = document.getElementById(`${pc}-list`);
+  const items = queue[pc];
+
+  document.getElementById(`${pc}-count`).textContent = items.length + '건';
+
+  if (!items.length) {
+    list.innerHTML = `<div class="empty"><div class="empty-ic">✅</div><div>해당 없음</div></div>`;
+    return;
+  }
+
+  list.innerHTML = items.map((item, i) => {
+    const isDone = doneSet.has(item.id+'');
+    const checkIcon = isDone ? '✓' : '';
+    return `
+    <div class="print-item ${isDone?'done':''}" onclick="toggleDone('${item.id}', ${i}, '${pc}')">
+      <div class="item-main">
+        <div class="item-check">${checkIcon}</div>
+        <div class="item-code">${item.code}</div>
+        <div class="item-info">
+          <div class="item-color">${item.color || '—'}</div>
+          <div class="item-size">${item.size || '—'} 사이즈</div>
+        </div>
+        <div style="text-align:right">
+          <div class="item-qty">${item.qty}</div>
+          <div class="item-unit">매</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleDone(id, idx, pc) {
+  const key = id + '';
+  if (doneSet.has(key)) doneSet.delete(key);
+  else doneSet.add(key);
+  localStorage.setItem('done', JSON.stringify([...doneSet]));
+  render();
+}
+
+function updateProgress() {
+  ['pc1','pc2'].forEach((pc, i) => {
+    const total = queue[pc].length;
+    const done  = queue[pc].filter(item => doneSet.has(item.id+'')).length;
+    const pct   = total ? Math.round(done/total*100) : 0;
+    document.getElementById(`prog${i+1}-text`).textContent = `${done} / ${total}`;
+    document.getElementById(`prog${i+1}-bar`).style.width = pct + '%';
+  });
+}
+
+// ═══════════════════════ MODAL ═══════════════════════
+function openModal() { document.getElementById('modal').classList.add('show'); }
+function closeModal() { document.getElementById('modal').classList.remove('show'); }
+function closeModalBg(e) { if (e.target.id === 'modal') closeModal(); }
+
+function switchInputTab(tab) {
+  inputTab = tab;
+  ['paste','sheets','direct','cfg'].forEach(t => {
+    const content = document.getElementById('tab-content-'+t);
+    if (content) content.style.display = t===tab?'block':'none';
+    const btn = document.getElementById('tab-'+t);
+    if (btn) btn.classList.toggle('active', t===tab);
+  });
+}
+
+// ═══════════════════════ 구글시트 연동 ═══════════════════════
+let dataSource = 'order';
+
+function setSource(src) {
+  dataSource = src;
+  document.getElementById('src-order-section').style.display   = src==='order'   ? 'block' : 'none';
+  document.getElementById('src-coupang-section').style.display = src==='coupang' ? 'block' : 'none';
+  ['order','coupang'].forEach(s => {
+    const btn = document.getElementById('src-'+s);
+    if (s === src) {
+      btn.style.borderColor = 'var(--pc1)';
+      btn.style.background  = 'var(--pc1-lt)';
+      btn.style.color       = 'var(--pc1)';
+    } else {
+      btn.style.borderColor = 'var(--border)';
+      btn.style.background  = 'var(--card)';
+      btn.style.color       = 'var(--ink3)';
+    }
+  });
+}
+
+function saveSheetUrl() {
+  const url = document.getElementById('sheets-url').value.trim();
+  if (!url) return;
+  localStorage.setItem('gs_config', JSON.stringify({url}));
+  setStatus('✅ URL 저장됨', 'var(--green)');
+}
+
+function setStatus(msg, color='var(--ink3)') {
+  const el = document.getElementById('sheets-status');
+  if (el) { el.textContent = msg; el.style.color = color; }
+}
+
+async function loadFromSheets() {
+  const cfg = JSON.parse(localStorage.getItem('gs_config')||'{}');
+  if (!cfg.url) {
+    setStatus('⚠️ 먼저 URL을 입력하고 저장하세요', 'var(--pc1)');
+    return;
+  }
+
+  const btn = document.getElementById('load-btn');
+  btn.textContent = '⏳ 불러오는 중...';
+  btn.disabled = true;
+  setStatus('구글시트에서 데이터 조회 중...', 'var(--pc2)');
+
+  try {
+    // Vercel 프록시를 통해 호출 (CORS 문제 해결)
+    // 로컬 파일(file://)에서 실행 시 직접 호출 시도
+    const isVercel = location.hostname !== 'localhost' &&
+                     !location.hostname.includes('127.0.0.1') &&
+                     location.protocol !== 'file:';
+
+    let json;
+
+    if (isVercel) {
+      // Vercel 배포 환경: 프록시 API 사용
+      const proxyUrl = `/api/inventory?url=${encodeURIComponent(cfg.url)}&action=getInventory`;
+      const res = await fetch(proxyUrl);
+      json = await res.json();
+    } else {
+      // 로컬 환경: Apps Script 직접 호출 시도
+      try {
+        const res = await fetch(cfg.url + '?action=getInventory', {
+          method: 'GET',
+          redirect: 'follow',
+        });
+        const text = await res.text();
+        json = JSON.parse(text);
+      } catch(e) {
+        // 직접 호출 실패 시 JSONP 방식 시도
+        json = await fetchViaScript(cfg.url + '?action=getInventory');
+      }
+    }
+
+    if (!json || json.status !== 'ok') {
+      setStatus('⚠️ 응답 오류: ' + (json?.message || '알 수 없는 오류'), 'var(--pc1)');
+      return;
+    }
+
+    if (!json.data?.orders?.length) {
+      setStatus('⚠️ 주문 데이터 없음 — 파싱 완료된 주문이 없거나 시트가 비어있음', 'var(--pc1)');
+      return;
+    }
+
+    processOrders(json.data.orders);
+
+  } catch(e) {
+    setStatus('❌ 연결 실패: ' + e.message, 'var(--red)');
+    document.getElementById('load-btn').disabled = false;
+    document.getElementById('load-btn').textContent = '📊 구글시트에서 주문 불러오기';
+  }
+}
+
+// JSONP 방식 (로컬 폴백)
+function fetchViaScript(url) {
+  return new Promise((resolve, reject) => {
+    const cbName = '_gs_cb_' + Date.now();
+    window[cbName] = (data) => {
+      delete window[cbName];
+      document.head.removeChild(script);
+      resolve(data);
+    };
+    const script = document.createElement('script');
+    script.src = url + '&callback=' + cbName;
+    script.onerror = () => reject(new Error('JSONP 실패'));
+    document.head.appendChild(script);
+    setTimeout(() => reject(new Error('타임아웃 (10초)')), 10000);
+  });
+}
+
+function processOrders(orders) {
+  const map = {};
+  orders.forEach(o => {
+    if (!o.code || (o.status && o.status.includes('차감완료'))) return;
+    const key = `${o.code}||${o.color}||${o.size}`;
+    if (!map[key]) map[key] = { code: o.code.toUpperCase(), color: o.color, size: o.size, qty: 0 };
+    map[key].qty += parseInt(o.qty) || 1;
+  });
+
+  if (!Object.keys(map).length) {
+    setStatus('⚠️ 처리할 주문이 없습니다', 'var(--pc1)');
+    document.getElementById('load-btn').disabled = false;
+    document.getElementById('load-btn').textContent = '📊 구글시트에서 주문 불러오기';
+    return;
+  }
+
+  Object.values(map).forEach(item => {
+    const prefix = item.code.match(/^([A-Z]+)/)?.[1] || '';
+    if (prefix && !pcMap.pc1.includes(prefix) && !pcMap.pc2.includes(prefix)) {
+      pcMap.pc2.push(prefix);
+      localStorage.setItem('pcMap', JSON.stringify(pcMap));
+      renderCfg();
+    }
+    const pc = getPC(item.code);
+    const existing = queue[pc].find(r =>
+      r.code===item.code && r.color===item.color && r.size===item.size
+    );
+    if (existing) existing.qty += item.qty;
+    else queue[pc].push({...item, id: Date.now()+Math.random()});
+  });
+
+  queue.pc1.sort((a,b) => b.qty-a.qty || a.code.localeCompare(b.code));
+  queue.pc2.sort((a,b) => b.qty-a.qty || a.code.localeCompare(b.code));
+
+  localStorage.setItem('printQueue', JSON.stringify(queue));
+  render();
+  closeModal();
+  toast(`✅ 구글시트에서 ${Object.keys(map).length}건 불러오기 완료`);
+  document.getElementById('load-btn').disabled = false;
+  document.getElementById('load-btn').textContent = '📊 구글시트에서 주문 불러오기';
+}
+
+// ═══════════════════════ CONTROLS ═══════════════════════
+function resetChecks() {
+  if (!doneSet.size) return;
+  if (confirm('체크 표시를 모두 초기화하시겠습니까?')) {
+    doneSet.clear();
+    localStorage.setItem('done', '[]');
+    render();
+    toast('↺ 체크 초기화 완료');
+  }
+}
+
+function clearAll() {
+  if (!queue.pc1.length && !queue.pc2.length) return;
+  if (confirm('인쇄 큐를 전체 삭제하시겠습니까?')) {
+    queue = { pc1: [], pc2: [] };
+    doneSet.clear();
+    localStorage.removeItem('printQueue');
+    localStorage.setItem('done', '[]');
+    render();
+    toast('🗑 초기화 완료');
+  }
+}
+
+// ═══════════════════════ TOAST ═══════════════════════
+let toastTimer;
+function toast(msg) {
+  let el = document.getElementById('_toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = '_toast';
+    el.style.cssText = `position:fixed;bottom:72px;left:50%;transform:translateX(-50%) translateY(20px);
+      background:#1a1a1a;color:#fff;padding:10px 18px;border-radius:20px;font-size:12px;font-weight:700;
+      box-shadow:0 4px 20px rgba(0,0,0,.5);opacity:0;transition:all .25s;z-index:999;white-space:nowrap;
+      border:1px solid #333;font-family:var(--sans)`;
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.opacity = '1';
+  el.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(-50%) translateY(20px)';
+  }, 2200);
+}
+
+// ═══════════════════════ CLOCK ═══════════════════════
+setInterval(() => {
+  const now = new Date();
+  document.getElementById('header-date').innerHTML =
+    now.toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'}) +
+    '<br>' + now.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+}, 30000);
+
+init();
+</script>
+</body>
+</html>
