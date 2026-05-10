@@ -718,57 +718,17 @@ function renderCard(item,pc){
   </div>`;
 }
 
-// ── TOGGLE DONE + 자동 차감 ──
-async function toggleDone(id){
-  // 이미 완료된 것은 체크 해제만 (차감 취소는 불가)
+// ── TOGGLE DONE (로컬 진행 체크만) ──
+function toggleDone(id){
   if(S.done.has(id)){
-    if(!confirm('완료 체크를 해제하시겠습니까?\n(재고 차감은 취소되지 않습니다)')) return;
     S.done.delete(id);
-    localStorage.setItem('done',JSON.stringify([...S.done]));
-    render();
-    return;
+    toast('체크 해제');
+  } else {
+    S.done.add(id);
+    const all=[...S.queue.pc1,...S.queue.pc2];
+    const item=all.find(i=>i.id===id);
+    if(item) toast(`✓ ${item.code} ${item.color||''} ${item.size||''} 완료 체크`);
   }
-
-  // 해당 아이템 찾기
-  const all=[...S.queue.pc1,...S.queue.pc2];
-  const item=all.find(i=>i.id===id);
-  if(!item) return;
-
-  // 확인 팝업
-  const confirmed=confirm(
-    `이 항목을 인쇄 완료 처리하시겠습니까?\n\n` +
-    `${item.code} / ${item.color} / ${item.size} — ${item.orderQty}매\n\n` +
-    `✅ 확인 시:\n` +
-    `• 무지상품재고 ${item.orderQty}개 차감\n` +
-    `• 전사지재고 ${item.orderQty}매 차감\n` +
-    `• 주문확인 시트 차감완료 마킹`
-  );
-  if(!confirmed) return;
-
-  // 차감 요청 전송
-  const cfg=JSON.parse(localStorage.getItem('gs_config')||'{}');
-  if(cfg.url){
-    try{
-      await fetch(cfg.url,{
-        method:'POST',
-        mode:'no-cors',
-        headers:{'Content-Type':'text/plain'},
-        body:JSON.stringify({
-          action:'deductItem',
-          code:item.code,
-          color:item.color,
-          size:item.size,
-          qty:item.orderQty,
-        }),
-      });
-      toast(`✅ ${item.code} ${item.color} ${item.size} — 차감 완료`);
-    }catch(e){
-      toast('⚠️ 차감 전송 실패: '+e.message);
-    }
-  }
-
-  // 로컬 체크 상태 업데이트
-  S.done.add(id);
   localStorage.setItem('done',JSON.stringify([...S.done]));
   render();
 }
