@@ -1018,7 +1018,10 @@ function renderCodes(type) {
     return a.localeCompare(b);
   });
   el.innerHTML = sorted.map(c =>
-    `<button class="code-pill ${sel[type].code===c?'active':''}" onclick="selectCode('${type}','${c}',this)">${c}</button>`
+    `<div style="display:flex;align-items:center;gap:4px;">
+      <button class="code-pill ${sel[type].code===c?'active':''}" onclick="selectCode('${type}','${c}',this)" style="flex:1;">${c}</button>
+      <button class="code-pill" onclick="deleteCode('${type}','${c}')" style="width:32px;height:32px;padding:0;font-size:16px;background:#fee;border-color:#fcc;color:#c02820;">✕</button>
+    </div>`
   ).join('') + `<button class="code-pill add-btn" onclick="showAddCode('${type}')">+</button>`;
 }
 
@@ -1027,6 +1030,17 @@ function selectCode(type, code, btn) {
   document.querySelectorAll(`#${type}-codes .code-pill`).forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   updateSummary(type);
+}
+
+function deleteCode(type, code) {
+  if (confirm(`${code}를 삭제하시겠습니까?`)) {
+    savedCodes[type] = savedCodes[type].filter(c => c !== code);
+    if (sel[type].code === code) {
+      sel[type].code = '';
+      updateSummary(type);
+    }
+    renderCodes(type);
+  }
 }
 
 function showAddCode(type) {
