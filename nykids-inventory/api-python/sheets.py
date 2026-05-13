@@ -89,8 +89,8 @@ class SheetsClient:
         ws = self._get_ws(settings.sheet_transfer)
         rows = ws.get_all_values()[1:]
         result["transfer"] = [
-            {"code": r[0], "name": r[1],
-             "stock": int(r[2] or 0), "safeStock": int(r[3] or 20)}
+            {"code": r[0], "name": r[1], "color": r[2] if len(r) > 2 else "",
+             "stock": int(r[3] if len(r) > 3 else 0), "safeStock": int(r[4] if len(r) > 4 else 20)}
             for r in rows if r[0]
         ]
 
@@ -167,6 +167,7 @@ class SheetsClient:
             # 필드명 호환성 (한글/영문, camelCase/snake_case 모두 지원)
             code_val = t.get("code") or t.get("코드", "")
             name_val = t.get("name") or t.get("이름", "")
+            color_val = t.get("color") or t.get("색상", "")
             stock_val = int(t.get("stock") or t.get("재고", 0))
             safe_stock_val = int(t.get("safeStock") or t.get("safe_stock") or t.get("안전재고", 20))
 
@@ -174,6 +175,7 @@ class SheetsClient:
                 items.append(TransferStock(
                     code=code_val,
                     name=name_val,
+                    color=color_val,
                     stock=stock_val,
                     safe_stock=safe_stock_val
                 ))
@@ -217,7 +219,19 @@ class SheetsClient:
         rows = ws.get_all_values()[1:]
         for i, row in enumerate(rows):
             if row[0] == code:
-                ws.update_cell(i + 2, 3, new_qty)
+                ws.update_cell(i + 2, 4, new_qty)
+                return True
+        return False
+
+    def update_finished_stock(self, sku: str, new_qty: int) -> bool:
+        """완제품재고 수량 업데이트"""
+        if self._mode != "gspread":
+            return False
+        ws = self._get_ws(settings.sheet_finished)
+        rows = ws.get_all_values()[1:]
+        for i, row in enumerate(rows):
+            if row[0] == sku:
+                ws.update_cell(i + 2, 4, new_qty)
                 return True
         return False
 

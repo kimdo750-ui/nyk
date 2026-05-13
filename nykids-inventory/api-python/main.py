@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from models import ChatRequest, ChatResponse
 from agent import get_agent
@@ -88,13 +88,14 @@ async def health():
 
 
 # ─── 대시보드 ───
-@app.get("/dashboard")
+@app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard():
     """실시간 모니터링 대시보드"""
     dashboard_path = Path(__file__).parent / "static" / "dashboard.html"
     if dashboard_path.exists():
-        return FileResponse(dashboard_path, media_type="text/html")
-    raise HTTPException(status_code=404, detail="대시보드를 찾을 수 없습니다")
+        with open(dashboard_path, "r", encoding="utf-8") as f:
+            return f.read()
+    return "<h1>대시보드를 찾을 수 없습니다</h1>"
 
 
 # ─── AI 채팅 ───
@@ -197,6 +198,45 @@ async def deduct_execute(confirmed: bool = False):
         agent = get_agent()
         result = agent.chat("재고 차감 실행해줘 confirmed=yes")
         return {"result": result["answer"]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ─── 재고 수량 수정 ───
+@app.post("/update-transfer")
+async def update_transfer(code: str, qty: int):
+    """전사지 수량 업데이트"""
+    if qty not in [5, 10, 15, 20, 25, 30]:
+        raise HTTPException(
+            status_code=400,
+            detail="수량은 5, 10, 15, 20, 25, 30 중 하나만 선택 가능합니다"
+        )
+    try:
+        client = get_sheets_client()
+        success = client.update_transfer_stock(code, qty)
+        if success:
+            return {"status": "ok", "message": f"{code} 수량이 {qty}로 업데이트되었습니다"}
+        else:
+            raise HTTPException(status_code=400, detail="업데이트 실패. 해당 코드를 찾을 수 없습니다")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/update-finished")
+async def update_finished(sku: str, qty: int):
+    """완제품 수량 업데이트"""
+    if qty not in [5, 10, 15, 20, 25, 30]:
+        raise HTTPException(
+            status_code=400,
+            detail="수량은 5, 10, 15, 20, 25, 30 중 하나만 선택 가능합니다"
+        )
+    try:
+        client = get_sheets_client()
+        success = client.update_finished_stock(sku, qty)
+        if success:
+            return {"status": "ok", "message": f"{sku} 수량이 {qty}로 업데이트되었습니다"}
+        else:
+            raise HTTPException(status_code=400, detail="업데이트 실패. 해당 SKU를 찾을 수 없습니다")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

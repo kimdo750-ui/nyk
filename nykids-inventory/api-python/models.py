@@ -49,6 +49,7 @@ class BlankStock(BaseModel):
 class TransferStock(BaseModel):
     code:       str = Field(..., description="전사지코드 = 완제품 SKU")
     name:       str = Field("", description="전사지명")
+    color:      str = Field("", description="전사지 색상")
     stock:      int = Field(..., description="현재재고 (매수)")
     safe_stock: int = Field(20, description="안전재고")
     status:     StockStatus = StockStatus.UNKNOWN

@@ -111,8 +111,11 @@ class InventoryAgent:
                 # LLM 호출
                 response = self.llm_with_tools.invoke(messages)
 
-                # 응답을 메시지에 추가
-                messages.append({"role": "assistant", "content": response.content})
+                # 응답을 dict로 변환해서 메시지에 추가
+                messages.append({
+                    "role": "assistant",
+                    "content": response.content or ""
+                })
 
                 # 도구 호출이 있는지 확인
                 if not (hasattr(response, 'tool_calls') and response.tool_calls):
@@ -123,9 +126,9 @@ class InventoryAgent:
                 # 도구 실행
                 tool_results = []
                 for tool_call in response.tool_calls:
-                    tool_name = tool_call['name']
-                    tool_input = tool_call.get('args', {})
-                    tool_id = tool_call.get('id', '')
+                    tool_name = tool_call.get('name') or getattr(tool_call, 'name', '')
+                    tool_input = tool_call.get('args') or getattr(tool_call, 'args', {})
+                    tool_id = tool_call.get('id') or getattr(tool_call, 'id', '')
 
                     logger.info(f"  🔧 도구 실행: {tool_name}")
 
@@ -140,11 +143,14 @@ class InventoryAgent:
                     tool_results.append({
                         "type": "tool_result",
                         "tool_use_id": tool_id,
-                        "content": result
+                        "content": str(result)
                     })
 
-                # 도구 결과를 메시지에 추가
-                messages.append({"role": "user", "content": tool_results})
+                # 도구 결과를 하나의 메시지로 추가
+                messages.append({
+                    "role": "user",
+                    "content": tool_results
+                })
 
             logger.info(f"✅ 에이전트 응답: {final_answer[:100]}...")
 
