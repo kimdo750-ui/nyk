@@ -516,6 +516,9 @@ body{
 .cdot-바이올렛{background:#8040c0}
 .cdot-백멜란지{background:#e0ddd8;border-color:#bbb!important}
 .cdot-그린{background:#2a7a3a}
+.cdot-다크민트{background:#2a9f7f}
+.cdot-피치{background:#f4a69f}
+.cdot-블루{background:#1a5aa8}
 </style>
 </head>
 <body>
@@ -669,26 +672,24 @@ body{
     <div class="sec-body">
       <div class="code-scroll" id="transfer-codes">
         <!-- JS로 렌더링 -->
-        <button class="code-pill add-btn" onclick="showAddCode('transfer')">+</button>
       </div>
       <div class="code-input-wrap" id="transfer-code-input">
         <input class="code-input" id="transfer-new-code" placeholder="코드 입력 (예: W281)" maxlength="10">
         <button class="code-confirm" onclick="addCode('transfer')">추가</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="qqty-btn" style="flex:1;background:var(--accent);color:#fff;border-color:var(--accent)" onclick="showAddCode('transfer')">+ 코드 추가</button>
+        <button class="qqty-btn" style="flex:1;background:#fee;color:#c02820;border-color:#fcc" id="transfer-delete-btn" onclick="deleteSelectedCode('transfer')" disabled>🗑 삭제</button>
       </div>
     </div>
   </div>
 
   <!-- 색상 -->
   <div class="sec">
-    <div class="sec-head">② 색상 (검은색 또는 흰색)</div>
+    <div class="sec-head">② 색상</div>
     <div class="sec-body">
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <button onclick="setTransferColor('검은색')" style="padding: 12px; border: 2px solid #ddd; border-radius: 8px; background: #f8f6f2; cursor: pointer; font-weight: 600;" id="transfer-color-black">
-          ⬛ 검은색
-        </button>
-        <button onclick="setTransferColor('흰색')" style="padding: 12px; border: 2px solid #ddd; border-radius: 8px; background: #f8f6f2; cursor: pointer; font-weight: 600;" id="transfer-color-white">
-          ⬜ 흰색
-        </button>
+      <div class="color-grid" id="transfer-colors" style="grid-template-columns: repeat(3, 1fr);">
+        <!-- JS로 렌더링 -->
       </div>
       <div style="margin-top: 10px; padding: 10px; background: #f0f3ff; border-radius: 6px; font-size: 13px; color: #667eea;" id="transfer-color-display">선택: 없음</div>
     </div>
@@ -762,11 +763,15 @@ body{
     <div class="sec-head">① 완제품 SKU (전사지코드)</div>
     <div class="sec-body">
       <div class="code-scroll" id="finished-codes">
-        <button class="code-pill add-btn" onclick="showAddCode('finished')">+</button>
+        <!-- JS로 렌더링 -->
       </div>
       <div class="code-input-wrap" id="finished-code-input">
         <input class="code-input" id="finished-new-code" placeholder="SKU 입력 (예: IT024)" maxlength="10">
         <button class="code-confirm" onclick="addCode('finished')">추가</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="qqty-btn" style="flex:1;background:var(--accent);color:#fff;border-color:var(--accent)" onclick="showAddCode('finished')">+ 코드 추가</button>
+        <button class="qqty-btn" style="flex:1;background:#fee;color:#c02820;border-color:#fcc" id="finished-delete-btn" onclick="deleteSelectedCode('finished')" disabled>🗑 삭제</button>
       </div>
     </div>
   </div>
@@ -951,6 +956,10 @@ const COLORS = [
   '레드','핑크','민트','카키','옐로우','스카이블루',
   '인디핑크','네온핑크','오렌지','바이올렛','백멜란지','그린'
 ];
+const TRANSFER_COLORS = [
+  '화이트','블랙','다크민트','피치','옐로우','레드',
+  '바이올렛','블루','베이지','그레이','스카이블루','인디핑크'
+];
 const SIZES = ['90','100','110','120','130','140','150','160','170','180','S','M','L','XL'];
 
 // 코드 프리셋 (저장된 코드 목록)
@@ -979,6 +988,7 @@ let currentTab = 'blank';
 function init() {
   renderColorBtns('blank');
   renderColorBtns('finished');
+  renderTransferColors();
   renderSizeBtns('blank');
   renderSizeBtns('finished');
   renderCodes('transfer');
@@ -995,6 +1005,16 @@ function renderColorBtns(type) {
   el.innerHTML = COLORS.map(c => {
     const cls = `cdot-${c}`.replace(/\s/g,'-');
     return `<button class="color-btn" onclick="selectColor('${type}','${c}',this)" data-v="${c}">
+      <span class="color-dot ${cls}"></span>${c}
+    </button>`;
+  }).join('');
+}
+
+function renderTransferColors() {
+  const el = document.getElementById('transfer-colors');
+  el.innerHTML = TRANSFER_COLORS.map(c => {
+    const cls = `cdot-${c}`.replace(/\s/g,'-');
+    return `<button class="color-btn" onclick="setTransferColor('${c}',this)" data-v="${c}">
       <span class="color-dot ${cls}"></span>${c}
     </button>`;
   }).join('');
@@ -1018,28 +1038,31 @@ function renderCodes(type) {
     return a.localeCompare(b);
   });
   el.innerHTML = sorted.map(c =>
-    `<div style="display:flex;align-items:center;gap:4px;">
-      <button class="code-pill ${sel[type].code===c?'active':''}" onclick="selectCode('${type}','${c}',this)" style="flex:1;">${c}</button>
-      <button class="code-pill" onclick="deleteCode('${type}','${c}')" style="width:32px;height:32px;padding:0;font-size:16px;background:#fee;border-color:#fcc;color:#c02820;">✕</button>
-    </div>`
-  ).join('') + `<button class="code-pill add-btn" onclick="showAddCode('${type}')">+</button>`;
+    `<button class="code-pill ${sel[type].code===c?'active':''}" onclick="selectCode('${type}','${c}',this)">${c}</button>`
+  ).join('');
 }
 
 function selectCode(type, code, btn) {
   sel[type].code = code;
   document.querySelectorAll(`#${type}-codes .code-pill`).forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
+  // 삭제 버튼 활성화
+  const deleteBtn = document.getElementById(type+'-delete-btn');
+  if (deleteBtn) deleteBtn.disabled = false;
   updateSummary(type);
 }
 
-function deleteCode(type, code) {
+function deleteSelectedCode(type) {
+  const code = sel[type].code;
+  if (!code) { toast('⚠️ 먼저 삭제할 코드를 선택하세요'); return; }
   if (confirm(`${code}를 삭제하시겠습니까?`)) {
     savedCodes[type] = savedCodes[type].filter(c => c !== code);
-    if (sel[type].code === code) {
-      sel[type].code = '';
-      updateSummary(type);
-    }
+    sel[type].code = '';
+    localStorage.setItem('codes_'+type, JSON.stringify(savedCodes[type]));
     renderCodes(type);
+    document.getElementById(type+'-delete-btn').disabled = true;
+    updateSummary(type);
+    toast('🗑 '+code+' 삭제됨');
   }
 }
 
@@ -1125,11 +1148,13 @@ function setQty(type, v) {
   setTimeout(()=>el.style.transform='',150);
 }
 
-function setTransferColor(color) {
+function setTransferColor(color, btn) {
   sel['transfer'].color = color;
   document.getElementById('transfer-color-display').textContent = '선택: ' + color;
-  document.getElementById('transfer-color-black').style.borderColor = color === '검은색' ? '#c84b14' : '#ddd';
-  document.getElementById('transfer-color-white').style.borderColor = color === '흰색' ? '#c84b14' : '#ddd';
+  // 모든 색상 버튼 비활성화
+  document.querySelectorAll('#transfer-colors .color-btn').forEach(b => b.classList.remove('active'));
+  // 선택된 버튼 활성화
+  if (btn) btn.classList.add('active');
   updateSummary('transfer');
 }
 
