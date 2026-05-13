@@ -544,6 +544,8 @@
         let blankChart = null;
         let transferChart = null;
 
+        const API_BASE = 'http://localhost:8000';
+
         const colorMap = {
             '블랙': 'color-black',
             '검은색': 'color-black',
@@ -581,7 +583,7 @@
 
         async function updateTransferStock(code, qty) {
             try {
-                const res = await fetch(`/update-transfer?code=${code}&qty=${qty}`, { method: 'POST' });
+                const res = await fetch(`${API_BASE}/update-transfer?code=${code}&qty=${qty}`, { method: 'POST' });
                 const data = await res.json();
                 if (res.ok) {
                     alert(`✅ ${code} 수량이 ${qty}로 업데이트되었습니다`);
@@ -596,7 +598,7 @@
 
         async function updateFinishedStock(sku, qty) {
             try {
-                const res = await fetch(`/update-finished?sku=${sku}&qty=${qty}`, { method: 'POST' });
+                const res = await fetch(`${API_BASE}/update-finished?sku=${sku}&qty=${qty}`, { method: 'POST' });
                 const data = await res.json();
                 if (res.ok) {
                     alert(`✅ ${sku} 수량이 ${qty}로 업데이트되었습니다`);
@@ -611,16 +613,16 @@
 
         async function refreshData() {
             try {
-                const invRes = await fetch("/inventory");
+                const invRes = await fetch(`${API_BASE}/inventory`);
                 const inventory = await invRes.json();
 
-                const ordRes = await fetch("/orders");
+                const ordRes = await fetch(`${API_BASE}/orders`);
                 const orders = await ordRes.json();
 
-                const prodRes = await fetch("/production");
+                const prodRes = await fetch(`${API_BASE}/production`);
                 const production = await prodRes.json();
 
-                const alertRes = await fetch("/alerts?level=urgent");
+                const alertRes = await fetch(`${API_BASE}/alerts?level=urgent`);
                 const alerts = await alertRes.json();
 
                 updateStats(inventory, orders, production, alerts);
