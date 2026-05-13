@@ -124,12 +124,11 @@ body{
 
 /* ── PRODUCT CODE SELECTOR ── */
 .code-scroll{
-  display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;
-  scrollbar-width:none;
+  display:grid;grid-template-columns:repeat(auto-fill, minmax(100px, 1fr));gap:8px;padding-bottom:4px;
+  width:100%;
 }
 .code-scroll::-webkit-scrollbar{display:none}
 .code-pill{
-  flex-shrink:0;
   padding:8px 14px;
   border-radius:8px;
   border:2px solid var(--border);
@@ -240,12 +239,22 @@ body{
   border:2px solid var(--border);border-radius:10px;overflow:hidden;
 }
 .qty-btn{
-  width:54px;height:54px;
+  width:50px;height:50px;
   background:var(--card);
   border:none;
-  font-size:24px;font-weight:300;color:var(--ink);
+  font-size:20px;font-weight:300;color:var(--ink);
   cursor:pointer;display:flex;align-items:center;justify-content:center;
   flex-shrink:0;transition:background .1s;
+}
+@media (max-width: 480px) {
+  .qty-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+  .qty-num {
+    font-size: 20px;
+  }
 }
 .qty-btn:active{background:var(--border)}
 .qty-num{
@@ -1121,7 +1130,13 @@ function updateSummary(type) {
     ready = !!(s.garment && s.color && s.size);
   } else if (type === 'transfer') {
     if (s.code) tags += `<span class="sel-tag color">${s.code}</span>`;
-    if (s.color) tags += `<span class="sel-tag color">${s.color}</span>`;
+    if (s.color) {
+      if (s.color === '검은색') {
+        tags += `<span class="sel-tag color" style="background: #000; color: #fff;">${s.color}</span>`;
+      } else {
+        tags += `<span class="sel-tag color" style="background: #fff; color: #000; border: 1px solid #ddd;">${s.color}</span>`;
+      }
+    }
     tags += `<span class="sel-tag qty">${qty}매</span>`;
     ready = !!(s.code && s.color);
   } else {
