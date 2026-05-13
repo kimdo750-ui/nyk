@@ -516,9 +516,6 @@ body{
 .cdot-바이올렛{background:#8040c0}
 .cdot-백멜란지{background:#e0ddd8;border-color:#bbb!important}
 .cdot-그린{background:#2a7a3a}
-.cdot-다크민트{background:#2a9f7f}
-.cdot-피치{background:#f4a69f}
-.cdot-블루{background:#1a5aa8}
 </style>
 </head>
 <body>
@@ -686,10 +683,15 @@ body{
 
   <!-- 색상 -->
   <div class="sec">
-    <div class="sec-head">② 색상</div>
+    <div class="sec-head">② 색상 (검은색 또는 흰색)</div>
     <div class="sec-body">
-      <div class="color-grid" id="transfer-colors" style="grid-template-columns: repeat(3, 1fr);">
-        <!-- JS로 렌더링 -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <button onclick="setTransferColor('검은색')" style="padding: 12px; border: 2px solid #ddd; border-radius: 8px; background: #f8f6f2; cursor: pointer; font-weight: 600;" id="transfer-color-black">
+          ⬛ 검은색
+        </button>
+        <button onclick="setTransferColor('흰색')" style="padding: 12px; border: 2px solid #ddd; border-radius: 8px; background: #f8f6f2; cursor: pointer; font-weight: 600;" id="transfer-color-white">
+          ⬜ 흰색
+        </button>
       </div>
       <div style="margin-top: 10px; padding: 10px; background: #f0f3ff; border-radius: 6px; font-size: 13px; color: #667eea;" id="transfer-color-display">선택: 없음</div>
     </div>
@@ -956,10 +958,6 @@ const COLORS = [
   '레드','핑크','민트','카키','옐로우','스카이블루',
   '인디핑크','네온핑크','오렌지','바이올렛','백멜란지','그린'
 ];
-const TRANSFER_COLORS = [
-  '화이트','블랙','다크민트','피치','옐로우','레드',
-  '바이올렛','블루','베이지','그레이','스카이블루','인디핑크'
-];
 const SIZES = ['90','100','110','120','130','140','150','160','170','180','S','M','L','XL'];
 
 // 코드 프리셋 (저장된 코드 목록)
@@ -988,7 +986,6 @@ let currentTab = 'blank';
 function init() {
   renderColorBtns('blank');
   renderColorBtns('finished');
-  renderTransferColors();
   renderSizeBtns('blank');
   renderSizeBtns('finished');
   renderCodes('transfer');
@@ -1005,16 +1002,6 @@ function renderColorBtns(type) {
   el.innerHTML = COLORS.map(c => {
     const cls = `cdot-${c}`.replace(/\s/g,'-');
     return `<button class="color-btn" onclick="selectColor('${type}','${c}',this)" data-v="${c}">
-      <span class="color-dot ${cls}"></span>${c}
-    </button>`;
-  }).join('');
-}
-
-function renderTransferColors() {
-  const el = document.getElementById('transfer-colors');
-  el.innerHTML = TRANSFER_COLORS.map(c => {
-    const cls = `cdot-${c}`.replace(/\s/g,'-');
-    return `<button class="color-btn" onclick="setTransferColor('${c}',this)" data-v="${c}">
       <span class="color-dot ${cls}"></span>${c}
     </button>`;
   }).join('');
@@ -1148,13 +1135,11 @@ function setQty(type, v) {
   setTimeout(()=>el.style.transform='',150);
 }
 
-function setTransferColor(color, btn) {
+function setTransferColor(color) {
   sel['transfer'].color = color;
   document.getElementById('transfer-color-display').textContent = '선택: ' + color;
-  // 모든 색상 버튼 비활성화
-  document.querySelectorAll('#transfer-colors .color-btn').forEach(b => b.classList.remove('active'));
-  // 선택된 버튼 활성화
-  if (btn) btn.classList.add('active');
+  document.getElementById('transfer-color-black').style.borderColor = color === '검은색' ? '#c84b14' : '#ddd';
+  document.getElementById('transfer-color-white').style.borderColor = color === '흰색' ? '#c84b14' : '#ddd';
   updateSummary('transfer');
 }
 
