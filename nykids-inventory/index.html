@@ -114,8 +114,8 @@ body{
 }
 .sec-head{
   padding:12px 14px 10px;
-  font-size:11px;font-weight:700;
-  color:var(--ink3);
+  font-size:16px;font-weight:700;
+  color:var(--ink);
   letter-spacing:1px;text-transform:uppercase;
   border-bottom:1px solid var(--border);
   display:flex;align-items:center;gap:6px;
@@ -238,41 +238,22 @@ body{
 /* ── QTY ── */
 .qty-wrap{
   display:flex;align-items:center;gap:0;
-  border:2px solid var(--border);border-radius:10px;overflow:hidden;
-  width:100%;
+  border:2px solid var(--border);border-radius:10px;overflow:visible;
+  max-width:100%;
 }
 .qty-btn{
-  width:50px;height:50px;
+  width:54px;height:54px;
   background:var(--card);
   border:none;
-  font-size:20px;font-weight:300;color:var(--ink);
+  font-size:24px;font-weight:300;color:var(--ink);
   cursor:pointer;display:flex;align-items:center;justify-content:center;
   flex-shrink:0;transition:background .1s;
 }
-@media (max-width: 600px) {
-  .qty-btn {
-    width: 42px;
-    height: 42px;
-    font-size: 16px;
-    padding: 0;
-  }
-  .qty-num {
-    font-size: 18px;
-    padding: 0 8px;
-  }
-  .qty-wrap {
-    width: 100%;
-  }
+.qty-btn:first-child {
+  border-radius: 8px 0 0 8px;
 }
-@media (max-width: 400px) {
-  .qty-btn {
-    width: 38px;
-    height: 38px;
-    font-size: 14px;
-  }
-  .qty-num {
-    font-size: 16px;
-  }
+.qty-btn:last-child {
+  border-radius: 0 8px 8px 0;
 }
 .qty-btn:active{background:var(--border)}
 .qty-num{
@@ -1029,7 +1010,14 @@ function renderSizeBtns(type) {
 // ══════════════════════════ CODE PILLS ══════════════════════
 function renderCodes(type) {
   const el = document.getElementById(type+'-codes');
-  el.innerHTML = savedCodes[type].map(c =>
+  // 코드를 타입별로 정렬 (W, IT, TJ 등)
+  const sorted = [...savedCodes[type]].sort((a, b) => {
+    const prefixA = a.replace(/\d+/g, '');
+    const prefixB = b.replace(/\d+/g, '');
+    if (prefixA !== prefixB) return prefixA.localeCompare(prefixB);
+    return a.localeCompare(b);
+  });
+  el.innerHTML = sorted.map(c =>
     `<button class="code-pill ${sel[type].code===c?'active':''}" onclick="selectCode('${type}','${c}',this)">${c}</button>`
   ).join('') + `<button class="code-pill add-btn" onclick="showAddCode('${type}')">+</button>`;
 }
