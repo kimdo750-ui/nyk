@@ -670,9 +670,25 @@ body{
     </div>
   </div>
 
+  <!-- 색상 -->
+  <div class="sec">
+    <div class="sec-head">② 색상 (검은색 또는 흰색)</div>
+    <div class="sec-body">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <button onclick="setTransferColor('검은색')" style="padding: 12px; border: 2px solid #ddd; border-radius: 8px; background: #f8f6f2; cursor: pointer; font-weight: 600;" id="transfer-color-black">
+          ⬛ 검은색
+        </button>
+        <button onclick="setTransferColor('흰색')" style="padding: 12px; border: 2px solid #ddd; border-radius: 8px; background: #f8f6f2; cursor: pointer; font-weight: 600;" id="transfer-color-white">
+          ⬜ 흰색
+        </button>
+      </div>
+      <div style="margin-top: 10px; padding: 10px; background: #f0f3ff; border-radius: 6px; font-size: 13px; color: #667eea;" id="transfer-color-display">선택: 없음</div>
+    </div>
+  </div>
+
   <!-- 수량 -->
   <div class="sec">
-    <div class="sec-head">② 수량</div>
+    <div class="sec-head">③ 수량</div>
     <div class="sec-body">
       <div class="qty-wrap">
         <button class="qty-btn" onclick="adjQty('transfer',-1)">−</button>
@@ -680,14 +696,12 @@ body{
         <button class="qty-btn" onclick="adjQty('transfer',1)">+</button>
       </div>
       <div class="quick-qtys">
+        <button class="qqty-btn" onclick="setQty('transfer',5)">5</button>
         <button class="qqty-btn" onclick="setQty('transfer',10)">10</button>
+        <button class="qqty-btn" onclick="setQty('transfer',15)">15</button>
         <button class="qqty-btn" onclick="setQty('transfer',20)">20</button>
+        <button class="qqty-btn" onclick="setQty('transfer',25)">25</button>
         <button class="qqty-btn" onclick="setQty('transfer',30)">30</button>
-        <button class="qqty-btn" onclick="setQty('transfer',50)">50</button>
-        <button class="qqty-btn" onclick="setQty('transfer',80)">80</button>
-        <button class="qqty-btn" onclick="setQty('transfer',100)">100</button>
-        <button class="qqty-btn" onclick="setQty('transfer',150)">150</button>
-        <button class="qqty-btn" onclick="setQty('transfer',200)">200</button>
       </div>
     </div>
   </div>
@@ -1082,6 +1096,14 @@ function setQty(type, v) {
   setTimeout(()=>el.style.transform='',150);
 }
 
+function setTransferColor(color) {
+  sel['transfer'].color = color;
+  document.getElementById('transfer-color-display').textContent = '선택: ' + color;
+  document.getElementById('transfer-color-black').style.borderColor = color === '검은색' ? '#c84b14' : '#ddd';
+  document.getElementById('transfer-color-white').style.borderColor = color === '흰색' ? '#c84b14' : '#ddd';
+  updateSummary('transfer');
+}
+
 // ══════════════════════════ SUMMARY ══════════════════════════
 function updateSummary(type) {
   const s = sel[type];
@@ -1099,8 +1121,9 @@ function updateSummary(type) {
     ready = !!(s.garment && s.color && s.size);
   } else if (type === 'transfer') {
     if (s.code) tags += `<span class="sel-tag color">${s.code}</span>`;
+    if (s.color) tags += `<span class="sel-tag color">${s.color}</span>`;
     tags += `<span class="sel-tag qty">${qty}매</span>`;
-    ready = !!s.code;
+    ready = !!(s.code && s.color);
   } else {
     if (s.code)  tags += `<span class="sel-tag">${s.code}</span>`;
     if (s.color) tags += `<span class="sel-tag color">${s.color}</span>`;
