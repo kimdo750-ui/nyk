@@ -124,11 +124,13 @@ body{
 
 /* ── PRODUCT CODE SELECTOR ── */
 .code-scroll{
-  display:grid;grid-template-columns:repeat(auto-fill, minmax(100px, 1fr));gap:8px;padding-bottom:4px;
+  display:flex;flex-wrap:wrap;gap:8px;padding-bottom:4px;
   width:100%;
+  scrollbar-width:none;
 }
 .code-scroll::-webkit-scrollbar{display:none}
 .code-pill{
+  flex-shrink:0;
   padding:8px 14px;
   border-radius:8px;
   border:2px solid var(--border);
@@ -237,6 +239,7 @@ body{
 .qty-wrap{
   display:flex;align-items:center;gap:0;
   border:2px solid var(--border);border-radius:10px;overflow:hidden;
+  width:100%;
 }
 .qty-btn{
   width:50px;height:50px;
@@ -246,14 +249,29 @@ body{
   cursor:pointer;display:flex;align-items:center;justify-content:center;
   flex-shrink:0;transition:background .1s;
 }
-@media (max-width: 480px) {
+@media (max-width: 600px) {
   .qty-btn {
-    width: 44px;
-    height: 44px;
-    font-size: 18px;
+    width: 42px;
+    height: 42px;
+    font-size: 16px;
+    padding: 0;
   }
   .qty-num {
-    font-size: 20px;
+    font-size: 18px;
+    padding: 0 8px;
+  }
+  .qty-wrap {
+    width: 100%;
+  }
+}
+@media (max-width: 400px) {
+  .qty-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 14px;
+  }
+  .qty-num {
+    font-size: 16px;
   }
 }
 .qty-btn:active{background:var(--border)}
