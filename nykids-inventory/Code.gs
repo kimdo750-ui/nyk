@@ -373,16 +373,25 @@ function _upsertBlank(ss,items) {
 function _upsertTransfer(ss,items) {
   const sh=ss.getSheetByName(SHEET_NAMES.TRANSFER);
   const last=sh.getLastRow();
-  const ex=last>1?sh.getRange(2,1,last-1,3).getValues():[];
+  const ex=last>1?sh.getRange(2,1,last-1,4).getValues():[];
   let n=0;
+  const now=Utilities.formatDate(new Date(),'Asia/Seoul','yyyy-MM-dd HH:mm');
+
   items.forEach(item=>{
     const idx=ex.findIndex(r=>String(r[0])===String(item.code||''));
-    if(idx>=0){sh.getRange(idx+2,3).setValue(item.qty);ex[idx][2]=item.qty;}
+    if(idx>=0){
+      sh.getRange(idx+2,2).setValue(item.color||'');  // B: 색상
+      sh.getRange(idx+2,3).setValue(item.qty);        // C: 수량
+      sh.getRange(idx+2,6).setValue(now);             // F: 수정일
+      ex[idx][1]=item.color||'';
+      ex[idx][2]=item.qty;
+    }
     else{
       const rn=sh.getLastRow()+1;
-      sh.getRange(rn,1,1,4).setValues([[item.code||'','',item.qty,20]]);
+      sh.getRange(rn,1,1,4).setValues([[item.code||'',item.color||'',item.qty,20]]);
       sh.getRange(rn,5).setFormula(`=IF(C${rn}="","",IF(C${rn}=0,"🔴 생산불가",IF(C${rn}<=10,"🔴 긴급",IF(C${rn}<=D${rn},"🟡 부족","🟢 안전"))))`);
-      ex.push([item.code||'','',item.qty,20]);
+      sh.getRange(rn,6).setValue(now);                // F: 수정일
+      ex.push([item.code||'',item.color||'',item.qty,20]);
     }
     n++;
   });

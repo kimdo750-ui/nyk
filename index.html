@@ -124,21 +124,26 @@ body{
 
 /* ── PRODUCT CODE SELECTOR ── */
 .code-scroll{
-  display:flex;flex-wrap:wrap;gap:8px;padding-bottom:4px;
-  width:100%;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:7px;padding-bottom:4px;
   scrollbar-width:none;
 }
 .code-scroll::-webkit-scrollbar{display:none}
 .code-pill{
-  flex-shrink:0;
-  padding:8px 14px;
+  height:40px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   border-radius:8px;
   border:2px solid var(--border);
   font-family:var(--mono);
   font-size:13px;font-weight:700;
   color:var(--ink2);
   cursor:pointer;background:var(--card);
-  transition:all .15s;white-space:nowrap;
+  transition:all .15s;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  padding:0;
 }
 .code-pill.active{
   border-color:var(--accent);
@@ -242,10 +247,10 @@ body{
   width:100%;
 }
 .qty-btn{
-  min-width:48px;width:48px;height:48px;
-  background:var(--card);
+  min-width:56px;width:56px;height:56px;
+  background:var(--accent);
   border:none;
-  font-size:20px;font-weight:300;color:var(--ink);
+  font-size:24px;font-weight:700;color:#fff;
   cursor:pointer;display:flex;align-items:center;justify-content:center;
   flex-shrink:0;transition:background .1s;
 }
@@ -530,14 +535,10 @@ body{
 </div>
 
 <!-- TOP TABS -->
-<div class="tabs">
+<div class="tabs" style="grid-template-columns:repeat(3,1fr)">
   <button class="tab-btn active" onclick="switchTab('blank')" id="top-tab-blank">
     <span class="tab-ic">🧵</span>
     <span class="tab-lbl">무지상품</span>
-  </button>
-  <button class="tab-btn" onclick="switchTab('transfer')" id="top-tab-transfer">
-    <span class="tab-ic">🖨️</span>
-    <span class="tab-lbl">전사지</span>
   </button>
   <button class="tab-btn" onclick="switchTab('finished')" id="top-tab-finished">
     <span class="tab-ic">📦</span>
@@ -650,103 +651,6 @@ body{
       <span class="inv-count" id="blank-count">0건</span>
     </div>
     <div class="inv-list" id="blank-list">
-      <div class="inv-empty">추가된 항목이 없습니다</div>
-    </div>
-  </div>
-
-</div>
-
-<!-- ═══ PANEL: 전사지 ═══ -->
-<div id="panel-transfer" class="panel">
-
-  <!-- 전사지 코드 -->
-  <div class="sec">
-    <div class="sec-head">① 전사지 코드 선택</div>
-    <div class="sec-body">
-      <div class="code-scroll" id="transfer-codes">
-        <!-- JS로 렌더링 -->
-      </div>
-      <div class="code-input-wrap" id="transfer-code-input">
-        <input class="code-input" id="transfer-new-code" placeholder="코드 입력 (예: W281)" maxlength="10">
-        <button class="code-confirm" onclick="addCode('transfer')">추가</button>
-      </div>
-      <div style="display:flex;gap:8px;margin-top:12px">
-        <button class="qqty-btn" style="flex:1;background:var(--accent);color:#fff;border-color:var(--accent)" onclick="showAddCode('transfer')">+ 코드 추가</button>
-        <button class="qqty-btn" style="flex:1;background:#fee;color:#c02820;border-color:#fcc" id="transfer-delete-btn" onclick="deleteSelectedCode('transfer')" disabled>🗑 삭제</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 색상 -->
-  <div class="sec">
-    <div class="sec-head">② 색상 (검은색 또는 흰색)</div>
-    <div class="sec-body">
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <button onclick="setTransferColor('검은색')" style="padding: 12px; border: 2px solid #ddd; border-radius: 8px; background: #f8f6f2; cursor: pointer; font-weight: 600;" id="transfer-color-black">
-          ⬛ 검은색
-        </button>
-        <button onclick="setTransferColor('흰색')" style="padding: 12px; border: 2px solid #ddd; border-radius: 8px; background: #f8f6f2; cursor: pointer; font-weight: 600;" id="transfer-color-white">
-          ⬜ 흰색
-        </button>
-      </div>
-      <div style="margin-top: 10px; padding: 10px; background: #f0f3ff; border-radius: 6px; font-size: 13px; color: #667eea;" id="transfer-color-display">선택: 없음</div>
-    </div>
-  </div>
-
-  <!-- 수량 -->
-  <div class="sec">
-    <div class="sec-head">③ 수량</div>
-    <div class="sec-body">
-      <div class="qty-wrap">
-        <button class="qty-btn" onclick="adjQty('transfer',-1)">−</button>
-        <input class="qty-num" id="transfer-qty" type="number" value="1" min="1" inputmode="numeric">
-        <button class="qty-btn" onclick="adjQty('transfer',1)">+</button>
-      </div>
-      <div class="quick-qtys">
-        <button class="qqty-btn" onclick="setQty('transfer',5)">5</button>
-        <button class="qqty-btn" onclick="setQty('transfer',10)">10</button>
-        <button class="qqty-btn" onclick="setQty('transfer',15)">15</button>
-        <button class="qqty-btn" onclick="setQty('transfer',20)">20</button>
-        <button class="qqty-btn" onclick="setQty('transfer',25)">25</button>
-        <button class="qqty-btn" onclick="setQty('transfer',30)">30</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 선택정보 -->
-  <div class="sec">
-    <div class="sec-head">선택 정보</div>
-    <div class="sec-body">
-      <div class="sel-summary" id="transfer-summary">
-        <span class="sel-empty">전사지 코드와 수량을 선택하세요</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- 배치입력 -->
-  <div class="batch-wrap">
-    <div class="batch-head">
-      📝 텍스트로 여러 항목 한 번에 입력
-      <button class="batch-toggle" onclick="toggleBatch('transfer')">펼치기 ▾</button>
-    </div>
-    <div class="batch-body" id="batch-transfer">
-      <textarea class="batch-textarea" id="batch-transfer-text"
-        placeholder="예) W281 120매, IT024 85매, W286 200매&#10;또는: W281/120, IT024/85"></textarea>
-      <div class="batch-hint">💡 코드 + 숫자 형식으로 입력하세요</div>
-      <div class="batch-actions">
-        <button class="batch-parse-btn" onclick="parseBatch('transfer')">🔍 인식하기</button>
-        <button class="batch-clear-btn" onclick="clearBatch('transfer')">✕ 지우기</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 목록 -->
-  <div class="inv-list-wrap">
-    <div class="inv-list-head">
-      재고 입력 목록
-      <span class="inv-count" id="transfer-count">0건</span>
-    </div>
-    <div class="inv-list" id="transfer-list">
       <div class="inv-empty">추가된 항목이 없습니다</div>
     </div>
   </div>
@@ -958,21 +862,18 @@ const SIZES = ['100','110','120','130','140','150','160','170','M','L','2XL','3X
 
 // 코드 프리셋 (저장된 코드 목록)
 let savedCodes = {
-  transfer: JSON.parse(localStorage.getItem('codes_transfer')||'["W281","IT024","W286","IT007","IT028","W114","W285","W319","IT011","IT002","W262","W152","IT027","W191","W320","W150","A144"]'),
   finished: JSON.parse(localStorage.getItem('codes_finished')||'["W281","IT024","W286","IT007","IT028","W114"]'),
 };
 
 // 재고 입력 목록
 let invData = {
   blank: JSON.parse(localStorage.getItem('inv_blank')||'[]'),
-  transfer: JSON.parse(localStorage.getItem('inv_transfer')||'[]'),
   finished: JSON.parse(localStorage.getItem('inv_finished')||'[]'),
 };
 
 // 현재 선택 상태
 const sel = {
   blank:    { garment:'', color:'', size:'', qty:1 },
-  transfer: { code:'', color:'', qty:1 },
   finished: { code:'', color:'', size:'', qty:1 },
 };
 
@@ -984,10 +885,8 @@ function init() {
   renderColorBtns('finished');
   renderSizeBtns('blank');
   renderSizeBtns('finished');
-  renderCodes('transfer');
   renderCodes('finished');
   renderList('blank');
-  renderList('transfer');
   renderList('finished');
   loadConfig();
 }
@@ -1154,17 +1053,6 @@ function updateSummary(type) {
     if (s.size)    tags += `<span class="sel-tag size">${s.size}사이즈</span>`;
     tags += `<span class="sel-tag qty">${qty}개</span>`;
     ready = !!(s.garment && s.color && s.size);
-  } else if (type === 'transfer') {
-    if (s.code) tags += `<span class="sel-tag color">${s.code}</span>`;
-    if (s.color) {
-      if (s.color === '검은색') {
-        tags += `<span class="sel-tag color" style="background: #000; color: #fff;">${s.color}</span>`;
-      } else {
-        tags += `<span class="sel-tag color" style="background: #fff; color: #000; border: 1px solid #ddd;">${s.color}</span>`;
-      }
-    }
-    tags += `<span class="sel-tag qty">${qty}매</span>`;
-    ready = !!(s.code && s.color);
   } else {
     if (s.code)  tags += `<span class="sel-tag">${s.code}</span>`;
     if (s.color) tags += `<span class="sel-tag color">${s.color}</span>`;
@@ -1192,9 +1080,6 @@ function addItem() {
   if (type === 'blank') {
     if (!s.garment || !s.color || !s.size) { toast('⚠️ 의류종류·색상·사이즈를 모두 선택하세요'); return; }
     item = { garment: s.garment, color: s.color, size: s.size, qty, id: Date.now() };
-  } else if (type === 'transfer') {
-    if (!s.code || !s.color) { toast('⚠️ 전사지 코드와 색상을 모두 선택하세요'); return; }
-    item = { code: s.code, color: s.color, qty, id: Date.now() };
   } else {
     if (!s.code || !s.color || !s.size) { toast('⚠️ SKU·색상·사이즈를 모두 선택하세요'); return; }
     item = { code: s.code, color: s.color, size: s.size, qty, id: Date.now() };
@@ -1213,7 +1098,7 @@ function addItem() {
   localStorage.setItem('inv_'+type, JSON.stringify(invData[type]));
   renderList(type);
   // 수량 리셋
-  setQty(type, 1);
+  setQty(type, type === 'finished' ? 0 : 1);
 }
 
 // ══════════════════════════ LIST RENDER ══════════════════════
@@ -1236,9 +1121,6 @@ function renderList(type) {
       icon = `<span class="color-dot ${dotCls}" style="width:12px;height:12px;border:1px solid rgba(0,0,0,.15)"></span>`;
       code = item.garment;
       detail = `${icon} ${item.color} · ${item.size}`;
-    } else if (type === 'transfer') {
-      code = item.code;
-      detail = '전사지';
     } else {
       const dotCls = `cdot-${item.color}`.replace(/\s/g,'-');
       icon = `<span class="color-dot ${dotCls}" style="width:12px;height:12px;border:1px solid rgba(0,0,0,.15)"></span>`;
@@ -1248,7 +1130,7 @@ function renderList(type) {
     return `<div class="inv-item">
       <div class="inv-code">${code}</div>
       <div class="inv-detail">${detail}</div>
-      <div class="inv-qty">${item.qty}${type==='transfer'?'매':'개'}</div>
+      <div class="inv-qty">${item.qty}개</div>
       <button class="inv-del" onclick="delItem('${type}',${item.id})">✕</button>
     </div>`;
   }).join('');
@@ -1302,20 +1184,6 @@ function parseBatch(type) {
         merge('blank', item);
         added++;
       }
-    } else if (type === 'transfer') {
-      const codes = [...line.matchAll(CODE_RE)].map(m=>m[1]);
-      const code = codes[0] || '';
-      const nums = [...line.matchAll(/\d+/g)].map(m=>parseInt(m[0]));
-      const q = nums.length >= 2 ? nums[1] : (nums.length===1 ? nums[0] : 1);
-      if (code) {
-        if (!savedCodes.transfer.includes(code)) {
-          savedCodes.transfer.push(code);
-          localStorage.setItem('codes_transfer', JSON.stringify(savedCodes.transfer));
-          renderCodes('transfer');
-        }
-        merge('transfer', { code, color: sel.transfer.color || '', qty: q, id: Date.now()+Math.random() });
-        added++;
-      }
     } else {
       const codes = [...line.matchAll(CODE_RE)].map(m=>m[1]);
       const code  = codes[0] || sel.finished.code || '';
@@ -1346,8 +1214,7 @@ function parseBatch(type) {
 }
 
 function merge(type, item) {
-  const key = type==='transfer' ? r => r.code===item.code
-    : type==='blank' ? r => r.garment===item.garment && r.color===item.color && r.size===item.size
+  const key = type==='blank' ? r => r.garment===item.garment && r.color===item.color && r.size===item.size
     : r => r.code===item.code && r.color===item.color && r.size===item.size;
   const existing = invData[type].find(key);
   if (existing) { existing.qty += item.qty; }
@@ -1460,7 +1327,7 @@ async function syncToSheets() {
   const cfg = JSON.parse(localStorage.getItem('gs_config')||'{}');
   if (!cfg.url) { toast('⚠️ 먼저 ⚙️ 설정에서 URL 입력하세요'); openConfig(); return; }
 
-  const totalItems = invData.blank.length + invData.transfer.length + invData.finished.length;
+  const totalItems = invData.blank.length + invData.finished.length;
   if (totalItems === 0) { toast('⚠️ 동기화할 재고 데이터가 없습니다'); return; }
 
   const btn = document.getElementById('sync-btn');
@@ -1469,7 +1336,6 @@ async function syncToSheets() {
   const payload = {
     action: 'updateInventory',
     blank:    invData.blank,
-    transfer: invData.transfer,
     finished: invData.finished,
     timestamp: new Date().toISOString(),
   };
@@ -1477,7 +1343,7 @@ async function syncToSheets() {
   try {
     await postToSheets(cfg.url, payload);
     // no-cors라 응답 확인 불가 → 전송 성공으로 처리
-    const msg = `☁️ 전송완료! 무지 ${invData.blank.length}건 · 전사지 ${invData.transfer.length}건 · 완제품 ${invData.finished.length}건\n구글시트에서 확인하세요`;
+    const msg = `☁️ 전송완료! 무지 ${invData.blank.length}건 · 완제품 ${invData.finished.length}건\n구글시트에서 확인하세요`;
     toast(msg);
     setStatus(true);
   } catch(e) {
@@ -1538,17 +1404,12 @@ function buildInventoryContext() {
     invData.blank.forEach(r => { ctx += `${r.garment} ${r.color} ${r.size}: ${r.qty}개\n`; });
   } else { ctx += '[무지상품재고] 데이터 없음\n'; }
 
-  if (invData.transfer.length > 0) {
-    ctx += '\n[전사지재고]\n';
-    invData.transfer.forEach(r => { ctx += `${r.code}: ${r.qty}매\n`; });
-  } else { ctx += '\n[전사지재고] 데이터 없음\n'; }
-
   if (invData.finished.length > 0) {
     ctx += '\n[완제품재고]\n';
     invData.finished.forEach(r => { ctx += `${r.code} ${r.color} ${r.size}: ${r.qty}개\n`; });
   } else { ctx += '\n[완제품재고] 데이터 없음\n'; }
 
-  ctx += '\n분석 원칙: 생산가능수량 = MIN(무지재고, 전사지재고). 숫자 구체적으로. 한국어로 핵심만 간결하게 답해라.';
+  ctx += '\n분석 원칙: 숫자 구체적으로. 한국어로 핵심만 간결하게 답해라.';
   return ctx;
 }
 
