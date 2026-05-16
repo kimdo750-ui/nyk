@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>뉴욕꼬맹이 재고관리 대시보드</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+            background: #f5f7fa;
+            color: #2c3e50;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+        header h1 { font-size: 32px; font-weight: 700; }
+        header p { font-size: 14px; margin-top: 8px; opacity: 0.9; }
+
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-left: 4px solid #667eea;
+        }
+        .section h2 { font-size: 18px; font-weight: 700; margin-bottom: 15px; color: #2c3e50; }
+
+        /* 2D 테이블 스타일 */
+        .table-wrapper { overflow-x: auto; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        th, td {
+            padding: 8px;
+            border: 1px solid #e0e0e0;
+            text-align: center;
+        }
+        th {
+            background: #f5f5f5;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        td { background: white; }
+
+        /* 재고 상태 색상 */
+        .stock-0, .stock-critical { background: #ffebee; color: #c62828; font-weight: 700; } /* 0개 */
+        .stock-low { background: #fff3e0; color: #e65100; font-weight: 700; } /* 1-10개 */
+        .stock-medium { background: #fffde7; color: #f57f17; } /* 11-30개 */
+        .stock-safe { background: #f0f9f5; color: #1b5e20; } /* 30개 이상 */
+        .stock-empty { background: #fafafa; color: #999; } /* 없음 */
+
+        /* 부족 알림 */
+        .alerts { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
+        .alert-item {
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid #e74c3c;
+            background: #ffebee;
+        }
+        .alert-item strong { color: #c62828; }
+        .alert-item small { color: #999; display: block; margin-top: 5px; }
+
+        /* 로딩 */
+        .loading { text-align: center; padding: 20px; color: #999; }
+        .empty { text-align: center; padding: 20px; color: #999; font-size: 13px; }
+
+        /* 새로고침 버튼 */
+        .refresh-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            float: right;
+        }
+        .refresh-btn:hover { background: #5568d3; }
+
+        /* 일일 리포트 */
+        .report-text {
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>📊 뉴욕꼬맹이 재고관리 대시보드</h1>
+        <p id="timestamp"></p>
+        <button class="refresh-btn" onclick="refreshAll()">🔄 새로고침</button>
+    </header>
+
+    <div class="container">
+        <!-- 무지상품재고 (2D 테이블) -->
+        <div class="section">
+            <h2>📦 무지상품 재고 (색상 × 사이즈)</h2>
+            <div id="blankStock" class="table-wrapper loading">로딩 중...</div>
+        </div>
+
+        <!-- 부족 알림 -->
+        <div class="section">
+            <h2>⚠️ 긴급 부족 알림</h2>
+            <div id="alerts" class="alerts loading">로딩 중...</div>
+        </div>
+
+        <!-- 전사지재고 -->
+        <div class="section">
+            <h2>🖨️ 전사지 재고</h2>
+            <div id="transferStock" class="table-wrapper loading">로딩 중...</div>
+        </div>
+
+        <!-- 일일 리포트 -->
+        <div class="section">
+            <h2>📅 일일 요약 리포트</h2>
+            <div id="report" class="loading">로딩 중...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+
+        function updateTimestamp() {
+            const now = new Date().toLocaleString('ko-KR');
+            document.getElementById('timestamp').textContent = `마지막 업데이트: ${now}`;
+        }
+
+        // 무지상품재고를 색상×사이즈 2D 테이블로 표시
+        async function loadBlankStock() {
+            try {
+                const res = await fetch(API_BASE + '/inventory');
+                const data = await res.json();
+                const blanks = data.blank || [];
+
+                if (blanks.length === 0) {
+                    document.getElementById('blankStock').innerHTML = '<div class="empty">재고 데이터 없음</div>';
+                    return;
+                }
+
+                // 의류종류별로 그룹화
+                const byGarment = {};
+                blanks.forEach(item => {
+                    if (!byGarment[item.garment]) byGarment[item.garment] = [];
+                    byGarment[item.garment].push(item);
+                });
+
+                // 각 의류종류별 테이블 생성
+                let html = '';
+                Object.entries(byGarment).forEach(([garment, items]) => {
+                    // 색상과 사이즈 추출
+                    const colors = [...new Set(items.map(i => i.color))].sort();
+                    const sizes = [...new Set(items.map(i => i.size))].sort((a, b) => {
+                        const sizeOrder = ['110', '120', '130', '140', '150', '160', '170', 'M', 'L', 'XL', '2XL', '3XL'];
+                        return sizeOrder.indexOf(a) - sizeOrder.indexOf(b);
+                    });
+
+                    html += `<h3 style="margin-top: 20px; margin-bottom: 10px; font-size: 14px; color: #667eea;">[${garment}]</h3>`;
+                    html += '<table><thead><tr><th>색상</th>';
+                    sizes.forEach(size => html += `<th>${size}</th>`);
+                    html += '</tr></thead><tbody>';
+
+                    colors.forEach(color => {
+                        html += `<tr><td style="text-align: left; font-weight: 600;">${color}</td>`;
+                        sizes.forEach(size => {
+                            const item = items.find(i => i.color === color && i.size === size);
+                            const stock = item ? item.stock : null;
+                            let className = 'stock-empty';
+                            let display = '-';
+
+                            if (stock !== null) {
+                                display = stock === 0 ? 'X' : stock;
+                                if (stock === 0) className = 'stock-0';
+                                else if (stock <= 10) className = 'stock-low';
+                                else if (stock <= 30) className = 'stock-medium';
+                                else className = 'stock-safe';
+                            }
+
+                            html += `<td class="${className}">${display}</td>`;
+                        });
+                        html += '</tr>';
+                    });
+                    html += '</tbody></table>';
+                });
+
+                document.getElementById('blankStock').innerHTML = html;
+            } catch (e) {
+                document.getElementById('blankStock').innerHTML = '<div class="empty">❌ 로드 실패</div>';
+            }
+        }
+
+        // 부족 알림
+        async function loadAlerts() {
+            try {
+                const res = await fetch(API_BASE + '/inventory');
+                const data = await res.json();
+
+                const alerts = [];
+
+                // 무지상품 부족
+                (data.blank || []).forEach(item => {
+                    if (item.stock <= 10 && item.stock > 0) {
+                        alerts.push({
+                            type: '무지',
+                            name: `${item.color} ${item.size}`,
+                            stock: item.stock,
+                            safe: item.safe_stock
+                        });
+                    } else if (item.stock === 0) {
+                        alerts.push({
+                            type: '무지',
+                            name: `${item.color} ${item.size}`,
+                            stock: 0,
+                            safe: item.safe_stock
+                        });
+                    }
+                });
+
+                // 전사지 부족
+                (data.transfer || []).forEach(item => {
+                    if (item.stock <= 10) {
+                        alerts.push({
+                            type: '전사지',
+                            name: item.code,
+                            stock: item.stock,
+                            safe: item.safe_stock
+                        });
+                    }
+                });
+
+                if (alerts.length === 0) {
+                    document.getElementById('alerts').innerHTML = '<div class="empty">긴급 부족 항목 없음 ✅</div>';
+                    return;
+                }
+
+                // 정렬: stock 0인 항목을 먼저
+                alerts.sort((a, b) => a.stock - b.stock);
+
+                let html = '';
+                alerts.forEach(alert => {
+                    const icon = alert.stock === 0 ? '🔴' : '🟠';
+                    html += `
+                        <div class="alert-item">
+                            ${icon} <strong>${alert.type} 부족</strong>
+                            <br>${alert.name}
+                            <br><small>현재: ${alert.stock}개 / 안전: ${alert.safe}개</small>
+                        </div>
+                    `;
+                });
+
+                document.getElementById('alerts').innerHTML = html;
+            } catch (e) {
+                document.getElementById('alerts').innerHTML = '<div class="empty">❌ 로드 실패</div>';
+            }
+        }
+
+        // 전사지재고 간단히
+        async function loadTransferStock() {
+            try {
+                const res = await fetch(API_BASE + '/inventory');
+                const data = await res.json();
+                const transfers = data.transfer || [];
+
+                if (transfers.length === 0) {
+                    document.getElementById('transferStock').innerHTML = '<div class="empty">재고 데이터 없음</div>';
+                    return;
+                }
+
+                let html = '<table><thead><tr><th>제품코드</th><th>현재재고</th><th>안전재고</th><th>상태</th></tr></thead><tbody>';
+
+                transfers.forEach(item => {
+                    const status = item.stock === 0 ? '🔴 생산불가' : item.stock <= 10 ? '🔴 긴급' : item.stock <= 20 ? '🟡 부족' : '🟢 안전';
+                    const className = item.stock === 0 ? 'stock-0' : item.stock <= 10 ? 'stock-low' : item.stock <= 20 ? 'stock-medium' : 'stock-safe';
+                    html += `<tr>
+                        <td style="text-align: left;">${item.code}</td>
+                        <td class="${className}">${item.stock}</td>
+                        <td>${item.safe_stock}</td>
+                        <td>${status}</td>
+                    </tr>`;
+                });
+
+                html += '</tbody></table>';
+                document.getElementById('transferStock').innerHTML = html;
+            } catch (e) {
+                document.getElementById('transferStock').innerHTML = '<div class="empty">❌ 로드 실패</div>';
+            }
+        }
+
+        // 일일 리포트
+        async function loadReport() {
+            try {
+                const res = await fetch(API_BASE + '/daily-report');
+                const data = await res.json();
+                document.getElementById('report').innerHTML = `<div class="report-text">${escapeHtml(data.report)}</div>`;
+            } catch (e) {
+                document.getElementById('report').innerHTML = '<div class="empty">❌ 로드 실패</div>';
+            }
+        }
+
+        function escapeHtml(text) {
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        async function refreshAll() {
+            updateTimestamp();
+            await Promise.all([loadBlankStock(), loadAlerts(), loadTransferStock(), loadReport()]);
+        }
+
+        // 초기 로드 + 매 30초마다 새로고침
+        refreshAll();
+        setInterval(refreshAll, 30000);
+    </script>
+</body>
+</html>
