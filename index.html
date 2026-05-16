@@ -124,26 +124,21 @@ body{
 
 /* ── PRODUCT CODE SELECTOR ── */
 .code-scroll{
-  display:grid;grid-template-columns:repeat(4,1fr);gap:7px;padding-bottom:4px;
+  display:flex;flex-wrap:wrap;gap:8px;padding-bottom:4px;
+  width:100%;
   scrollbar-width:none;
 }
 .code-scroll::-webkit-scrollbar{display:none}
 .code-pill{
-  height:40px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  flex-shrink:0;
+  padding:8px 14px;
   border-radius:8px;
   border:2px solid var(--border);
   font-family:var(--mono);
   font-size:13px;font-weight:700;
   color:var(--ink2);
   cursor:pointer;background:var(--card);
-  transition:all .15s;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  padding:0;
+  transition:all .15s;white-space:nowrap;
 }
 .code-pill.active{
   border-color:var(--accent);
@@ -247,10 +242,10 @@ body{
   width:100%;
 }
 .qty-btn{
-  min-width:56px;width:56px;height:56px;
-  background:var(--accent);
+  min-width:48px;width:48px;height:48px;
+  background:var(--card);
   border:none;
-  font-size:24px;font-weight:700;color:#fff;
+  font-size:20px;font-weight:300;color:var(--ink);
   cursor:pointer;display:flex;align-items:center;justify-content:center;
   flex-shrink:0;transition:background .1s;
 }
@@ -1160,8 +1155,14 @@ function updateSummary(type) {
     tags += `<span class="sel-tag qty">${qty}개</span>`;
     ready = !!(s.garment && s.color && s.size);
   } else if (type === 'transfer') {
-    if (s.code)  tags += `<span class="sel-tag">${s.code}</span>`;
-    if (s.color) tags += `<span class="sel-tag color">${s.color}</span>`;
+    if (s.code) tags += `<span class="sel-tag color">${s.code}</span>`;
+    if (s.color) {
+      if (s.color === '검은색') {
+        tags += `<span class="sel-tag color" style="background: #000; color: #fff;">${s.color}</span>`;
+      } else {
+        tags += `<span class="sel-tag color" style="background: #fff; color: #000; border: 1px solid #ddd;">${s.color}</span>`;
+      }
+    }
     tags += `<span class="sel-tag qty">${qty}매</span>`;
     ready = !!(s.code && s.color);
   } else {
@@ -1229,18 +1230,15 @@ function renderList(type) {
   }
 
   el.innerHTML = data.map(item => {
-    let code = '', detail = '', icon = '', unit = '개';
+    let code = '', detail = '', icon = '';
     if (type === 'blank') {
       const dotCls = `cdot-${item.color}`.replace(/\s/g,'-');
       icon = `<span class="color-dot ${dotCls}" style="width:12px;height:12px;border:1px solid rgba(0,0,0,.15)"></span>`;
       code = item.garment;
       detail = `${icon} ${item.color} · ${item.size}`;
     } else if (type === 'transfer') {
-      const dotCls = `cdot-${item.color}`.replace(/\s/g,'-');
-      icon = `<span class="color-dot ${dotCls}" style="width:12px;height:12px;border:1px solid rgba(0,0,0,.15)"></span>`;
       code = item.code;
-      detail = `${icon} ${item.color}`;
-      unit = '매';
+      detail = '전사지';
     } else {
       const dotCls = `cdot-${item.color}`.replace(/\s/g,'-');
       icon = `<span class="color-dot ${dotCls}" style="width:12px;height:12px;border:1px solid rgba(0,0,0,.15)"></span>`;
@@ -1250,7 +1248,7 @@ function renderList(type) {
     return `<div class="inv-item">
       <div class="inv-code">${code}</div>
       <div class="inv-detail">${detail}</div>
-      <div class="inv-qty">${item.qty}${unit}</div>
+      <div class="inv-qty">${item.qty}${type==='transfer'?'매':'개'}</div>
       <button class="inv-del" onclick="delItem('${type}',${item.id})">✕</button>
     </div>`;
   }).join('');
@@ -1306,15 +1304,16 @@ function parseBatch(type) {
       }
     } else if (type === 'transfer') {
       const codes = [...line.matchAll(CODE_RE)].map(m=>m[1]);
-      const code  = codes[0] || sel.transfer.code || '';
-      const color = sel.transfer.color || '';
-      if (code && color) {
+      const code = codes[0] || '';
+      const nums = [...line.matchAll(/\d+/g)].map(m=>parseInt(m[0]));
+      const q = nums.length >= 2 ? nums[1] : (nums.length===1 ? nums[0] : 1);
+      if (code) {
         if (!savedCodes.transfer.includes(code)) {
           savedCodes.transfer.push(code);
           localStorage.setItem('codes_transfer', JSON.stringify(savedCodes.transfer));
           renderCodes('transfer');
         }
-        merge('transfer', { code, color, qty, id: Date.now()+Math.random() });
+        merge('transfer', { code, color: sel.transfer.color || '', qty: q, id: Date.now()+Math.random() });
         added++;
       }
     } else {
@@ -1347,14 +1346,9 @@ function parseBatch(type) {
 }
 
 function merge(type, item) {
-  let key;
-  if (type === 'blank') {
-    key = r => r.garment===item.garment && r.color===item.color && r.size===item.size;
-  } else if (type === 'transfer') {
-    key = r => r.code===item.code && r.color===item.color;
-  } else {
-    key = r => r.code===item.code && r.color===item.color && r.size===item.size;
-  }
+  const key = type==='transfer' ? r => r.code===item.code
+    : type==='blank' ? r => r.garment===item.garment && r.color===item.color && r.size===item.size
+    : r => r.code===item.code && r.color===item.color && r.size===item.size;
   const existing = invData[type].find(key);
   if (existing) { existing.qty += item.qty; }
   else { invData[type].push(item); }
@@ -1546,7 +1540,7 @@ function buildInventoryContext() {
 
   if (invData.transfer.length > 0) {
     ctx += '\n[전사지재고]\n';
-    invData.transfer.forEach(r => { ctx += `${r.code} ${r.color}: ${r.qty}매\n`; });
+    invData.transfer.forEach(r => { ctx += `${r.code}: ${r.qty}매\n`; });
   } else { ctx += '\n[전사지재고] 데이터 없음\n'; }
 
   if (invData.finished.length > 0) {
@@ -1554,7 +1548,7 @@ function buildInventoryContext() {
     invData.finished.forEach(r => { ctx += `${r.code} ${r.color} ${r.size}: ${r.qty}개\n`; });
   } else { ctx += '\n[완제품재고] 데이터 없음\n'; }
 
-  ctx += '\n분석 원칙: 숫자 구체적으로. 한국어로 핵심만 간결하게 답해라.';
+  ctx += '\n분석 원칙: 생산가능수량 = MIN(무지재고, 전사지재고). 숫자 구체적으로. 한국어로 핵심만 간결하게 답해라.';
   return ctx;
 }
 
