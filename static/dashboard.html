@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>뉴욕꼬맹이 재고관리 대시보드</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <style>
         * {
             margin: 0;
@@ -483,30 +484,9 @@
             </div>
         </div>
 
-        <!-- 전사지 수량 수정 -->
+        <!-- 완제품 재고 -->
         <div class="card" style="margin-top: 30px;">
-            <h2>📝 전사지 수량 수정</h2>
-            <div class="table-container">
-                <table class="stock-table" id="transfer-table">
-                    <thead>
-                        <tr>
-                            <th>전사지 코드</th>
-                            <th>색상</th>
-                            <th>현재 수량</th>
-                            <th>수정 수량</th>
-                            <th>작업</th>
-                        </tr>
-                    </thead>
-                    <tbody id="transfer-tbody">
-                        <tr class="loading"><td colspan="5">로딩 중...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- 완제품 수량 수정 -->
-        <div class="card" style="margin-top: 30px;">
-            <h2>🎁 완제품 수량 수정</h2>
+            <h2>🎁 완제품 재고</h2>
             <div class="table-container">
                 <table class="stock-table" id="finished-table">
                     <thead>
@@ -515,12 +495,10 @@
                             <th>색상</th>
                             <th>사이즈</th>
                             <th>현재 수량</th>
-                            <th>수정 수량</th>
-                            <th>작업</th>
                         </tr>
                     </thead>
                     <tbody id="finished-tbody">
-                        <tr class="loading"><td colspan="6">로딩 중...</td></tr>
+                        <tr class="loading"><td colspan="4">로딩 중...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -628,9 +606,8 @@
                 updateStats(inventory, orders, production, alerts);
                 updateCharts(inventory);
                 updateAlerts(alerts);
-                updateBottlenecks(production);
+                updateBottlenecks(inventory, orders, production);
                 updateRecommendations(inventory, alerts);
-                updateTransferTable(inventory);
                 updateFinishedTable(inventory);
 
             } catch (error) {
@@ -690,6 +667,20 @@
             const blankData = blank.map(b => b.stock).slice(0, 8);
             const blankSafe = blank.map(b => b.safe_stock).slice(0, 8);
 
+            // 색상별 색깔 매핑
+            const colorMap = {
+                '레드': '#ff6b6b',
+                '블랙': '#2c3e50',
+                '화이트': '#f0f0f0',
+                '파랑': '#4dabf7',
+                '초록': '#51cf66',
+                '노랑': '#ffd43b',
+                '주황': '#ff8787',
+                '보라': '#b197fc'
+            };
+
+            const blankColors = blank.map(b => colorMap[b.color] || '#667eea').slice(0, 8);
+
             if (blankChart) blankChart.destroy();
             const blankCtx = document.getElementById("blankStockChart").getContext("2d");
             blankChart = new Chart(blankCtx, {
@@ -700,7 +691,7 @@
                         {
                             label: "현재 재고",
                             data: blankData,
-                            backgroundColor: "#667eea",
+                            backgroundColor: blankColors,
                             borderRadius: 8,
                             borderSkipped: false
                         },
@@ -717,37 +708,82 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            font: { size: 11, weight: 'bold' },
+                            color: '#2c3e50',
+                            formatter: (value, context) => {
+                                if (context.datasetIndex === 0) return value;
+                                return '';
+                            }
+                        },
                         legend: { position: "bottom", labels: { font: { size: legendFontSize }, padding: legendPadding } }
                     },
                     scales: { y: { beginAtZero: true, ticks: { font: { size: labelFontSize } } } }
-                }
+                },
+                plugins: [ChartDataLabels]
             });
 
-            const transferLabels = transfer.map(t => t.code).slice(0, 8);
-            const transferData = transfer.map(t => t.stock).slice(0, 8);
+            // 전사지 색상별 분류
+            const allCodes = [...new Set(transfer.map(t => t.code))].slice(0, 8);
+            const whiteData = allCodes.map(code => {
+                const item = transfer.find(t => t.code === code && t.color === '흰색');
+                return item ? item.stock : 0;
+            });
+            const blackData = allCodes.map(code => {
+                const item = transfer.find(t => t.code === code && t.color === '검은색');
+                return item ? item.stock : 0;
+            });
 
             if (transferChart) transferChart.destroy();
             const transferCtx = document.getElementById("transferStockChart").getContext("2d");
             transferChart = new Chart(transferCtx, {
                 type: "bar",
                 data: {
-                    labels: transferLabels,
-                    datasets: [{
-                        label: "전사지 재고",
-                        data: transferData,
-                        backgroundColor: "#764ba2",
-                        borderRadius: 8,
-                        borderSkipped: false
-                    }]
+                    labels: allCodes,
+                    datasets: [
+                        {
+                            label: "흰색",
+                            data: whiteData,
+                            backgroundColor: "#f5f5f5",
+                            borderColor: "#cccccc",
+                            borderWidth: 1,
+                            borderRadius: 8,
+                            borderSkipped: false
+                        },
+                        {
+                            label: "검은색",
+                            data: blackData,
+                            backgroundColor: "#2c3e50",
+                            borderRadius: 8,
+                            borderSkipped: false
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            font: { size: 11, weight: 'bold' },
+                            color: '#2c3e50',
+                            formatter: (value) => value > 0 ? value : ''
+                        },
                         legend: { position: "bottom", labels: { font: { size: legendFontSize }, padding: legendPadding } }
                     },
-                    scales: { y: { beginAtZero: true, ticks: { font: { size: labelFontSize } } } }
-                }
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            stacked: false,
+                            ticks: { font: { size: labelFontSize }, stepSize: Math.max(1, Math.round(Math.max(...whiteData, ...blackData) / 5)) }
+                        },
+                        x: { stacked: false }
+                    }
+                },
+                plugins: [ChartDataLabels]
             });
 
             document.getElementById("refresh-blank").textContent = 
@@ -756,15 +792,31 @@
                 "마지막 갱신: " + new Date().toLocaleTimeString('ko-KR');
         }
 
-        function updateBottlenecks(production) {
-            const text = production.result || "";
-            const bottlenecks = text.split("\n").filter(l => l.includes("[") && l.includes("]"));
+        function updateBottlenecks(inventory, orders, production) {
+            const blank = inventory.blank || [];
+            const orderList = orders.orders || [];
 
-            const html = bottlenecks.slice(0, 5).map(b => {
-                return `<div class="bottleneck">🔴 ${b.trim()}</div>`;
-            }).join("");
+            const bottlenecks = [];
 
-            document.getElementById("bottleneck-list").innerHTML = 
+            // 주문량 > 무지상품 재고 확인
+            const totalOrderQty = orderList.reduce((sum, o) => sum + o.qty, 0);
+            const totalBlankStock = blank.reduce((sum, b) => sum + b.stock, 0);
+
+            if (totalOrderQty > totalBlankStock && totalOrderQty > 0) {
+                bottlenecks.push(
+                    `<div class="bottleneck">🚨 <strong>원단 긴급 주문 필요!</strong><br>` +
+                    `오늘 주문: ${totalOrderQty}개 > 무지 재고: ${totalBlankStock}개<br>` +
+                    `부족량: ${totalOrderQty - totalBlankStock}개 (반드시 원단 주문 필요)</div>`
+                );
+            }
+
+            // production 데이터 추가 (기존)
+            const prodText = production.result || "";
+            const prodBottlenecks = prodText.split("\n").filter(l => l.includes("[") && l.includes("]"));
+            bottlenecks.push(...prodBottlenecks.slice(0, 3).map(b => `<div class="bottleneck">🔴 ${b.trim()}</div>`));
+
+            const html = bottlenecks.slice(0, 5).join("");
+            document.getElementById("bottleneck-list").innerHTML =
                 html || '<div class="empty-state"><div class="empty-state-icon">✓</div><div class="empty-state-text">병목 없음</div></div>';
         }
 
@@ -849,7 +901,7 @@
             const tbody = document.getElementById("finished-tbody");
 
             if (finished.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px;">완제품 데이터가 없습니다</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px;">완제품 데이터가 없습니다</td></tr>';
                 return;
             }
 
@@ -859,32 +911,8 @@
                     <td>${getColorDisplay(f.color)}</td>
                     <td>${f.size}</td>
                     <td><strong>${f.stock}</strong></td>
-                    <td>
-                        <select id="qty-finished-${f.sku}">
-                            <option value="">선택</option>
-                            <option value="5" ${f.stock === 5 ? 'selected' : ''}>5</option>
-                            <option value="10" ${f.stock === 10 ? 'selected' : ''}>10</option>
-                            <option value="15" ${f.stock === 15 ? 'selected' : ''}>15</option>
-                            <option value="20" ${f.stock === 20 ? 'selected' : ''}>20</option>
-                            <option value="25" ${f.stock === 25 ? 'selected' : ''}>25</option>
-                            <option value="30" ${f.stock === 30 ? 'selected' : ''}>30</option>
-                        </select>
-                    </td>
-                    <td>
-                        <button onclick="updateFinishedOnClick('${f.sku}')">수정</button>
-                    </td>
                 </tr>
             `).join("");
-        }
-
-        function updateFinishedOnClick(sku) {
-            const select = document.getElementById(`qty-finished-${sku}`);
-            const qty = select.value;
-            if (!qty) {
-                alert("수량을 선택하세요");
-                return;
-            }
-            updateFinishedStock(sku, parseInt(qty));
         }
 
         refreshData();
