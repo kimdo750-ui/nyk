@@ -337,16 +337,6 @@ function doPost(e) {
       return _json({status:'ok', message:'시트 초기화 완료', sheets:Object.values(SHEET_NAMES)});
     }
 
-    // 완제품 단일 항목 업데이트 (대시보드 수정 버튼)
-    if (data.action === 'updateFinished') {
-      const success = updateFinishedFromDashboard(data.sku, data.color, data.size, data.qty);
-      if (success) {
-        return _json({status:'ok', message:`✅ ${data.sku} ${data.color} ${data.size} 수량이 ${data.qty}로 업데이트됨`});
-      } else {
-        return _json({status:'error', message:`❌ ${data.sku} ${data.color} ${data.size} 항목을 찾을 수 없습니다`});
-      }
-    }
-
     const res = {blank:0, transfer:0, finished:0};
     if (data.blank    && data.blank.length)    res.blank    = _upsertBlank(ss, data.blank);
     if (data.transfer && data.transfer.length) res.transfer = _upsertTransfer(ss, data.transfer);
@@ -420,27 +410,6 @@ function _upsertFinished(ss,items) {
 
 function _json(obj){
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
-}
-
-// ════════════════════════════════════════════════════════
-// 완제품재고 수량 업데이트 (대시보드 수정 버튼 처리)
-// POST body: { action:'updateFinished', sku, color, size, qty }
-// ════════════════════════════════════════════════════════
-function updateFinishedFromDashboard(sku, color, size, qty) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sh = ss.getSheetByName(SHEET_NAMES.FINISHED);
-  if (!sh || sh.getLastRow() < 2) return false;
-
-  const rows = sh.getRange(2, 1, sh.getLastRow()-1, 7).getValues();
-  for (let i = 0; i < rows.length; i++) {
-    if (String(rows[i][0]).trim() === sku &&
-        String(rows[i][1]).trim() === color &&
-        String(rows[i][2]).trim() === size) {
-      sh.getRange(i+2, 4).setValue(qty);
-      return true;
-    }
-  }
-  return false;
 }
 
 // ════════════════════════════════════════════════════════

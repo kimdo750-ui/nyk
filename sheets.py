@@ -273,6 +273,9 @@ class SheetsClient:
         try:
             ws = self._get_ws(settings.sheet_finished)
             rows = ws.get_all_values()[1:]
+
+            print(f"🔍 찾는 항목: SKU=[{sku}], Color=[{color}], Size=[{size}]")
+
             for i, row in enumerate(rows):
                 if len(row) >= 3:
                     # 공백 제거 후 정확히 비교
@@ -280,12 +283,19 @@ class SheetsClient:
                     row_color = str(row[1]).strip() if row[1] else ""
                     row_size = str(row[2]).strip() if row[2] else ""
 
+                    print(f"   행 {i+2}: SKU=[{row_sku}] Color=[{row_color}] Size=[{row_size}]")
+
                     if row_sku == sku and row_color == color and row_size == size:
+                        print(f"✅ 매칭됨! D{i+2} 셀을 {new_qty}로 업데이트")
                         ws.update_cell(i + 2, 4, new_qty)
                         return True
+
+            print(f"❌ 매칭되는 항목 없음 (총 {len(rows)}행 확인)")
             return False
         except Exception as e:
             print(f"❌ 업데이트 실패: {e}")
+            import traceback
+            traceback.print_exc()
             return False
 
 
