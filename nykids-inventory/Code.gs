@@ -26,6 +26,8 @@ function onOpen() {
     .addItem('③ 전사지코드 자동 동기화', 'syncTransferCodes')
     .addItem('④ 주문 기반 재고 차감 확인', 'openDeductSidebar')
     .addSeparator()
+    .addItem('🖨️ 인쇄용 무지상품 양식 생성', 'generatePrintSheet')
+    .addSeparator()
     .addItem('🤖 AI 재고 분석 채팅', 'openChatSidebar')
     .addSeparator()
     .addItem('⚙️ Anthropic API 키 설정', 'setApiKey')
@@ -51,6 +53,93 @@ function setupSheets() {
   });
   SpreadsheetApp.getUi().alert(
     '✅ 시트 초기 설정 완료!\n\n4개 탭 생성됨:\n①주문확인(원본)\n②무지상품재고\n③전사지재고\n④완제품재고\n\n이제 모바일앱에서 재고를 입력하세요!'
+  );
+}
+
+// ── 인쇄용 무지상품 양식 생성 ──
+function generatePrintSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const srcSh = ss.getSheetByName(SHEET_NAMES.BLANK);
+
+  if(!srcSh || srcSh.getLastRow() < 2) {
+    SpreadsheetApp.getUi().alert('❌ 무지상품재고 탭에 데이터가 없습니다');
+    return;
+  }
+
+  // 기존 인쇄용 탭 있으면 삭제, 없으면 생성
+  const PRINT_SHEET = '인쇄용_무지상품';
+  let printSh = ss.getSheetByName(PRINT_SHEET);
+  if(printSh) {
+    ss.deleteSheet(printSh);
+  }
+  printSh = ss.insertSheet(PRINT_SHEET);
+
+  // 무지상품재고 데이터 읽기 (A:E 열, 헤더 제외)
+  const data = srcSh.getRange(2, 1, srcSh.getLastRow()-1, 5).getValues();
+
+  // 사이즈 정렬
+  const SIZES = ['110','120','130','140','150','160','170'];
+
+  // 색상별 데이터 그룹화
+  const colorData = {};
+  data.filter(r=>r[0]&&r[1]).forEach(r=>{
+    const color = String(r[1]).trim();
+    const size = String(r[2]).trim();
+    const stock = r[3]||0;
+
+    if(!colorData[color]) colorData[color] = {};
+    colorData[color][size] = stock;
+  });
+
+  // 색상 정렬
+  const colors = Object.keys(colorData).sort();
+
+  // A1: 날짜
+  const today = Utilities.formatDate(new Date(),'Asia/Seoul','yyyy/M/d');
+  printSh.getRange('A1').setValue(today).setFontSize(14).setFontWeight('bold');
+
+  // A3: 헤더 (색상, 사이즈...)
+  const header = ['색상',...SIZES];
+  printSh.getRange(3, 1, 1, header.length).setValues([header]);
+  _styleHeader(printSh, header.length);
+
+  // 데이터 행 입력
+  let row = 4;
+  colors.forEach(color=>{
+    const colorValues = colorData[color];
+    const dataRow = [color, ...SIZES.map(sz=>{
+      const stock = colorValues[sz];
+      return (stock === 0 || stock === '') ? 'X' : stock;
+    })];
+    printSh.getRange(row, 1, 1, dataRow.length).setValues([dataRow]);
+    row++;
+  });
+
+  // 스타일링
+  // 열 너비 조정
+  printSh.setColumnWidth(1, 75);  // 색상 열
+  SIZES.forEach((_, i)=>printSh.setColumnWidth(i+2, 60));  // 사이즈 열들
+
+  // 셀 높이 조정
+  printSh.setRowHeight(1, 25);
+  printSh.setRowHeight(3, 25);
+  for(let i=4; i<row; i++) {
+    printSh.setRowHeight(i, 30);
+  }
+
+  // 중앙 정렬 + 테두리
+  const dataRange = printSh.getRange(3, 1, row-3, header.length);
+  dataRange.setHorizontalAlignment('center').setVerticalAlignment('middle');
+  dataRange.setBorder(true, true, true, true, true, true);
+
+  // 인쇄 설정
+  const pageLayout = printSh.getPageLayout();
+  pageLayout.setOrientation(SpreadsheetApp.PageOrientation.LANDSCAPE);
+  pageLayout.setPaperSize(SpreadsheetApp.PaperSize.A4);
+  pageLayout.setMargins(5, 5, 5, 5);
+
+  SpreadsheetApp.getUi().alert(
+    `✅ 인쇄용 양식 생성 완료!\n\n색상: ${colors.length}개\n${PRINT_SHEET} 탭에서 확인 후 인쇄하세요.`
   );
 }
 
@@ -296,12 +385,23 @@ function doGet(e) {
     try{
       const sh=ss.getSheetByName(SHEET_NAMES.FINISHED);
       if(sh&&sh.getLastRow()>1){
-        sh.getRange(2,1,sh.getLastRow()-1,6).getValues()
+        sh.getRange(2,1,sh.getLastRow()-1,7).getValues()
           .filter(r=>r[0])
           .forEach(r=>{
+            const stock = r[3]||0;
+            const dailySales = r[4]||0;
+            // 상태 계산: Google Sheets G열(비고/상태)에서 읽기
+            let status = String(r[6]||'');
+            if(!status) {
+              // 상태값이 없으면 재고 기반으로 자동 계산
+              if(stock === 0) status = '🔴 긴급';
+              else if(stock < dailySales * 3) status = '🟡 부족';
+              else status = '🟢 안전';
+            }
             result.finished.push({
               sku:String(r[0]),color:String(r[1]),size:String(r[2]),
-              stock:r[3]||0,dailySales:r[4]||0,runout:String(r[5]||'')
+              stock:stock,dailySales:dailySales,runout:String(r[5]||''),
+              status:status
             });
           });
       }
@@ -312,6 +412,48 @@ function doGet(e) {
       .setMimeType(ContentService.MimeType.JSON);
   }
 
+  // ── 완제품 재고 수량 업데이트 ──
+  if(action==='updateFinished'){
+    const sku = (e.parameter.sku||'').trim();
+    const color = (e.parameter.color||'').trim();
+    const size = (e.parameter.size||'').trim();
+    const qty = parseInt(e.parameter.qty||0);
+
+    Logger.log(`🔍 updateFinished 요청: sku=[${sku}], color=[${color}], size=[${size}], qty=${qty}`);
+
+    if(!sku || !color || !size || !qty) {
+      return _json({status:'error', message:'sku, color, size, qty 모두 필수입니다'});
+    }
+
+    const sh = ss.getSheetByName(SHEET_NAMES.FINISHED);
+    if(!sh || sh.getLastRow() < 2) {
+      Logger.log('❌ 완제품재고 시트 없음');
+      return _json({status:'error', message:'완제품재고 시트가 없거나 비어있습니다'});
+    }
+
+    Logger.log(`📊 시트 데이터 행 수: ${sh.getLastRow()-1}`);
+    const rows = sh.getRange(2,1,sh.getLastRow()-1,4).getValues();
+
+    for(let i=0; i<rows.length; i++) {
+      const row_sku = String(rows[i][0]||'').trim();
+      const row_color = String(rows[i][1]||'').trim();
+      const row_size = String(rows[i][2]||'').trim();
+
+      Logger.log(`   행 ${i+2}: [${row_sku}] [${row_color}] [${row_size}]`);
+
+      if(row_sku === sku && row_color === color && row_size === size) {
+        Logger.log(`✅ 매칭! D${i+2} 셀을 ${qty}로 업데이트`);
+        sh.getRange(i+2, 4).setValue(qty);
+        sh.getRange(i+2, 7).setValue(Utilities.formatDate(new Date(),'Asia/Seoul','yyyy-MM-dd HH:mm'));
+        Logger.log(`✅ 업데이트 완료`);
+        return _json({status:'ok', message:`✅ ${sku} ${color} ${size} 수량이 ${qty}로 업데이트되었습니다`});
+      }
+    }
+
+    Logger.log(`❌ 매칭되는 항목 없음`);
+    return _json({status:'error', message:`❌ 해당 항목을 찾을 수 없습니다: ${sku} ${color} ${size}`});
+  }
+
   return _json({status:'ok',message:'뉴욕꼬맹이 재고관리 연결됨 ✅',version:'2.0',sheets:Object.values(SHEET_NAMES)});
 }
 
@@ -320,16 +462,24 @@ function doGet(e) {
 // Content-Type: text/plain으로 받아서 JSON.parse 처리
 // ════════════════════════════════════════════════════════
 function doPost(e) {
+  Logger.log('═══ doPost 함수 시작 ═══');
   try {
     // text/plain 또는 application/json 모두 처리
     const raw = e.postData ? e.postData.contents : '';
-    if (!raw) return _json({status:'error', message:'body가 비어있습니다. Content-Type: text/plain 으로 전송하세요'});
+    Logger.log(`📨 수신 body 길이: ${raw.length}`);
+    if (!raw) {
+      Logger.log('❌ body 비어있음');
+      return _json({status:'error', message:'body가 비어있습니다. Content-Type: text/plain 으로 전송하세요'});
+    }
 
     const data = JSON.parse(raw);
+    Logger.log(`📦 파싱된 action: ${data.action}`);
+    Logger.log(`📋 데이터: ${JSON.stringify(data)}`);
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     _ensureAllSheets(ss);
 
     if (data.action === 'setup') {
+      Logger.log('🔧 setup action 처리 중');
       ['시트1','Sheet1','재고카운팅'].forEach(n => {
         const s = ss.getSheetByName(n);
         if (s && ss.getSheets().length > 1) { try { ss.deleteSheet(s); } catch(er) {} }
@@ -337,16 +487,68 @@ function doPost(e) {
       return _json({status:'ok', message:'시트 초기화 완료', sheets:Object.values(SHEET_NAMES)});
     }
 
+    // 완제품 단일 항목 업데이트 (대시보드 수정 버튼)
+    if (data.action === 'updateFinished') {
+      Logger.log('🎯 updateFinished action 감지됨!');
+      const success = updateFinishedFromDashboard(data.sku, data.color, data.size, data.qty);
+      Logger.log(`📊 updateFinishedFromDashboard 결과: ${success}`);
+      if (success) {
+        Logger.log(`✅ 업데이트 성공`);
+        return _json({status:'ok', message:`✅ ${data.sku} ${data.color} ${data.size} 수량이 ${data.qty}로 업데이트됨`});
+      } else {
+        Logger.log(`❌ 업데이트 실패: 항목을 찾을 수 없음`);
+        return _json({status:'error', message:`❌ ${data.sku} ${data.color} ${data.size} 항목을 찾을 수 없습니다`});
+      }
+    }
+
+    Logger.log('🔄 모바일 앱 동기화 처리 중');
     const res = {blank:0, transfer:0, finished:0};
     if (data.blank    && data.blank.length)    res.blank    = _upsertBlank(ss, data.blank);
     if (data.transfer && data.transfer.length) res.transfer = _upsertTransfer(ss, data.transfer);
     if (data.finished && data.finished.length) res.finished = _upsertFinished(ss, data.finished);
 
+    Logger.log(`✅ doPost 완료: ${JSON.stringify(res)}`);
     return _json({status:'ok', updated:res, timestamp:new Date().toISOString()});
 
   } catch(err) {
+    Logger.log(`❌ doPost 예외: ${err.message}`);
     return _json({status:'error', message:err.message, hint:'JSON.parse 실패 시 body 형식을 확인하세요'});
   }
+}
+
+// ════════════════════════════════════════════════════════
+// 완제품재고 수량 업데이트 (대시보드 수정 버튼 처리)
+// ════════════════════════════════════════════════════════
+function updateFinishedFromDashboard(sku, color, size, qty) {
+  Logger.log(`🔍 updateFinishedFromDashboard: sku=[${sku}], color=[${color}], size=[${size}], qty=${qty}`);
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = ss.getSheetByName(SHEET_NAMES.FINISHED);
+  if (!sh || sh.getLastRow() < 2) {
+    Logger.log('❌ 완제품재고 시트 없음 또는 데이터 없음');
+    return false;
+  }
+
+  Logger.log(`📊 완제품 데이터 행 수: ${sh.getLastRow()-1}`);
+  const rows = sh.getRange(2, 1, sh.getLastRow()-1, 7).getValues();
+
+  for (let i = 0; i < rows.length; i++) {
+    const row_sku = String(rows[i][0]||'').trim();
+    const row_color = String(rows[i][1]||'').trim();
+    const row_size = String(rows[i][2]||'').trim();
+
+    Logger.log(`   행 ${i+2}: [${row_sku}] [${row_color}] [${row_size}]`);
+
+    if (row_sku === sku && row_color === color && row_size === size) {
+      Logger.log(`✅ 매칭! D${i+2}에 ${qty} 입력`);
+      sh.getRange(i+2, 4).setValue(qty);
+      Logger.log(`✅ 업데이트 완료`);
+      return true;
+    }
+  }
+
+  Logger.log(`❌ 매칭되는 항목 없음`);
+  return false;
 }
 
 function _upsertBlank(ss,items) {

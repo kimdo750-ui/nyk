@@ -439,6 +439,12 @@
                 </div>
             </div>
 
+            <!-- 상태별 상세 목록 -->
+            <div class="card">
+                <h2>📋 상태별 상세</h2>
+                <div id="status-details" style="font-size: 13px; line-height: 1.8;"></div>
+            </div>
+
             <div class="card">
                 <h2>📦 오늘 주문</h2>
                 <div class="stat-box">
@@ -519,11 +525,6 @@
         <!-- 하단: 상세 정보 -->
         <div class="grid-2" style="margin-top: 30px;">
             <div class="card">
-                <h2>🔔 재고 부족 알림</h2>
-                <div id="alerts-list" class="loading">로딩 중...</div>
-            </div>
-
-            <div class="card">
                 <h2>💡 발주 추천</h2>
                 <div id="recommend-list" class="loading">로딩 중...</div>
             </div>
@@ -588,8 +589,15 @@
 
         async function updateFinishedStock(sku, color, size, qty) {
             try {
-                const res = await fetch(`${API_BASE}/update-finished?sku=${sku}&color=${encodeURIComponent(color)}&size=${size}&qty=${qty}`, { method: 'POST' });
+                const url = `${API_BASE}/update-finished?sku=${sku}&color=${encodeURIComponent(color)}&size=${size}&qty=${qty}`;
+                console.log("📤 완제품 업데이트 요청:", { sku, color, size, qty, url });
+
+                const res = await fetch(url, { method: 'POST' });
                 const data = await res.json();
+
+                console.log("📥 응답 상태:", res.ok, "상태코드:", res.status);
+                console.log("📥 응답 데이터:", data);
+
                 if (res.ok) {
                     alert(`✅ ${sku} ${color} ${size} 수량이 ${qty}로 업데이트되었습니다`);
                     refreshData();
@@ -597,6 +605,7 @@
                     alert(`❌ 오류: ${data.detail}`);
                 }
             } catch (error) {
+                console.error("❌ 요청 실패:", error);
                 alert(`❌ 업데이트 실패: ${error.message}`);
             }
         }
@@ -612,14 +621,10 @@
                 const prodRes = await fetch(`${API_BASE}/production`);
                 const production = await prodRes.json();
 
-                const alertRes = await fetch(`${API_BASE}/alerts?level=urgent`);
-                const alerts = await alertRes.json();
-
-                updateStats(inventory, orders, production, alerts);
+                updateStats(inventory, orders, production);
                 updateCharts(inventory);
-                updateAlerts(alerts);
                 updateBottlenecks(inventory, orders, production);
-                updateRecommendations(inventory, alerts);
+                updateRecommendations(inventory);
                 updateFinishedTable(inventory);
 
             } catch (error) {
@@ -630,22 +635,43 @@
             }
         }
 
-        function updateStats(inventory, orders, production, alerts) {
+        function updateStats(inventory, orders, production) {
             const blank = inventory.blank || [];
+            const finished = inventory.finished || [];
 
             const stats = { safe: 0, warning: 0, urgent: 0, critical: 0 };
+            const details = { safe: [], warning: [], urgent: [], critical: [] };
 
             blank.forEach(b => {
-                if (b.status.includes("안전")) stats.safe++;
-                else if (b.status.includes("부족")) stats.warning++;
-                else if (b.status.includes("긴급")) stats.urgent++;
-                else if (b.status.includes("생산불가")) stats.critical++;
+                const label = `🧵 ${b.color} ${b.size}`;
+                if (b.status.includes("안전")) { stats.safe++; details.safe.push(label); }
+                else if (b.status.includes("부족")) { stats.warning++; details.warning.push(label); }
+                else if (b.status.includes("긴급")) { stats.urgent++; details.urgent.push(label); }
+                else if (b.status.includes("생산불가")) { stats.critical++; details.critical.push(label); }
+            });
+
+            // 완제품재고도 통계에 포함
+            finished.forEach(f => {
+                const label = `📦 ${f.sku} ${f.color} ${f.size}`;
+                if (f.status && f.status.includes("안전")) { stats.safe++; details.safe.push(label); }
+                else if (f.status && f.status.includes("부족")) { stats.warning++; details.warning.push(label); }
+                else if (f.status && f.status.includes("긴급")) { stats.urgent++; details.urgent.push(label); }
+                else if (f.status && f.status.includes("생산불가")) { stats.critical++; details.critical.push(label); }
             });
 
             document.getElementById("stat-safe").textContent = stats.safe;
             document.getElementById("stat-warning").textContent = stats.warning;
             document.getElementById("stat-urgent").textContent = stats.urgent;
             document.getElementById("stat-critical").textContent = stats.critical;
+
+            // 상태별 상세 목록 표시
+            const detailsHtml = `
+                ${stats.critical > 0 ? `<div style="color:#e74c3c; margin-bottom:15px;"><strong>🔴 생산불가 (${stats.critical}건)</strong><br/>${details.critical.join('<br/>')}</div>` : ''}
+                ${stats.urgent > 0 ? `<div style="color:#e67e22; margin-bottom:15px;"><strong>🟠 긴급 (${stats.urgent}건)</strong><br/>${details.urgent.join('<br/>')}</div>` : ''}
+                ${stats.warning > 0 ? `<div style="color:#f39c12; margin-bottom:15px;"><strong>🟡 부족 (${stats.warning}건)</strong><br/>${details.warning.join('<br/>')}</div>` : ''}
+                ${stats.safe > 0 ? `<div style="color:#27ae60;"><strong>🟢 안전 (${stats.safe}건)</strong></div>` : ''}
+            `;
+            document.getElementById("status-details").innerHTML = detailsHtml || '모든 재고가 안전합니다 ✅';
 
             const orderList = orders.orders || [];
             document.getElementById("stat-pending").textContent = orderList.length;
@@ -671,19 +697,42 @@
             const blankData = blank.map(b => b.stock).slice(0, 8);
             const blankSafe = blank.map(b => b.safe_stock).slice(0, 8);
 
-            // 색상별 색깔 매핑
+            // 색상별 색깔 매핑 (CSS 색상 정의와 일치)
             const colorMap = {
-                '레드': '#ff6b6b',
-                '블랙': '#2c3e50',
-                '화이트': '#f0f0f0',
-                '파랑': '#4dabf7',
+                '레드': '#cc0000',
+                '빨간색': '#cc0000',
+                '블랙': '#000000',
+                '검은색': '#000000',
+                '화이트': '#ffffff',
+                '흰색': '#ffffff',
+                '블루': '#0052cc',
+                '파란색': '#0052cc',
+                '파랑': '#0052cc',
+                '바이올렛': '#6600cc',
+                '보라색': '#6600cc',
+                '보라': '#6600cc',
+                '스카이블루': '#87ceeb',
+                '하늘색': '#87ceeb',
+                '민트': '#98ff98',
+                '민트색': '#98ff98',
+                '다크민트': '#00a86b',
+                '진민트색': '#00a86b',
+                '퍼플': '#b366ff',
+                '베이지': '#f5f5dc',
+                '베이지색': '#f5f5dc',
+                '그레이': '#d3d3d3',
+                '회색': '#d3d3d3',
+                '그린': '#51cf66',
                 '초록': '#51cf66',
+                '옐로우': '#ffd43b',
                 '노랑': '#ffd43b',
                 '주황': '#ff8787',
-                '보라': '#b197fc'
+                '카멜': '#c19a6b',
+                '핑크': '#ff69b4',
+                '인디핑크': '#ff1493'
             };
 
-            const blankColors = blank.map(b => colorMap[b.color] || '#667eea').slice(0, 8);
+            const blankColors = blank.map(b => colorMap[b.color] || '#999999').slice(0, 8);
 
             if (blankChart) blankChart.destroy();
             const blankCtx = document.getElementById("blankStockChart").getContext("2d");
@@ -732,11 +781,11 @@
             // 전사지 색상별 분류 - 모든 코드 표시
             const allCodes = [...new Set(transfer.map(t => t.code))];
             const whiteData = allCodes.map(code => {
-                const item = transfer.find(t => t.code === code && t.color === '흰색');
+                const item = transfer.find(t => t.code === code && (t.color === '흰색' || t.name === '흰색'));
                 return item ? item.stock : 0;
             });
             const blackData = allCodes.map(code => {
-                const item = transfer.find(t => t.code === code && t.color === '검은색');
+                const item = transfer.find(t => t.code === code && (t.color === '검은색' || t.name === '검은색'));
                 return item ? item.stock : 0;
             });
 
@@ -847,7 +896,7 @@
                 html || '<div class="empty-state"><div class="empty-state-icon">⭐</div><div class="empty-state-text">재고 부족 알림 없음</div></div>';
         }
 
-        function updateRecommendations(inventory, alerts) {
+        function updateRecommendations(inventory) {
             const blank = inventory.blank || [];
             const transfer = inventory.transfer || [];
             const recommendations = [];
@@ -947,10 +996,20 @@
                         </select>
                     </td>
                     <td>
-                        <button onclick="updateFinishedOnClick('${f.sku}', '${f.color}', '${f.size}')">수정</button>
+                        <button data-sku="${f.sku}" data-color="${f.color}" data-size="${f.size}" class="btn-edit-finished">수정</button>
                     </td>
                 </tr>
             `).join("");
+
+            // 이벤트 위임: 모든 수정 버튼에 클릭 핸들러 추가
+            document.querySelectorAll('.btn-edit-finished').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const sku = e.target.dataset.sku;
+                    const color = e.target.dataset.color;
+                    const size = e.target.dataset.size;
+                    updateFinishedOnClick(sku, color, size);
+                });
+            });
         }
 
         refreshData();

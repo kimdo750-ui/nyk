@@ -65,6 +65,26 @@ class SheetsClient:
                 raise ValueError(f"Apps Script 오류: {data}")
             return data["data"]
 
+    def _update_finished_via_apps_script(self, sku: str, color: str, size: str, new_qty: int) -> bool:
+        """Apps Script 모드에서 완제품재고 업데이트 (GET 쿼리 파라미터)"""
+        try:
+            # GET 방식으로 변경 (302 리다이렉트 이후 POST → GET 변환 방지)
+            url = f"{settings.apps_script_url}?action=updateFinished&sku={sku}&color={color}&size={size}&qty={new_qty}"
+            logger.info(f"📤 Apps Script 요청: {url[:80]}...")
+            with httpx.Client(timeout=15, follow_redirects=True) as client:
+                res = client.get(url)
+                res.raise_for_status()
+                data = res.json()
+                if data.get("status") == "ok":
+                    logger.info(f"✅ Apps Script 업데이트 완료: {sku} {color} {size} → {new_qty}")
+                    return True
+                else:
+                    logger.error(f"❌ Apps Script 업데이트 실패: {data.get('message', '알 수 없는 오류')}")
+                    return False
+        except Exception as e:
+            logger.error(f"❌ Apps Script 호출 오류: {e}")
+            return False
+
     def _fetch_via_gspread(self) -> dict:
         result = {}
         # 주문확인(원본) - H열부터(8번째)가 파싱 결과
@@ -268,6 +288,8 @@ class SheetsClient:
 
     def update_finished_stock(self, sku: str, color: str, size: str, new_qty: int) -> bool:
         """완제품재고 수량 업데이트"""
+        if self._mode == "apps_script":
+            return self._update_finished_via_apps_script(sku, color, size, new_qty)
         if self._mode != "gspread":
             return False
         try:
