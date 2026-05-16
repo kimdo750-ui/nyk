@@ -270,13 +270,23 @@ class SheetsClient:
         """완제품재고 수량 업데이트"""
         if self._mode != "gspread":
             return False
-        ws = self._get_ws(settings.sheet_finished)
-        rows = ws.get_all_values()[1:]
-        for i, row in enumerate(rows):
-            if len(row) >= 3 and row[0] == sku and row[1] == color and row[2] == size:
-                ws.update_cell(i + 2, 4, new_qty)
-                return True
-        return False
+        try:
+            ws = self._get_ws(settings.sheet_finished)
+            rows = ws.get_all_values()[1:]
+            for i, row in enumerate(rows):
+                if len(row) >= 3:
+                    # 공백 제거 후 정확히 비교
+                    row_sku = str(row[0]).strip() if row[0] else ""
+                    row_color = str(row[1]).strip() if row[1] else ""
+                    row_size = str(row[2]).strip() if row[2] else ""
+
+                    if row_sku == sku and row_color == color and row_size == size:
+                        ws.update_cell(i + 2, 4, new_qty)
+                        return True
+            return False
+        except Exception as e:
+            print(f"❌ 업데이트 실패: {e}")
+            return False
 
 
 # 싱글톤
