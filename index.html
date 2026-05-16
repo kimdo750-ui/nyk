@@ -239,13 +239,13 @@ body{
 .qty-wrap{
   display:flex;align-items:center;gap:0;
   border:2px solid var(--border);border-radius:10px;overflow:hidden;
-  max-width:100%;
+  width:100%;
 }
 .qty-btn{
-  width:54px;height:54px;
+  min-width:48px;width:48px;height:48px;
   background:var(--card);
   border:none;
-  font-size:24px;font-weight:300;color:var(--ink);
+  font-size:20px;font-weight:300;color:var(--ink);
   cursor:pointer;display:flex;align-items:center;justify-content:center;
   flex-shrink:0;transition:background .1s;
 }
@@ -954,7 +954,7 @@ const COLORS = [
   '핑크','민트','다크민트','옐로우','스카이블루',
   '인디핑크','바이올렛','퍼플'
 ];
-const SIZES = ['90','100','110','120','130','140','150','160','170','180','S','M','L','XL'];
+const SIZES = ['100','110','120','130','140','150','160','170','M','L','2XL','3XL'];
 
 // 코드 프리셋 (저장된 코드 목록)
 let savedCodes = {
