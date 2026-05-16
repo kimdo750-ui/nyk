@@ -249,7 +249,7 @@ async def update_transfer(code: str, qty: int):
 
 
 @app.post("/update-finished")
-async def update_finished(sku: str, qty: int):
+async def update_finished(sku: str, color: str, size: str, qty: int):
     """완제품 수량 업데이트"""
     if qty not in [5, 10, 15, 20, 25, 30]:
         raise HTTPException(
@@ -258,11 +258,11 @@ async def update_finished(sku: str, qty: int):
         )
     try:
         client = get_sheets_client()
-        success = client.update_finished_stock(sku, qty)
+        success = client.update_finished_stock(sku, color, size, qty)
         if success:
-            return {"status": "ok", "message": f"{sku} 수량이 {qty}로 업데이트되었습니다"}
+            return {"status": "ok", "message": f"{sku} {color} {size} 수량이 {qty}로 업데이트되었습니다"}
         else:
-            raise HTTPException(status_code=400, detail="업데이트 실패. 해당 SKU를 찾을 수 없습니다")
+            raise HTTPException(status_code=400, detail="업데이트 실패. 해당 항목을 찾을 수 없습니다")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

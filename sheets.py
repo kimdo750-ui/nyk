@@ -266,14 +266,14 @@ class SheetsClient:
                 return True
         return False
 
-    def update_finished_stock(self, sku: str, new_qty: int) -> bool:
+    def update_finished_stock(self, sku: str, color: str, size: str, new_qty: int) -> bool:
         """완제품재고 수량 업데이트"""
         if self._mode != "gspread":
             return False
         ws = self._get_ws(settings.sheet_finished)
         rows = ws.get_all_values()[1:]
         for i, row in enumerate(rows):
-            if row[0] == sku:
+            if len(row) >= 3 and row[0] == sku and row[1] == color and row[2] == size:
                 ws.update_cell(i + 2, 4, new_qty)
                 return True
         return False
