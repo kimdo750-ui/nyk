@@ -972,7 +972,7 @@ let invData = {
 // 현재 선택 상태
 const sel = {
   blank:    { garment:'', color:'', size:'', qty:1 },
-  transfer: { code:'', qty:1 },
+  transfer: { code:'', color:'', qty:1 },
   finished: { code:'', color:'', size:'', qty:1 },
 };
 
@@ -1193,8 +1193,8 @@ function addItem() {
     if (!s.garment || !s.color || !s.size) { toast('⚠️ 의류종류·색상·사이즈를 모두 선택하세요'); return; }
     item = { garment: s.garment, color: s.color, size: s.size, qty, id: Date.now() };
   } else if (type === 'transfer') {
-    if (!s.code) { toast('⚠️ 전사지 코드를 선택하세요'); return; }
-    item = { code: s.code, qty, id: Date.now() };
+    if (!s.code || !s.color) { toast('⚠️ 전사지 코드와 색상을 모두 선택하세요'); return; }
+    item = { code: s.code, color: s.color, qty, id: Date.now() };
   } else {
     if (!s.code || !s.color || !s.size) { toast('⚠️ SKU·색상·사이즈를 모두 선택하세요'); return; }
     item = { code: s.code, color: s.color, size: s.size, qty, id: Date.now() };
@@ -1313,7 +1313,7 @@ function parseBatch(type) {
           localStorage.setItem('codes_transfer', JSON.stringify(savedCodes.transfer));
           renderCodes('transfer');
         }
-        merge('transfer', { code, qty: q, id: Date.now()+Math.random() });
+        merge('transfer', { code, color: sel.transfer.color || '', qty: q, id: Date.now()+Math.random() });
         added++;
       }
     } else {
