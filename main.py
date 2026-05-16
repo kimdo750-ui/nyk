@@ -280,10 +280,12 @@ async def update_finished(sku: str, color: str, size: str, qty: int):
 
 if __name__ == "__main__":
     import uvicorn
+    import os
+    port = int(os.getenv("PORT", 8000))  # Render/클라우드 배포용 동적 포트
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
-        port=8000,
+        port=port,
         reload=settings.app_env == "development",
         log_level=settings.log_level.lower(),
     )
