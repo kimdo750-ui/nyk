@@ -1,0 +1,1656 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>뉴욕꼬맹이 재고입력</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+:root{
+  --bg:#f0ede8;
+  --surface:#ffffff;
+  --card:#f8f6f2;
+  --border:#e2ddd6;
+  --border2:#c8c2b8;
+  --ink:#1a1814;
+  --ink2:#5a554e;
+  --ink3:#9a948a;
+  --accent:#c84b14;
+  --accent-dk:#a83c10;
+  --accent-lt:#fdf0eb;
+  --green:#1a7a40;
+  --green-lt:#e8f5ee;
+  --blue:#1a5aa8;
+  --blue-lt:#e8f0fa;
+  --orange:#d97a10;
+  --orange-lt:#fef3e3;
+  --red:#c02820;
+  --red-lt:#fdecea;
+  --sel:#c84b14;
+  --tab-h:56px;
+  --header-h:52px;
+  --mono:'JetBrains Mono',monospace;
+  --sans:'Noto Sans KR',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{font-size:14px;height:100%}
+body{
+  background:var(--bg);
+  font-family:var(--sans);
+  color:var(--ink);
+  height:100%;
+  max-width:480px;
+  margin:0 auto;
+  position:relative;
+  overflow-x:hidden;
+}
+
+/* ── HEADER ── */
+.header{
+  height:var(--header-h);
+  background:var(--ink);
+  display:flex;align-items:center;
+  padding:0 16px;
+  position:sticky;top:0;z-index:100;
+  gap:10px;
+}
+.header-logo{font-size:16px;font-weight:900;color:#fff;letter-spacing:-.3px}
+.header-logo em{color:var(--accent);font-style:normal}
+.header-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.sync-btn{
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.2);
+  color:#fff;border-radius:7px;
+  padding:6px 10px;font-size:11px;font-weight:700;
+  font-family:var(--sans);cursor:pointer;
+  display:flex;align-items:center;gap:4px;
+}
+.sync-btn:active{background:rgba(255,255,255,.2)}
+.dot-status{width:7px;height:7px;border-radius:50%;background:#4a4a4a;flex-shrink:0}
+.dot-status.ok{background:#2ed573}
+.dot-status.err{background:#ff4757}
+
+/* ── TABS ── */
+.tabs{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  background:var(--ink);
+  border-bottom:2px solid rgba(255,255,255,.08);
+  position:sticky;top:var(--header-h);z-index:99;
+}
+.tab-btn{
+  height:44px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:1px;
+  font-size:11px;font-weight:700;
+  color:rgba(255,255,255,.4);
+  cursor:pointer;border:none;background:none;
+  font-family:var(--sans);
+  border-bottom:3px solid transparent;
+  transition:all .2s;
+  padding:0;
+}
+.tab-btn.active{
+  color:#fff;
+  border-bottom-color:var(--accent);
+}
+.tab-btn .tab-ic{font-size:16px;line-height:1}
+.tab-btn .tab-lbl{line-height:1}
+
+/* ── PANELS ── */
+.panel{display:none;padding:14px 14px 120px;min-height:calc(100vh - 100px)}
+.panel.active{display:block;animation:fadeUp .2s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes aiDot{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+
+/* ── SECTION CARDS ── */
+.sec{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:14px;
+  margin-bottom:12px;
+  overflow:hidden;
+}
+.sec-head{
+  padding:12px 14px 10px;
+  font-size:16px;font-weight:700;
+  color:var(--ink);
+  letter-spacing:1px;text-transform:uppercase;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:6px;
+}
+.sec-body{padding:12px 14px}
+
+/* ── PRODUCT CODE SELECTOR ── */
+.code-scroll{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:7px;padding-bottom:4px;
+  scrollbar-width:none;
+}
+.code-scroll::-webkit-scrollbar{display:none}
+.code-pill{
+  height:40px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:8px;
+  border:2px solid var(--border);
+  font-family:var(--mono);
+  font-size:13px;font-weight:700;
+  color:var(--ink2);
+  cursor:pointer;background:var(--card);
+  transition:all .15s;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  padding:0;
+}
+.code-pill.active{
+  border-color:var(--accent);
+  background:var(--accent-lt);
+  color:var(--accent);
+}
+.code-pill.add-btn{
+  border-style:dashed;
+  color:var(--ink3);font-size:18px;
+  padding:8px 16px;
+}
+.code-input-wrap{
+  margin-top:10px;
+  display:none;
+}
+.code-input-wrap.show{display:flex;gap:8px}
+.code-input{
+  flex:1;
+  border:2px solid var(--accent);
+  border-radius:8px;
+  padding:9px 12px;
+  font-family:var(--mono);font-size:14px;font-weight:700;
+  outline:none;color:var(--ink);
+  text-transform:uppercase;
+}
+.code-confirm{
+  background:var(--accent);color:#fff;
+  border:none;border-radius:8px;
+  padding:0 14px;font-size:13px;font-weight:700;
+  cursor:pointer;font-family:var(--sans);
+}
+
+/* ── COLOR BUTTONS ── */
+.color-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:7px;
+}
+.color-btn{
+  height:42px;
+  border-radius:9px;
+  border:2px solid var(--border);
+  background:var(--card);
+  font-size:12px;font-weight:700;
+  color:var(--ink);
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:4px;
+  transition:all .12s;
+  font-family:var(--sans);
+  position:relative;
+}
+.color-btn:active{transform:scale(.95)}
+.color-btn.active{
+  border-color:var(--sel);
+  background:var(--accent-lt);
+  color:var(--accent);
+}
+.color-dot{
+  width:10px;height:10px;border-radius:50%;
+  border:1px solid rgba(0,0,0,.12);flex-shrink:0;
+}
+.custom-color-row{margin-top:8px}
+.field-lbl{font-size:11px;color:var(--ink3);font-weight:700;margin-bottom:5px}
+.text-input{
+  width:100%;
+  border:1.5px solid var(--border);
+  border-radius:8px;padding:9px 12px;
+  font-size:13px;font-family:var(--sans);
+  outline:none;color:var(--ink);background:var(--card);
+}
+.text-input:focus{border-color:var(--accent);background:#fff}
+
+/* ── SIZE BUTTONS ── */
+.size-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:7px;
+}
+.size-btn{
+  height:46px;
+  border-radius:9px;
+  border:2px solid var(--border);
+  background:var(--card);
+  font-family:var(--mono);
+  font-size:14px;font-weight:700;
+  color:var(--ink);
+  cursor:pointer;
+  transition:all .12s;
+}
+.size-btn:active{transform:scale(.95)}
+.size-btn.active{
+  border-color:var(--sel);
+  background:var(--accent-lt);
+  color:var(--accent);
+}
+
+/* ── QTY ── */
+.qty-wrap{
+  display:flex;align-items:center;gap:0;
+  border:2px solid var(--border);border-radius:10px;overflow:hidden;
+  width:100%;
+}
+.qty-btn{
+  min-width:56px;width:56px;height:56px;
+  background:var(--accent);
+  border:none;
+  font-size:24px;font-weight:700;color:#fff;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:background .1s;
+}
+.qty-btn:first-child {
+  border-radius: 8px 0 0 8px;
+}
+.qty-btn:last-child {
+  border-radius: 0 8px 8px 0;
+}
+.qty-btn:active{background:var(--border)}
+.qty-num{
+  flex:1;text-align:center;
+  font-family:var(--mono);font-size:24px;font-weight:700;
+  border:none;outline:none;background:transparent;
+  color:var(--ink);
+}
+.quick-qtys{
+  display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;
+}
+.qqty-btn{
+  height:34px;min-width:44px;
+  padding:0 10px;
+  border-radius:8px;
+  border:1.5px solid var(--border);
+  background:var(--card);
+  font-family:var(--mono);font-size:12px;font-weight:700;
+  color:var(--ink2);cursor:pointer;
+  transition:all .12s;
+}
+.qqty-btn:active{background:var(--accent-lt);border-color:var(--accent);color:var(--accent)}
+
+/* ── SELECTION SUMMARY ── */
+.sel-summary{
+  background:linear-gradient(135deg,var(--accent-lt),#fff8f4);
+  border:1.5px solid rgba(200,75,20,.2);
+  border-radius:10px;
+  padding:10px 14px;
+  display:flex;align-items:center;gap:8px;
+  flex-wrap:wrap;
+  min-height:42px;
+}
+.sel-tag{
+  background:var(--ink);color:#fff;
+  border-radius:6px;padding:4px 10px;
+  font-size:12px;font-weight:700;
+  font-family:var(--mono);
+  white-space:nowrap;
+}
+.sel-tag.color{background:var(--accent)}
+.sel-tag.size{background:var(--green)}
+.sel-tag.qty{background:var(--blue)}
+.sel-empty{font-size:12px;color:var(--ink3)}
+
+/* ── ADD BUTTON ── */
+.add-btn-wrap{
+  position:fixed;
+  bottom:var(--tab-h);left:0;right:0;
+  max-width:480px;margin:0 auto;
+  padding:10px 14px;
+  background:linear-gradient(to top,var(--bg) 60%,transparent);
+  z-index:90;
+}
+.add-btn{
+  width:100%;height:52px;
+  background:var(--ink);color:#fff;
+  border:none;border-radius:13px;
+  font-size:15px;font-weight:900;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  font-family:var(--sans);
+  letter-spacing:-.3px;
+  box-shadow:0 4px 20px rgba(26,24,20,.25);
+  transition:all .15s;
+  position:relative;overflow:hidden;
+}
+.add-btn::after{
+  content:'';
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.1),transparent);
+}
+.add-btn:active{transform:scale(.98);background:#0d0d0a}
+.add-btn.ready{background:var(--accent);box-shadow:0 4px 20px rgba(200,75,20,.35)}
+.add-btn.ready:active{background:var(--accent-dk)}
+
+/* ── BOTTOM TABS ── */
+.bottom-tabs{
+  position:fixed;
+  bottom:0;left:0;right:0;
+  max-width:480px;margin:0 auto;
+  height:var(--tab-h);
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  display:grid;grid-template-columns:repeat(3,1fr);
+  z-index:100;
+}
+.btab-btn{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;
+  font-size:10px;font-weight:700;color:var(--ink3);
+  cursor:pointer;border:none;background:none;
+  font-family:var(--sans);
+}
+.btab-btn.active{color:var(--accent)}
+.btab-btn .btic{font-size:20px;line-height:1}
+
+/* ── BATCH TEXT INPUT ── */
+.batch-wrap{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:14px;
+  overflow:hidden;
+  margin-bottom:12px;
+}
+.batch-head{
+  padding:11px 14px;
+  background:var(--card);
+  border-bottom:1px solid var(--border);
+  font-size:11px;font-weight:700;color:var(--ink3);
+  letter-spacing:1px;text-transform:uppercase;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.batch-toggle{
+  font-size:11px;color:var(--accent);font-weight:700;
+  background:none;border:none;cursor:pointer;font-family:var(--sans);
+}
+.batch-body{
+  padding:12px 14px;
+  display:none;
+}
+.batch-body.show{display:block}
+.batch-textarea{
+  width:100%;height:80px;
+  border:1.5px solid var(--border);border-radius:9px;
+  padding:10px 12px;
+  font-size:13px;font-family:var(--sans);
+  outline:none;resize:none;color:var(--ink);
+  background:var(--card);line-height:1.6;
+}
+.batch-textarea:focus{border-color:var(--accent);background:#fff}
+.batch-hint{font-size:11px;color:var(--ink3);margin-top:6px;line-height:1.6}
+.batch-hint strong{color:var(--accent)}
+.batch-actions{display:flex;gap:8px;margin-top:10px}
+.batch-parse-btn{
+  flex:1;height:42px;
+  background:var(--ink);color:#fff;
+  border:none;border-radius:9px;
+  font-size:13px;font-weight:700;cursor:pointer;
+  font-family:var(--sans);
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.batch-parse-btn:active{background:#333}
+.batch-clear-btn{
+  height:42px;padding:0 16px;
+  background:var(--card);color:var(--ink2);
+  border:1.5px solid var(--border);border-radius:9px;
+  font-size:13px;font-weight:700;cursor:pointer;
+  font-family:var(--sans);
+}
+
+/* ── INVENTORY LIST ── */
+.inv-list-wrap{
+  background:var(--surface);
+  border:1px solid var(--border);border-radius:14px;
+  overflow:hidden;margin-bottom:12px;
+}
+.inv-list-head{
+  padding:11px 14px;
+  background:var(--card);border-bottom:1px solid var(--border);
+  font-size:11px;font-weight:700;color:var(--ink3);
+  letter-spacing:1px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.inv-count{
+  background:var(--accent);color:#fff;
+  border-radius:6px;padding:2px 8px;
+  font-size:11px;font-weight:700;font-family:var(--mono);
+}
+.inv-list{max-height:300px;overflow-y:auto}
+.inv-item{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 14px;border-bottom:1px solid var(--border);
+}
+.inv-item:last-child{border-bottom:none}
+.inv-code{
+  font-family:var(--mono);font-size:12px;font-weight:700;
+  color:var(--accent);min-width:60px;
+}
+.inv-detail{flex:1;font-size:13px;color:var(--ink)}
+.inv-qty{
+  font-family:var(--mono);font-size:14px;font-weight:700;
+  color:var(--ink);min-width:36px;text-align:right;
+}
+.inv-del{
+  width:28px;height:28px;
+  background:var(--red-lt);border:none;border-radius:7px;
+  color:var(--red);font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.inv-empty{padding:24px;text-align:center;color:var(--ink3);font-size:13px}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:calc(var(--tab-h) + 70px);
+  left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--ink);color:#fff;
+  padding:10px 18px;border-radius:20px;
+  font-size:13px;font-weight:700;
+  white-space:nowrap;opacity:0;
+  transition:all .25s;z-index:999;
+  box-shadow:0 4px 20px rgba(0,0,0,.3);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── CONFIG MODAL ── */
+.modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.6);backdrop-filter:blur(4px);
+  z-index:200;display:none;align-items:flex-end;
+}
+.modal-overlay.show{display:flex}
+.modal-sheet{
+  width:100%;max-width:480px;margin:0 auto;
+  background:var(--surface);
+  border-radius:20px 20px 0 0;
+  padding:20px 16px 36px;
+  animation:slideUp .25s ease;
+}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px}
+.modal-title{font-size:17px;font-weight:900;margin-bottom:4px}
+.modal-sub{font-size:12px;color:var(--ink3);margin-bottom:18px}
+.modal-field{margin-bottom:14px}
+.modal-label{font-size:11px;font-weight:700;color:var(--ink3);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+.modal-input{
+  width:100%;border:2px solid var(--border);border-radius:9px;
+  padding:11px 13px;font-size:13px;font-family:var(--sans);
+  outline:none;color:var(--ink);
+}
+.modal-input:focus{border-color:var(--accent)}
+.modal-save{
+  width:100%;height:50px;
+  background:var(--accent);color:#fff;
+  border:none;border-radius:12px;
+  font-size:15px;font-weight:900;
+  cursor:pointer;font-family:var(--sans);margin-top:8px;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* ── COLOR DEFINITIONS ── */
+.cdot-화이트{background:#f5f5f5;border-color:#ccc!important}
+.cdot-블랙{background:#1a1a1a}
+.cdot-그레이{background:#888}
+.cdot-베이지{background:#d4b896}
+.cdot-블루{background:#1a5aa8}
+.cdot-레드{background:#d42020}
+.cdot-핑크{background:#e8709a}
+.cdot-민트{background:#4ecdc4}
+.cdot-다크민트{background:#2a9d8f}
+.cdot-옐로우{background:#f0c020}
+.cdot-스카이블루{background:#5aa8e0}
+.cdot-인디핑크{background:#d4809a}
+.cdot-바이올렛{background:#8040c0}
+.cdot-퍼플{background:#a855f7}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <div class="header-logo">뉴욕<em>꼬맹이</em></div>
+  </div>
+  <div class="header-right">
+    <div class="dot-status" id="dot-status"></div>
+    <button class="sync-btn" onclick="openConfig()">⚙️ 설정</button>
+    <button class="sync-btn" id="setup-btn" onclick="setupSheets()" style="background:rgba(78,180,120,.25);border-color:rgba(78,180,120,.5)">🔧 시트초기화</button>
+    <button class="sync-btn" id="sync-btn" onclick="syncToSheets()" style="background:rgba(200,75,20,.3);border-color:rgba(200,75,20,.5)">☁️ 동기화</button>
+  </div>
+</div>
+
+<!-- TOP TABS -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('blank')" id="top-tab-blank">
+    <span class="tab-ic">🧵</span>
+    <span class="tab-lbl">무지상품</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('transfer')" id="top-tab-transfer">
+    <span class="tab-ic">🖨️</span>
+    <span class="tab-lbl">전사지</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('finished')" id="top-tab-finished">
+    <span class="tab-ic">📦</span>
+    <span class="tab-lbl">완제품</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('ai')" id="top-tab-ai">
+    <span class="tab-ic">🤖</span>
+    <span class="tab-lbl">AI분석</span>
+  </button>
+</div>
+
+<!-- ═══ PANEL: 무지상품 ═══ -->
+<div id="panel-blank" class="panel active">
+
+  <!-- 의류 종류 -->
+  <div class="sec">
+    <div class="sec-head">① 의류 종류</div>
+    <div class="sec-body">
+      <div class="color-grid" style="grid-template-columns:repeat(3,1fr)">
+        <button class="color-btn" onclick="selectGarment(this,'NY반팔티셔츠')" data-v="NY반팔티셔츠">👕 NY반팔</button>
+        <button class="color-btn" onclick="selectGarment(this,'디즈니반팔')" data-v="디즈니반팔">👕 디즈니</button>
+        <button class="color-btn" onclick="selectGarment(this,'맨투맨')" data-v="맨투맨">👕 맨투맨</button>
+        <button class="color-btn" onclick="selectGarment(this,'후드티')" data-v="후드티">🧥 후드티</button>
+        <button class="color-btn" onclick="selectGarment(this,'실내복')" data-v="실내복">🩲 실내복</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 색상 -->
+  <div class="sec">
+    <div class="sec-head">② 색상</div>
+    <div class="sec-body">
+      <div class="color-grid" id="blank-colors">
+        <!-- JS로 렌더링 -->
+      </div>
+      <div class="custom-color-row" style="margin-top:10px">
+        <div class="field-lbl">직접입력</div>
+        <input class="text-input" id="blank-custom-color" placeholder="색상명…" oninput="onCustomColor('blank', this.value)">
+      </div>
+    </div>
+  </div>
+
+  <!-- 사이즈 -->
+  <div class="sec">
+    <div class="sec-head">③ 사이즈</div>
+    <div class="sec-body">
+      <div class="size-grid" id="blank-sizes">
+        <!-- JS로 렌더링 -->
+      </div>
+      <div class="custom-color-row" style="margin-top:10px">
+        <div class="field-lbl">직접입력</div>
+        <input class="text-input" id="blank-custom-size" placeholder="숫자…" type="text" inputmode="text" oninput="onCustomSize('blank', this.value)">
+      </div>
+    </div>
+  </div>
+
+  <!-- 수량 -->
+  <div class="sec">
+    <div class="sec-head">④ 수량</div>
+    <div class="sec-body">
+      <div class="qty-wrap">
+        <button class="qty-btn" onclick="adjQty('blank',-1)">−</button>
+        <input class="qty-num" id="blank-qty" type="number" value="1" min="1" inputmode="numeric">
+        <button class="qty-btn" onclick="adjQty('blank',1)">+</button>
+      </div>
+      <div class="quick-qtys">
+        <button class="qqty-btn" onclick="setQty('blank',5)">5</button>
+        <button class="qqty-btn" onclick="setQty('blank',8)">8</button>
+        <button class="qqty-btn" onclick="setQty('blank',10)">10</button>
+        <button class="qqty-btn" onclick="setQty('blank',12)">12</button>
+        <button class="qqty-btn" onclick="setQty('blank',15)">15</button>
+        <button class="qqty-btn" onclick="setQty('blank',20)">20</button>
+        <button class="qqty-btn" onclick="setQty('blank',30)">30</button>
+        <button class="qqty-btn" onclick="setQty('blank',50)">50</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 선택정보 -->
+  <div class="sec">
+    <div class="sec-head">선택 정보</div>
+    <div class="sec-body">
+      <div class="sel-summary" id="blank-summary">
+        <span class="sel-empty">위에서 색상·사이즈·수량을 선택하세요</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 배치입력 -->
+  <div class="batch-wrap">
+    <div class="batch-head">
+      📝 텍스트로 여러 항목 한 번에 입력
+      <button class="batch-toggle" onclick="toggleBatch('blank')">펼치기 ▾</button>
+    </div>
+    <div class="batch-body" id="batch-blank">
+      <textarea class="batch-textarea" id="batch-blank-text"
+        placeholder="예) 화이트 110 15개, 블랙 120 8개, 스카이블루 130 20개&#10;또는: 화이트/110/15, 블랙/120/8"></textarea>
+      <div class="batch-hint">💡 숫자는 아라비아 숫자(110, 15)로 입력하면 정확해요</div>
+      <div class="batch-actions">
+        <button class="batch-parse-btn" onclick="parseBatch('blank')">🔍 인식하기</button>
+        <button class="batch-clear-btn" onclick="clearBatch('blank')">✕ 지우기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 목록 -->
+  <div class="inv-list-wrap">
+    <div class="inv-list-head">
+      재고 입력 목록
+      <span class="inv-count" id="blank-count">0건</span>
+    </div>
+    <div class="inv-list" id="blank-list">
+      <div class="inv-empty">추가된 항목이 없습니다</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ PANEL: 전사지 ═══ -->
+<div id="panel-transfer" class="panel">
+
+  <!-- 전사지 코드 -->
+  <div class="sec">
+    <div class="sec-head">① 전사지 코드 선택</div>
+    <div class="sec-body">
+      <div class="code-scroll" id="transfer-codes">
+        <!-- JS로 렌더링 -->
+      </div>
+      <div class="code-input-wrap" id="transfer-code-input">
+        <input class="code-input" id="transfer-new-code" placeholder="코드 입력 (예: W281)" maxlength="10">
+        <button class="code-confirm" onclick="addCode('transfer')">추가</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="qqty-btn" style="flex:1;background:var(--accent);color:#fff;border-color:var(--accent)" onclick="showAddCode('transfer')">+ 코드 추가</button>
+        <button class="qqty-btn" style="flex:1;background:#fee;color:#c02820;border-color:#fcc" id="transfer-delete-btn" onclick="deleteSelectedCode('transfer')" disabled>🗑 삭제</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 색상 -->
+  <div class="sec">
+    <div class="sec-head">② 색상 (검은색 또는 흰색)</div>
+    <div class="sec-body">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <button onclick="setTransferColor('검은색')" style="padding: 12px; border: 2px solid #ddd; border-radius: 8px; background: #f8f6f2; cursor: pointer; font-weight: 600;" id="transfer-color-black">
+          ⬛ 검은색
+        </button>
+        <button onclick="setTransferColor('흰색')" style="padding: 12px; border: 2px solid #ddd; border-radius: 8px; background: #f8f6f2; cursor: pointer; font-weight: 600;" id="transfer-color-white">
+          ⬜ 흰색
+        </button>
+      </div>
+      <div style="margin-top: 10px; padding: 10px; background: #f0f3ff; border-radius: 6px; font-size: 13px; color: #667eea;" id="transfer-color-display">선택: 없음</div>
+    </div>
+  </div>
+
+  <!-- 수량 -->
+  <div class="sec">
+    <div class="sec-head">③ 수량</div>
+    <div class="sec-body">
+      <div class="qty-wrap">
+        <button class="qty-btn" onclick="adjQty('transfer',-1)">−</button>
+        <input class="qty-num" id="transfer-qty" type="number" value="1" min="1" inputmode="numeric">
+        <button class="qty-btn" onclick="adjQty('transfer',1)">+</button>
+      </div>
+      <div class="quick-qtys">
+        <button class="qqty-btn" onclick="setQty('transfer',5)">5</button>
+        <button class="qqty-btn" onclick="setQty('transfer',10)">10</button>
+        <button class="qqty-btn" onclick="setQty('transfer',15)">15</button>
+        <button class="qqty-btn" onclick="setQty('transfer',20)">20</button>
+        <button class="qqty-btn" onclick="setQty('transfer',25)">25</button>
+        <button class="qqty-btn" onclick="setQty('transfer',30)">30</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 선택정보 -->
+  <div class="sec">
+    <div class="sec-head">선택 정보</div>
+    <div class="sec-body">
+      <div class="sel-summary" id="transfer-summary">
+        <span class="sel-empty">전사지 코드와 수량을 선택하세요</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 배치입력 -->
+  <div class="batch-wrap">
+    <div class="batch-head">
+      📝 텍스트로 여러 항목 한 번에 입력
+      <button class="batch-toggle" onclick="toggleBatch('transfer')">펼치기 ▾</button>
+    </div>
+    <div class="batch-body" id="batch-transfer">
+      <textarea class="batch-textarea" id="batch-transfer-text"
+        placeholder="예) W281 120매, IT024 85매, W286 200매&#10;또는: W281/120, IT024/85"></textarea>
+      <div class="batch-hint">💡 코드 + 숫자 형식으로 입력하세요</div>
+      <div class="batch-actions">
+        <button class="batch-parse-btn" onclick="parseBatch('transfer')">🔍 인식하기</button>
+        <button class="batch-clear-btn" onclick="clearBatch('transfer')">✕ 지우기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 목록 -->
+  <div class="inv-list-wrap">
+    <div class="inv-list-head">
+      재고 입력 목록
+      <span class="inv-count" id="transfer-count">0건</span>
+    </div>
+    <div class="inv-list" id="transfer-list">
+      <div class="inv-empty">추가된 항목이 없습니다</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ PANEL: 완제품 ═══ -->
+<div id="panel-finished" class="panel">
+
+  <!-- 완제품 SKU -->
+  <div class="sec">
+    <div class="sec-head">① 완제품 SKU (전사지코드)</div>
+    <div class="sec-body">
+      <div class="code-scroll" id="finished-codes">
+        <!-- JS로 렌더링 -->
+      </div>
+      <div class="code-input-wrap" id="finished-code-input">
+        <input class="code-input" id="finished-new-code" placeholder="SKU 입력 (예: IT024)" maxlength="10">
+        <button class="code-confirm" onclick="addCode('finished')">추가</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="qqty-btn" style="flex:1;background:var(--accent);color:#fff;border-color:var(--accent)" onclick="showAddCode('finished')">+ 코드 추가</button>
+        <button class="qqty-btn" style="flex:1;background:#fee;color:#c02820;border-color:#fcc" id="finished-delete-btn" onclick="deleteSelectedCode('finished')" disabled>🗑 삭제</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 색상 -->
+  <div class="sec">
+    <div class="sec-head">② 색상</div>
+    <div class="sec-body">
+      <div class="color-grid" id="finished-colors"></div>
+      <div class="custom-color-row" style="margin-top:10px">
+        <div class="field-lbl">직접입력</div>
+        <input class="text-input" id="finished-custom-color" placeholder="색상명…" oninput="onCustomColor('finished', this.value)">
+      </div>
+    </div>
+  </div>
+
+  <!-- 사이즈 -->
+  <div class="sec">
+    <div class="sec-head">③ 사이즈</div>
+    <div class="sec-body">
+      <div class="size-grid" id="finished-sizes"></div>
+      <div class="custom-color-row" style="margin-top:10px">
+        <div class="field-lbl">직접입력</div>
+        <input class="text-input" id="finished-custom-size" placeholder="숫자…" type="text" inputmode="text" oninput="onCustomSize('finished', this.value)">
+      </div>
+    </div>
+  </div>
+
+  <!-- 수량 -->
+  <div class="sec">
+    <div class="sec-head">④ 현재재고 수량</div>
+    <div class="sec-body">
+      <div class="qty-wrap">
+        <button class="qty-btn" onclick="adjQty('finished',-1)">−</button>
+        <input class="qty-num" id="finished-qty" type="number" value="1" min="0" inputmode="numeric">
+        <button class="qty-btn" onclick="adjQty('finished',1)">+</button>
+      </div>
+      <div class="quick-qtys">
+        <button class="qqty-btn" onclick="setQty('finished',0)">0</button>
+        <button class="qqty-btn" onclick="setQty('finished',5)">5</button>
+        <button class="qqty-btn" onclick="setQty('finished',10)">10</button>
+        <button class="qqty-btn" onclick="setQty('finished',15)">15</button>
+        <button class="qqty-btn" onclick="setQty('finished',20)">20</button>
+        <button class="qqty-btn" onclick="setQty('finished',30)">30</button>
+        <button class="qqty-btn" onclick="setQty('finished',50)">50</button>
+        <button class="qqty-btn" onclick="setQty('finished',100)">100</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 선택정보 -->
+  <div class="sec">
+    <div class="sec-head">선택 정보</div>
+    <div class="sec-body">
+      <div class="sel-summary" id="finished-summary">
+        <span class="sel-empty">SKU·색상·사이즈·수량을 선택하세요</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 배치입력 -->
+  <div class="batch-wrap">
+    <div class="batch-head">
+      📝 텍스트로 여러 항목 한 번에 입력
+      <button class="batch-toggle" onclick="toggleBatch('finished')">펼치기 ▾</button>
+    </div>
+    <div class="batch-body" id="batch-finished">
+      <textarea class="batch-textarea" id="batch-finished-text"
+        placeholder="예) IT024 화이트 150 12개, W281 블랙 130 8개&#10;또는: IT024/화이트/150/12, W281/블랙/130/8"></textarea>
+      <div class="batch-hint">💡 코드 + 색상 + 사이즈 + 수량 순서로 입력하세요</div>
+      <div class="batch-actions">
+        <button class="batch-parse-btn" onclick="parseBatch('finished')">🔍 인식하기</button>
+        <button class="batch-clear-btn" onclick="clearBatch('finished')">✕ 지우기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 목록 -->
+  <div class="inv-list-wrap">
+    <div class="inv-list-head">
+      재고 입력 목록
+      <span class="inv-count" id="finished-count">0건</span>
+    </div>
+    <div class="inv-list" id="finished-list">
+      <div class="inv-empty">추가된 항목이 없습니다</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ PANEL: AI 분석 ═══ -->
+<div id="panel-ai" class="panel">
+
+  <div class="sec" style="margin-bottom:10px">
+    <div class="sec-head">🤖 AI 재고 분석 채팅</div>
+    <div class="sec-body" style="padding:10px 14px">
+      <div style="font-size:11px;color:var(--ink3);margin-bottom:10px">
+        현재 앱에 입력된 재고 데이터를 기반으로 분석합니다
+      </div>
+      <!-- 빠른 질문 -->
+      <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:4px">
+        <button class="qqty-btn" style="font-family:var(--sans);font-size:11px;height:auto;padding:6px 10px;white-space:normal;text-align:left;min-width:0" onclick="quickAsk('생산 불가능한 제품 있어?')">생산불가 확인</button>
+        <button class="qqty-btn" style="font-family:var(--sans);font-size:11px;height:auto;padding:6px 10px;white-space:normal;text-align:left;min-width:0" onclick="quickAsk('무지상품 재고 부족한 것 알려줘')">무지 부족</button>
+        <button class="qqty-btn" style="font-family:var(--sans);font-size:11px;height:auto;padding:6px 10px;white-space:normal;text-align:left;min-width:0" onclick="quickAsk('전사지 재고 긴급한 것 있어?')">전사지 긴급</button>
+        <button class="qqty-btn" style="font-family:var(--sans);font-size:11px;height:auto;padding:6px 10px;white-space:normal;text-align:left;min-width:0" onclick="quickAsk('당장 발주해야 할 품목은?')">발주 추천</button>
+        <button class="qqty-btn" style="font-family:var(--sans);font-size:11px;height:auto;padding:6px 10px;white-space:normal;text-align:left;min-width:0" onclick="quickAsk('전체 생산가능수량 계산해줘')">생산량 계산</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 채팅 메시지 영역 -->
+  <div id="ai-messages" style="
+    background:var(--surface);border:1px solid var(--border);border-radius:14px;
+    padding:14px;min-height:300px;max-height:420px;overflow-y:auto;
+    display:flex;flex-direction:column;gap:10px;margin-bottom:10px
+  ">
+    <div id="ai-welcome" style="text-align:center;padding:30px 10px;color:var(--ink3)">
+      <div style="font-size:32px;margin-bottom:8px">🤖</div>
+      <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px">AI 재고 분석</div>
+      <div style="font-size:12px;line-height:1.6">재고를 입력하고 동기화한 뒤<br>궁금한 것을 물어보세요</div>
+    </div>
+  </div>
+
+  <!-- 입력창 -->
+  <div style="display:flex;gap:8px;align-items:flex-end;padding-bottom:100px">
+    <textarea id="ai-input"
+      style="flex:1;border:2px solid var(--border);border-radius:10px;padding:10px 12px;
+             font-size:13px;font-family:var(--sans);resize:none;outline:none;
+             min-height:44px;max-height:100px;line-height:1.5;color:var(--ink)"
+      placeholder="재고에 대해 물어보세요..."
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAiMessage()}"
+      oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"
+    ></textarea>
+    <button onclick="sendAiMessage()" id="ai-send-btn" style="
+      width:44px;height:44px;border-radius:10px;
+      background:var(--ink);color:#fff;border:none;font-size:18px;
+      cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center
+    ">➤</button>
+  </div>
+</div>
+
+<!-- ADD BUTTON -->
+<div class="add-btn-wrap" id="add-btn-wrap">
+  <button class="add-btn" id="add-btn" onclick="addItem()">
+    + 재고 목록에 추가
+  </button>
+</div>
+
+<!-- CONFIG MODAL -->
+<div class="modal-overlay" id="config-modal">
+  <div class="modal-sheet">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div class="modal-handle" style="margin:0"></div>
+      <button onclick="closeConfigBtn()" style="background:none;border:none;font-size:22px;color:var(--ink3);cursor:pointer;padding:0 0 0 16px;line-height:1">×</button>
+    </div>
+    <div class="modal-title">⚙️ 구글시트 연결 설정</div>
+    <div class="modal-sub">Apps Script 웹앱 URL 입력 후 저장 버튼 누르세요</div>
+    <div class="modal-field">
+      <div class="modal-label">📋 Apps Script 웹앱 URL</div>
+      <input class="modal-input" id="cfg-url"
+        placeholder="https://script.google.com/macros/s/..."
+        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    </div>
+    <div style="background:#f0f8ff;border:1px solid #c0d8f0;border-radius:8px;padding:10px 12px;font-size:11px;line-height:1.8;color:#1a3a6a;margin-bottom:16px">
+      📌 <strong>URL 얻는 방법:</strong><br>
+      구글시트 → 확장프로그램 → Apps Script<br>
+      → 배포 → 새 배포 → 웹앱<br>
+      → 액세스: <strong>모든 사용자</strong> → 배포 → URL 복사
+    </div>
+    <button class="modal-save" id="modal-save-btn" onclick="saveConfig()">✅ 저장하기</button>
+    <div id="cfg-result" style="text-align:center;font-size:12px;color:var(--ink3);margin-top:10px;min-height:18px"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════ DATA ══════════════════════════
+const COLORS = [
+  '화이트','블랙','그레이','베이지','블루','레드',
+  '핑크','민트','다크민트','옐로우','스카이블루',
+  '인디핑크','바이올렛','퍼플'
+];
+const SIZES = ['100','110','120','130','140','150','160','170','M','L','2XL','3XL'];
+
+// 코드 프리셋 (저장된 코드 목록)
+let savedCodes = {
+  transfer: JSON.parse(localStorage.getItem('codes_transfer')||'["W281","IT024","W286","IT007","IT028","W114","W285","W319","IT011","IT002","W262","W152","IT027","W191","W320","W150","A144"]'),
+  finished: JSON.parse(localStorage.getItem('codes_finished')||'["W281","IT024","W286","IT007","IT028","W114"]'),
+};
+
+// 재고 입력 목록
+let invData = {
+  blank: JSON.parse(localStorage.getItem('inv_blank')||'[]'),
+  transfer: JSON.parse(localStorage.getItem('inv_transfer')||'[]'),
+  finished: JSON.parse(localStorage.getItem('inv_finished')||'[]'),
+};
+
+// 현재 선택 상태
+const sel = {
+  blank:    { garment:'', color:'', size:'', qty:1 },
+  transfer: { code:'', color:'', qty:1 },
+  finished: { code:'', color:'', size:'', qty:1 },
+};
+
+let currentTab = 'blank';
+
+// ══════════════════════════ INIT ══════════════════════════
+function init() {
+  renderColorBtns('blank');
+  renderColorBtns('finished');
+  renderSizeBtns('blank');
+  renderSizeBtns('finished');
+  renderCodes('transfer');
+  renderCodes('finished');
+  renderList('blank');
+  renderList('transfer');
+  renderList('finished');
+  loadConfig();
+}
+
+// ══════════════════════════ COLOR BUTTONS ══════════════════
+function renderColorBtns(type) {
+  const el = document.getElementById(type+'-colors');
+  el.innerHTML = COLORS.map(c => {
+    const cls = `cdot-${c}`.replace(/\s/g,'-');
+    return `<button class="color-btn" onclick="selectColor('${type}','${c}',this)" data-v="${c}">
+      <span class="color-dot ${cls}"></span>${c}
+    </button>`;
+  }).join('');
+}
+
+function renderSizeBtns(type) {
+  const el = document.getElementById(type+'-sizes');
+  el.innerHTML = SIZES.map(s =>
+    `<button class="size-btn" onclick="selectSize('${type}','${s}',this)" data-v="${s}">${s}</button>`
+  ).join('');
+}
+
+// ══════════════════════════ CODE PILLS ══════════════════════
+function renderCodes(type) {
+  const el = document.getElementById(type+'-codes');
+  // 코드를 타입별로 정렬 (W, IT, TJ 등)
+  const sorted = [...savedCodes[type]].sort((a, b) => {
+    const prefixA = a.replace(/\d+/g, '');
+    const prefixB = b.replace(/\d+/g, '');
+    if (prefixA !== prefixB) return prefixA.localeCompare(prefixB);
+    return a.localeCompare(b);
+  });
+  el.innerHTML = sorted.map(c =>
+    `<button class="code-pill ${sel[type].code===c?'active':''}" onclick="selectCode('${type}','${c}',this)">${c}</button>`
+  ).join('');
+}
+
+function selectCode(type, code, btn) {
+  sel[type].code = code;
+  document.querySelectorAll(`#${type}-codes .code-pill`).forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  // 삭제 버튼 활성화
+  const deleteBtn = document.getElementById(type+'-delete-btn');
+  if (deleteBtn) deleteBtn.disabled = false;
+  updateSummary(type);
+}
+
+function deleteSelectedCode(type) {
+  const code = sel[type].code;
+  if (!code) { toast('⚠️ 먼저 삭제할 코드를 선택하세요'); return; }
+  if (confirm(`${code}를 삭제하시겠습니까?`)) {
+    savedCodes[type] = savedCodes[type].filter(c => c !== code);
+    sel[type].code = '';
+    localStorage.setItem('codes_'+type, JSON.stringify(savedCodes[type]));
+    renderCodes(type);
+    document.getElementById(type+'-delete-btn').disabled = true;
+    updateSummary(type);
+    toast('🗑 '+code+' 삭제됨');
+  }
+}
+
+function showAddCode(type) {
+  const wrap = document.getElementById(type+'-code-input');
+  wrap.classList.toggle('show');
+  if (wrap.classList.contains('show')) {
+    document.getElementById(type+'-new-code').focus();
+  }
+}
+
+function addCode(type) {
+  const input = document.getElementById(type+'-new-code');
+  const code = input.value.trim().toUpperCase();
+  if (!code) return;
+  if (!savedCodes[type].includes(code)) {
+    savedCodes[type].unshift(code);
+    localStorage.setItem('codes_'+type, JSON.stringify(savedCodes[type]));
+  }
+  sel[type].code = code;
+  renderCodes(type);
+  document.getElementById(type+'-code-input').classList.remove('show');
+  input.value = '';
+  updateSummary(type);
+  toast('✅ '+code+' 추가됨');
+}
+
+// ══════════════════════════ SELECTION ══════════════════════
+function selectGarment(btn, val) {
+  sel.blank.garment = val;
+  document.querySelectorAll('#panel-blank .color-btn[data-v]').forEach(b=>{
+    if(b.dataset.v && ['NY반팔티셔츠','디즈니반팔','맨투맨','후드티','실내복'].includes(b.dataset.v))
+      b.classList.remove('active');
+  });
+  btn.classList.add('active');
+  updateSummary('blank');
+}
+
+function selectColor(type, val, btn) {
+  sel[type].color = val;
+  document.getElementById(type+'-custom-color').value = '';
+  document.querySelectorAll(`#${type}-colors .color-btn`).forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  updateSummary(type);
+}
+
+function selectSize(type, val, btn) {
+  sel[type].size = val;
+  document.getElementById(type+'-custom-size').value = '';
+  document.querySelectorAll(`#${type}-sizes .size-btn`).forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  updateSummary(type);
+}
+
+function onCustomColor(type, val) {
+  sel[type].color = val;
+  document.querySelectorAll(`#${type}-colors .color-btn`).forEach(b=>b.classList.remove('active'));
+  updateSummary(type);
+}
+
+function onCustomSize(type, val) {
+  sel[type].size = val;
+  document.querySelectorAll(`#${type}-sizes .size-btn`).forEach(b=>b.classList.remove('active'));
+  updateSummary(type);
+}
+
+function adjQty(type, d) {
+  const input = document.getElementById(type+'-qty');
+  const min = type==='finished' ? 0 : 1;
+  const v = Math.max(min, (parseInt(input.value)||1) + d);
+  input.value = v;
+  sel[type].qty = v;
+  updateSummary(type);
+}
+
+function setQty(type, v) {
+  document.getElementById(type+'-qty').value = v;
+  sel[type].qty = v;
+  updateSummary(type);
+  // 애니메이션
+  const el = document.getElementById(type+'-qty');
+  el.style.transform='scale(1.2)';
+  setTimeout(()=>el.style.transform='',150);
+}
+
+function setTransferColor(color) {
+  sel['transfer'].color = color;
+  document.getElementById('transfer-color-display').textContent = '선택: ' + color;
+  document.getElementById('transfer-color-black').style.borderColor = color === '검은색' ? '#c84b14' : '#ddd';
+  document.getElementById('transfer-color-white').style.borderColor = color === '흰색' ? '#c84b14' : '#ddd';
+  updateSummary('transfer');
+}
+
+// ══════════════════════════ SUMMARY ══════════════════════════
+function updateSummary(type) {
+  const s = sel[type];
+  const qty = parseInt(document.getElementById(type+'-qty').value)||1;
+  s.qty = qty;
+  const el = document.getElementById(type+'-summary');
+  let tags = '';
+  let ready = false;
+
+  if (type === 'blank') {
+    if (s.garment) tags += `<span class="sel-tag">${s.garment}</span>`;
+    if (s.color)   tags += `<span class="sel-tag color">${s.color}</span>`;
+    if (s.size)    tags += `<span class="sel-tag size">${s.size}사이즈</span>`;
+    tags += `<span class="sel-tag qty">${qty}개</span>`;
+    ready = !!(s.garment && s.color && s.size);
+  } else if (type === 'transfer') {
+    if (s.code) tags += `<span class="sel-tag color">${s.code}</span>`;
+    if (s.color) {
+      if (s.color === '검은색') {
+        tags += `<span class="sel-tag color" style="background: #000; color: #fff;">${s.color}</span>`;
+      } else {
+        tags += `<span class="sel-tag color" style="background: #fff; color: #000; border: 1px solid #ddd;">${s.color}</span>`;
+      }
+    }
+    tags += `<span class="sel-tag qty">${qty}매</span>`;
+    ready = !!(s.code && s.color);
+  } else {
+    if (s.code)  tags += `<span class="sel-tag">${s.code}</span>`;
+    if (s.color) tags += `<span class="sel-tag color">${s.color}</span>`;
+    if (s.size)  tags += `<span class="sel-tag size">${s.size}사이즈</span>`;
+    tags += `<span class="sel-tag qty">${qty}개</span>`;
+    ready = !!(s.code && s.color && s.size);
+  }
+
+  el.innerHTML = tags || '<span class="sel-empty">위에서 항목을 선택하세요</span>';
+
+  const btn = document.getElementById('add-btn');
+  if (currentTab === type) {
+    btn.classList.toggle('ready', ready);
+    btn.textContent = ready ? '+ 재고 목록에 추가' : '선택 정보를 입력하세요';
+  }
+}
+
+// ══════════════════════════ ADD ITEM ══════════════════════════
+function addItem() {
+  const type = currentTab;
+  const s = sel[type];
+  const qty = parseInt(document.getElementById(type+'-qty').value)||1;
+
+  let item = null;
+  if (type === 'blank') {
+    if (!s.garment || !s.color || !s.size) { toast('⚠️ 의류종류·색상·사이즈를 모두 선택하세요'); return; }
+    item = { garment: s.garment, color: s.color, size: s.size, qty, id: Date.now() };
+  } else if (type === 'transfer') {
+    if (!s.code || !s.color) { toast('⚠️ 전사지 코드와 색상을 모두 선택하세요'); return; }
+    item = { code: s.code, color: s.color, qty, id: Date.now() };
+  } else {
+    if (!s.code || !s.color || !s.size) { toast('⚠️ SKU·색상·사이즈를 모두 선택하세요'); return; }
+    item = { code: s.code, color: s.color, size: s.size, qty, id: Date.now() };
+  }
+
+  // 중복 병합
+  const existing = invData[type].find(r => JSON.stringify({...r,id:0,qty:0}) === JSON.stringify({...item,id:0,qty:0}));
+  if (existing) {
+    existing.qty += qty;
+    toast('🔄 기존 항목에 수량 합산: +'+qty);
+  } else {
+    invData[type].push(item);
+    toast('✅ 추가 완료!');
+  }
+
+  localStorage.setItem('inv_'+type, JSON.stringify(invData[type]));
+  renderList(type);
+  // 수량 리셋
+  setQty(type, 1);
+}
+
+// ══════════════════════════ LIST RENDER ══════════════════════
+function renderList(type) {
+  const el = document.getElementById(type+'-list');
+  const countEl = document.getElementById(type+'-count');
+  const data = invData[type];
+
+  countEl.textContent = data.length + '건';
+
+  if (!data.length) {
+    el.innerHTML = '<div class="inv-empty">추가된 항목이 없습니다</div>';
+    return;
+  }
+
+  el.innerHTML = data.map(item => {
+    let code = '', detail = '', icon = '';
+    if (type === 'blank') {
+      const dotCls = `cdot-${item.color}`.replace(/\s/g,'-');
+      icon = `<span class="color-dot ${dotCls}" style="width:12px;height:12px;border:1px solid rgba(0,0,0,.15)"></span>`;
+      code = item.garment;
+      detail = `${icon} ${item.color} · ${item.size}`;
+    } else if (type === 'transfer') {
+      code = item.code;
+      detail = item.color ? `색상: ${item.color}` : '전사지';
+    } else {
+      const dotCls = `cdot-${item.color}`.replace(/\s/g,'-');
+      icon = `<span class="color-dot ${dotCls}" style="width:12px;height:12px;border:1px solid rgba(0,0,0,.15)"></span>`;
+      code = item.code;
+      detail = `${icon} ${item.color} · ${item.size}`;
+    }
+    return `<div class="inv-item">
+      <div class="inv-code">${code}</div>
+      <div class="inv-detail">${detail}</div>
+      <div class="inv-qty">${item.qty}${type==='transfer'?'매':'개'}</div>
+      <button class="inv-del" onclick="delItem('${type}',${item.id})">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function delItem(type, id) {
+  invData[type] = invData[type].filter(r => r.id !== id);
+  localStorage.setItem('inv_'+type, JSON.stringify(invData[type]));
+  renderList(type);
+  toast('🗑 삭제됨');
+}
+
+// ══════════════════════════ BATCH PARSE ══════════════════════
+function toggleBatch(type) {
+  const el = document.getElementById('batch-'+type);
+  el.classList.toggle('show');
+  const btn = el.previousElementSibling.querySelector('.batch-toggle');
+  btn.textContent = el.classList.contains('show') ? '접기 ▴' : '펼치기 ▾';
+}
+
+function clearBatch(type) {
+  document.getElementById('batch-'+type+'-text').value = '';
+}
+
+function parseBatch(type) {
+  const raw = document.getElementById('batch-'+type+'-text').value.trim();
+  if (!raw) { toast('⚠️ 텍스트를 입력하세요'); return; }
+
+  const COLORS_RE = COLORS.join('|');
+  const SIZES_RE = '90|100|110|120|130|140|150|160|170|180|S|M|L|XL';
+  const CODE_RE = /\b([A-Z]{1,4}\d{2,4})\b/g;
+
+  let added = 0;
+  // 구분자: 줄바꿈 또는 콤마
+  const lines = raw.split(/[\n,]+/).map(l=>l.trim()).filter(Boolean);
+
+  lines.forEach(line => {
+    if (!line) return;
+    const qtyM = line.match(/(\d+)\s*(?:개|매|장|pcs?)?(?:\s*$)/i);
+    const qty = qtyM ? parseInt(qtyM[1]) : 1;
+
+    if (type === 'blank') {
+      const colorM = line.match(new RegExp(COLORS_RE));
+      const sizeM  = line.match(new RegExp(SIZES_RE));
+      const garmentM = line.match(/NY반팔티셔츠|디즈니반팔|맨투맨|후드티|실내복/);
+      const color  = colorM ? colorM[0] : '';
+      const size   = sizeM  ? sizeM[0] : '';
+      const garment = garmentM ? garmentM[0] : sel.blank.garment || 'NY반팔티셔츠';
+      if (color && size) {
+        const item = { garment, color, size, qty, id: Date.now()+Math.random() };
+        merge('blank', item);
+        added++;
+      }
+    } else if (type === 'transfer') {
+      const codes = [...line.matchAll(CODE_RE)].map(m=>m[1]);
+      const code = codes[0] || '';
+      const nums = [...line.matchAll(/\d+/g)].map(m=>parseInt(m[0]));
+      const q = nums.length >= 2 ? nums[1] : (nums.length===1 ? nums[0] : 1);
+      if (code) {
+        if (!savedCodes.transfer.includes(code)) {
+          savedCodes.transfer.push(code);
+          localStorage.setItem('codes_transfer', JSON.stringify(savedCodes.transfer));
+          renderCodes('transfer');
+        }
+        merge('transfer', { code, color: sel.transfer.color || '', qty: q, id: Date.now()+Math.random() });
+        added++;
+      }
+    } else {
+      const codes = [...line.matchAll(CODE_RE)].map(m=>m[1]);
+      const code  = codes[0] || sel.finished.code || '';
+      const colorM = line.match(new RegExp(COLORS_RE));
+      const sizeM  = line.match(new RegExp(SIZES_RE));
+      const color  = colorM ? colorM[0] : '';
+      const size   = sizeM  ? sizeM[0] : '';
+      if (code && color && size) {
+        if (!savedCodes.finished.includes(code)) {
+          savedCodes.finished.push(code);
+          localStorage.setItem('codes_finished', JSON.stringify(savedCodes.finished));
+          renderCodes('finished');
+        }
+        merge('finished', { code, color, size, qty, id: Date.now()+Math.random() });
+        added++;
+      }
+    }
+  });
+
+  if (added > 0) {
+    localStorage.setItem('inv_'+type, JSON.stringify(invData[type]));
+    renderList(type);
+    clearBatch(type);
+    toast(`✅ ${added}건 인식 완료`);
+  } else {
+    toast('⚠️ 인식 실패 — 형식 확인 필요');
+  }
+}
+
+function merge(type, item) {
+  const key = type==='transfer' ? r => r.code===item.code
+    : type==='blank' ? r => r.garment===item.garment && r.color===item.color && r.size===item.size
+    : r => r.code===item.code && r.color===item.color && r.size===item.size;
+  const existing = invData[type].find(key);
+  if (existing) { existing.qty += item.qty; }
+  else { invData[type].push(item); }
+}
+
+// ══════════════════════════ TAB SWITCH ══════════════════════
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
+  document.getElementById('top-tab-'+tab).classList.add('active');
+  // AI 탭일 때 추가 버튼 숨기기
+  document.getElementById('add-btn-wrap').style.display = tab === 'ai' ? 'none' : '';
+  if (tab !== 'ai') updateSummary(tab);
+  window.scrollTo(0,0);
+}
+
+// ══════════════════════════ CONFIG ══════════════════════════
+function openConfig() {
+  const modal = document.getElementById('config-modal');
+  modal.classList.add('show');
+  const cfg = JSON.parse(localStorage.getItem('gs_config')||'{}');
+  document.getElementById('cfg-url').value = cfg.url || '';
+  document.getElementById('cfg-result').textContent = cfg.url ? '✅ URL 저장됨' : '';
+  // 키보드 열리도록 약간 딜레이 후 포커스
+  setTimeout(() => document.getElementById('cfg-url').focus(), 300);
+}
+function closeConfigBtn() {
+  document.getElementById('config-modal').classList.remove('show');
+}
+function closeConfig(e) {
+  // 더 이상 오버레이 클릭으로 닫히지 않음 (모바일 키보드 내려갈 때 오작동 방지)
+}
+function saveConfig() {
+  const url = document.getElementById('cfg-url').value.trim();
+  if (!url) {
+    document.getElementById('cfg-result').textContent = '⚠️ URL을 입력해주세요';
+    document.getElementById('cfg-result').style.color = 'var(--orange)';
+    return;
+  }
+
+  // URL 형식 간단 검증
+  if (!url.startsWith('https://script.google.com/macros/')) {
+    document.getElementById('cfg-result').textContent = '⚠️ Google Apps Script URL이 맞는지 확인하세요';
+    document.getElementById('cfg-result').style.color = 'var(--orange)';
+    return;
+  }
+
+  // 즉시 저장 (fetch 테스트 없이)
+  localStorage.setItem('gs_config', JSON.stringify({url}));
+  setStatus(true);
+
+  const btn = document.getElementById('modal-save-btn');
+  btn.textContent = '✅ 저장됨!';
+  btn.style.background = 'var(--green)';
+  document.getElementById('cfg-result').textContent = 'URL이 저장되었습니다. 이제 🔧 시트초기화를 눌러주세요';
+  document.getElementById('cfg-result').style.color = 'var(--green)';
+
+  setTimeout(() => {
+    document.getElementById('config-modal').classList.remove('show');
+    btn.textContent = '✅ 저장하기';
+    btn.style.background = '';
+    toast('✅ URL 저장 완료! 🔧 시트초기화 버튼을 눌러주세요');
+  }, 1200);
+}
+
+// 구글시트 4개 탭 초기화
+async function setupSheets() {
+  const cfg = JSON.parse(localStorage.getItem('gs_config')||'{}');
+  if (!cfg.url) { toast('⚠️ 먼저 ⚙️ 설정에서 URL을 입력하세요'); openConfig(); return; }
+
+  const btn = document.getElementById('setup-btn');
+  btn.textContent = '⏳ 초기화 중...';
+
+  try {
+    // GET으로 setup 실행
+    await fetch(cfg.url + '?action=setup', {mode:'no-cors'});
+    toast('✅ 구글시트 4개 탭 생성 완료!\n주문확인·무지상품·전사지·완제품재고');
+    setStatus(true);
+  } catch(e) {
+    // no-cors라 에러가 나도 실제론 성공일 수 있음
+    toast('🔧 시트 초기화 요청 전송됨 — 구글시트 확인하세요');
+  } finally {
+    btn.textContent = '🔧 시트초기화';
+  }
+}
+function loadConfig() {
+  const cfg = JSON.parse(localStorage.getItem('gs_config')||'{}');
+  setStatus(!!cfg.url);
+}
+function setStatus(ok) {
+  document.getElementById('dot-status').className = 'dot-status ' + (ok?'ok':'err');
+}
+
+// ══════════════════════════ SYNC ══════════════════════════
+// no-cors 모드에서는 application/json 헤더가 차단됨 → text/plain 사용
+async function postToSheets(url, payload) {
+  return fetch(url, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain' },  // ← 핵심: text/plain만 no-cors에서 허용
+    body: JSON.stringify(payload),
+    redirect: 'follow',
+  });
+}
+
+async function syncToSheets() {
+  const cfg = JSON.parse(localStorage.getItem('gs_config')||'{}');
+  if (!cfg.url) { toast('⚠️ 먼저 ⚙️ 설정에서 URL 입력하세요'); openConfig(); return; }
+
+  const totalItems = invData.blank.length + invData.transfer.length + invData.finished.length;
+  if (totalItems === 0) { toast('⚠️ 동기화할 재고 데이터가 없습니다'); return; }
+
+  const btn = document.getElementById('sync-btn');
+  btn.textContent = '⏳ 전송 중...';
+
+  const payload = {
+    action: 'updateInventory',
+    blank:    invData.blank,
+    transfer: invData.transfer,
+    finished: invData.finished,
+    timestamp: new Date().toISOString(),
+  };
+
+  try {
+    await postToSheets(cfg.url, payload);
+    // no-cors라 응답 확인 불가 → 전송 성공으로 처리
+    const msg = `☁️ 전송완료! 무지 ${invData.blank.length}건 · 전사지 ${invData.transfer.length}건 · 완제품 ${invData.finished.length}건\n구글시트에서 확인하세요`;
+    toast(msg);
+    setStatus(true);
+  } catch(e) {
+    toast('❌ 전송 실패: ' + e.message + '\nURL을 다시 확인하세요');
+    setStatus(false);
+  } finally {
+    btn.textContent = '☁️ 동기화';
+  }
+}
+
+// setupSheets도 동일 방식으로 수정
+async function setupSheets() {
+  const cfg = JSON.parse(localStorage.getItem('gs_config')||'{}');
+  if (!cfg.url) { toast('⚠️ 먼저 ⚙️ 설정에서 URL을 입력하세요'); openConfig(); return; }
+
+  const btn = document.getElementById('setup-btn');
+  btn.textContent = '⏳ 초기화 중...';
+
+  try {
+    await postToSheets(cfg.url, { action: 'setup' });
+    toast('🔧 초기화 요청 전송됨!\n구글시트에서 탭 4개 생성 확인하세요\n(주문확인·무지상품·전사지·완제품)');
+    setStatus(true);
+  } catch(e) {
+    toast('❌ 실패: ' + e.message);
+    setStatus(false);
+  } finally {
+    btn.textContent = '🔧 시트초기화';
+  }
+}
+
+// ══════════════════════════ TOAST ══════════════════════════
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// ══════════════════════════ QTY INPUT SYNC ══════════════════
+['blank','transfer','finished'].forEach(type => {
+  document.getElementById(type+'-qty').addEventListener('input', function() {
+    sel[type].qty = parseInt(this.value)||1;
+    updateSummary(type);
+  });
+});
+
+// ══════════════════════════ AI 채팅 ══════════════════════════
+let aiHistory = [];
+let aiLoading = false;
+
+function buildInventoryContext() {
+  let ctx = '너는 뉴욕꼬맹이 커스텀 유아복 재고 분석 AI다.\n아래는 현재 입력된 재고 현황이다.\n\n';
+
+  if (invData.blank.length > 0) {
+    ctx += '[무지상품재고]\n';
+    invData.blank.forEach(r => { ctx += `${r.garment} ${r.color} ${r.size}: ${r.qty}개\n`; });
+  } else { ctx += '[무지상품재고] 데이터 없음\n'; }
+
+  if (invData.transfer.length > 0) {
+    ctx += '\n[전사지재고]\n';
+    invData.transfer.forEach(r => { ctx += `${r.code}: ${r.qty}매\n`; });
+  } else { ctx += '\n[전사지재고] 데이터 없음\n'; }
+
+  if (invData.finished.length > 0) {
+    ctx += '\n[완제품재고]\n';
+    invData.finished.forEach(r => { ctx += `${r.code} ${r.color} ${r.size}: ${r.qty}개\n`; });
+  } else { ctx += '\n[완제품재고] 데이터 없음\n'; }
+
+  ctx += '\n분석 원칙: 생산가능수량 = MIN(무지재고, 전사지재고). 숫자 구체적으로. 한국어로 핵심만 간결하게 답해라.';
+  return ctx;
+}
+
+function addAiMsg(role, text) {
+  const wrap = document.getElementById('ai-messages');
+  const welcome = document.getElementById('ai-welcome');
+  if (welcome) welcome.remove();
+
+  const div = document.createElement('div');
+  const isUser = role === 'user';
+  div.style.cssText = `display:flex;flex-direction:${isUser?'row-reverse':'row'};gap:8px;align-items:flex-start`;
+
+  const avatar = document.createElement('div');
+  avatar.style.cssText = `width:28px;height:28px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;margin-top:2px;background:${isUser?'var(--ink)':'var(--accent)'};color:#fff`;
+  avatar.textContent = isUser ? '👤' : '🤖';
+
+  const bubble = document.createElement('div');
+  bubble.style.cssText = `max-width:82%;padding:10px 13px;border-radius:12px;font-size:12px;line-height:1.7;${isUser?'background:var(--ink);color:#fff;border-top-right-radius:3px':'background:var(--surface);border:1px solid var(--border);border-top-left-radius:3px;color:var(--ink)'}`;
+  bubble.innerHTML = text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+
+  div.appendChild(avatar);
+  div.appendChild(bubble);
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+  return div;
+}
+
+function addTypingDots() {
+  const wrap = document.getElementById('ai-messages');
+  const div = document.createElement('div');
+  div.id = 'ai-typing';
+  div.style.cssText = 'display:flex;gap:8px;align-items:flex-start';
+  div.innerHTML = `
+    <div style="width:28px;height:28px;border-radius:8px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:2px">🤖</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;border-top-left-radius:3px;padding:12px 16px">
+      <div style="display:flex;gap:5px;align-items:center">
+        <span style="width:7px;height:7px;border-radius:50%;background:var(--ink3);animation:aiDot 1.2s infinite"></span>
+        <span style="width:7px;height:7px;border-radius:50%;background:var(--ink3);animation:aiDot 1.2s infinite 0.2s"></span>
+        <span style="width:7px;height:7px;border-radius:50%;background:var(--ink3);animation:aiDot 1.2s infinite 0.4s"></span>
+      </div>
+    </div>`;
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+async function sendAiMessage() {
+  if (aiLoading) return;
+  const input = document.getElementById('ai-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  addAiMsg('user', text);
+  aiHistory.push({ role: 'user', content: text });
+  input.value = '';
+  input.style.height = 'auto';
+
+  aiLoading = true;
+  document.getElementById('ai-send-btn').disabled = true;
+  addTypingDots();
+
+  try {
+    const cfg = JSON.parse(localStorage.getItem('gs_config')||'{}');
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: aiHistory.slice(-10),
+        appsScriptUrl: cfg.url || '',   // 구글시트 4탭 데이터 조회용
+      }),
+    });
+
+    document.getElementById('ai-typing')?.remove();
+
+    const data = await res.json();
+    if (data.error) {
+      addAiMsg('ai', '❌ 오류: ' + data.error);
+    } else {
+      addAiMsg('ai', data.text);
+      aiHistory.push({ role: 'assistant', content: data.text });
+      if (aiHistory.length > 20) aiHistory = aiHistory.slice(-20);
+    }
+  } catch(e) {
+    document.getElementById('ai-typing')?.remove();
+    addAiMsg('ai', '❌ 연결 오류: ' + e.message + '\n\nVercel 환경변수에 ANTHROPIC_API_KEY가 설정되어 있는지 확인하세요.');
+  } finally {
+    aiLoading = false;
+    document.getElementById('ai-send-btn').disabled = false;
+  }
+}
+
+function quickAsk(text) {
+  document.getElementById('ai-input').value = text;
+  sendAiMessage();
+}
+
+// ══════════════════════════ START ══════════════════════════
+init();
+</script>
+</body>
+</html>
