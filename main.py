@@ -12,7 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from models import ChatRequest, ChatResponse
 from agent import get_agent
 from sheets import get_sheets_client
-from scheduler import init_scheduler, stop_scheduler
+from scheduler import init_scheduler, stop_scheduler, get_report_now
 from config import settings
 
 # 로깅 설정
@@ -182,12 +182,11 @@ async def get_alerts(level: str = "urgent"):
 @app.get("/daily-report")
 async def get_daily_report():
     """
-    일일 요약 리포트 (즉시 생성)
+    일일 요약 리포트 (즉시 생성 + 텔레그램 발송)
     → 사용자에게 텍스트로 반환 → 대표님/카톡에 복사-붙여넣기
     """
     try:
-        from daily_report import generate_daily_report
-        report = generate_daily_report()
+        report = get_report_now()
         return {
             "report": report,
             "format": "text",

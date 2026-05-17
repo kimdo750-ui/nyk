@@ -19,6 +19,10 @@ class Settings(BaseSettings):
     app_env: str = Field("development", env="APP_ENV")
     log_level: str = Field("INFO", env="LOG_LEVEL")
 
+    # 텔레그램
+    telegram_bot_token: str = Field("", env="TELEGRAM_BOT_TOKEN")
+    telegram_chat_id: str = Field("", env="TELEGRAM_CHAT_ID")
+
     # 시트 이름 (고정값)
     sheet_order: str = "주문확인(원본)"
     sheet_blank: str = "무지상품재고"

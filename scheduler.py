@@ -3,10 +3,12 @@
 APScheduler를 사용한 백그라운드 작업 스케줄링
 """
 import logging
+import httpx
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from datetime import datetime
 from daily_report import generate_daily_report
+from config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -54,10 +56,11 @@ def _scheduled_daily_report():
         # 리포트 생성
         report = generate_daily_report()
 
-        # TODO: 여기서 사용자에게 리포트 전송
-        # 옵션 1: 이메일 전송
-        # 옵션 2: 문자 메시지
-        # 옵션 3: 콘솔 출력 (개발 중)
+        # 텔레그램으로 발송
+        if settings.telegram_bot_token and settings.telegram_chat_id:
+            _send_telegram(report)
+        else:
+            logger.warning("⚠️ 텔레그램 설정 누락 (토큰 또는 채팅 ID)")
 
         logger.info(f"✅ 일일 리포트 생성 및 전송 완료\n{report}")
 
@@ -68,10 +71,43 @@ def _scheduled_daily_report():
         return f"오류: {str(e)}"
 
 
+def _send_telegram(message: str):
+    """텔레그램으로 메시지 전송"""
+    try:
+        url = f"https://api.telegram.org/bot{settings.telegram_bot_token}/sendMessage"
+        payload = {
+            "chat_id": settings.telegram_chat_id,
+            "text": message,
+            "parse_mode": "HTML"
+        }
+
+        response = httpx.post(url, json=payload, timeout=10)
+
+        if response.status_code == 200:
+            logger.info("✅ 텔레그램 메시지 전송 성공")
+        else:
+            logger.error(f"❌ 텔레그램 전송 실패: {response.text}")
+
+    except Exception as e:
+        logger.error(f"❌ 텔레그램 전송 오류: {e}")
+
+
 def get_report_now():
-    """즉시 리포트 생성 (테스트용)"""
+    """즉시 리포트 생성 및 텔레그램 발송"""
     logger.info("🔄 즉시 리포트 생성...")
-    return _scheduled_daily_report()
+    try:
+        report = generate_daily_report()
+
+        # 텔레그램으로 발송
+        if settings.telegram_bot_token and settings.telegram_chat_id:
+            _send_telegram(report)
+        else:
+            logger.warning("⚠️ 텔레그램 설정 누락")
+
+        return report
+    except Exception as e:
+        logger.error(f"❌ 리포트 생성 실패: {e}")
+        return f"오류: {str(e)}"
 
 
 # ─────────────────────────────────────────
