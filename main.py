@@ -280,13 +280,11 @@ async def update_finished(sku: str, color: str, size: str, qty: int):
 if __name__ == "__main__":
     import uvicorn
     import os
-    port = int(os.getenv("PORT", 8000))  # Render/클라우드 배포용 동적 포트
-    is_dev = settings.app_env == "development"
+    port = int(os.getenv("PORT", 8000))
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
         port=port,
-        reload=is_dev,  # 개발 모드에서만 재로드
-        reload_dirs=["./"] if is_dev else None,
+        reload=False,  # 프로덕션에서는 항상 False
         log_level=settings.log_level.lower(),
     )
