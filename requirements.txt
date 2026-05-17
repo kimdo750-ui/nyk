@@ -1,7 +1,9 @@
 fastapi==0.115.0
 uvicorn==0.30.0
 anthropic==0.100.0
+langchain==0.1.14
 langchain-anthropic==1.4.3
+langchain-core==0.1.38
 pydantic==2.13.4
 pydantic-settings==2.14.1
 python-dotenv==1.2.2
