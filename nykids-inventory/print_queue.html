@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>뉴욕꼬맹이 인쇄큐</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.395.0/dist/umd/lucide.min.js"></script>
+<style>
+:root{
+  --bg:#F5F7FA;
+  --surface:#FFFFFF;
+  --surface-2:#F8F9FB;
+  --border:#E8ECF2;
+  --border-2:#D1D9E0;
+  --shadow:0 1px 3px rgba(26,31,46,.04),0 4px 16px rgba(26,31,46,.06);
+  --shadow-sm:0 1px 4px rgba(26,31,46,.06);
+  --text-1:#1A1F2E;
+  --text-2:#5C6470;
+  --text-3:#9CA3AF;
+  --accent:#C8620A;
+  --accent-bg:#FEF3EB;
+  --pc1:#B87C10;
+  --pc1-light:#FEF6E4;
+  --pc1-border:#F7DFA0;
+  --pc2:#3A6DA8;
+  --pc2-light:#EBF2FA;
+  --pc2-border:#BAD1EC;
+  --green:#0B7A5B;
+  --green-light:#E6F5F0;
+  --warn:#A35207;
+  --warn-light:#FFFBEB;
+  --warn-border:#FDE68A;
+  --done-text:#9CA3AF;
+  --radius:12px;
+  --radius-sm:8px;
+  --radius-chip:999px;
+  --font:'Pretendard Variable','Noto Sans KR',system-ui,sans-serif;
+  --mono:'Roboto Mono','SF Mono',ui-monospace,monospace;
+}
+[data-theme="dark"]{
+  --bg:#0F1117;
+  --surface:#181C26;
+  --surface-2:#1E2230;
+  --border:#272B38;
+  --border-2:#323848;
+  --shadow:0 1px 3px rgba(0,0,0,.2),0 4px 16px rgba(0,0,0,.25);
+  --shadow-sm:0 1px 4px rgba(0,0,0,.2);
+  --text-1:#EDF0F5;
+  --text-2:#8892A4;
+  --text-3:#525B6A;
+  --accent:#E07B2C;
+  --accent-bg:#2A1E10;
+  --pc1:#D49426;
+  --pc1-light:#241C0A;
+  --pc1-border:#4A380C;
+  --pc2:#5B8EC8;
+  --pc2-light:#0D1E30;
+  --pc2-border:#1A3654;
+  --green:#1AA882;
+  --green-light:#081E18;
+  --warn:#D4820E;
+  --warn-light:#1C1408;
+  --warn-border:#4A3208;
+  --done-text:#434A58;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:var(--font);font-size:14px;line-height:1.5;background:var(--bg);color:var(--text-1)}
+
+/* ── HEADER ── */
+.header{
+  position:sticky;top:0;z-index:100;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  padding:0 24px;
+  height:60px;
+  display:flex;align-items:center;gap:16px;
+}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-mark{
+  width:36px;height:36px;border-radius:10px;
+  background:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.logo-mark svg{width:18px;height:18px;stroke:#fff;stroke-width:2}
+.logo-text{display:flex;flex-direction:column;gap:1px}
+.logo-name{font-size:14px;font-weight:700;color:var(--text-1);letter-spacing:-.3px}
+.logo-sub{font-size:10px;color:var(--text-3);font-family:var(--mono);letter-spacing:.3px}
+.header-mid{flex:1;display:flex;align-items:center;justify-content:center}
+.header-date{font-size:12px;color:var(--text-2);font-family:var(--mono)}
+.header-actions{display:flex;align-items:center;gap:8px;margin-left:auto}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  height:34px;padding:0 14px;border-radius:var(--radius-sm);
+  font-size:12px;font-weight:600;font-family:var(--font);
+  border:none;cursor:pointer;transition:all .15s;white-space:nowrap;
+  text-decoration:none;
+}
+.btn svg{width:14px;height:14px;flex-shrink:0}
+.btn-ghost{background:transparent;color:var(--text-2);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--surface-2);color:var(--text-1)}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{filter:brightness(1.08)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-icon{width:34px;padding:0;justify-content:center}
+
+/* ── KPI BAR ── */
+.kpi-bar{
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  padding:16px 24px;
+  display:flex;gap:0;
+}
+.kpi-item{
+  flex:1;padding:0 20px;
+  border-right:1px solid var(--border);
+}
+.kpi-item:first-child{padding-left:0}
+.kpi-item:last-child{border-right:none;padding-right:0}
+.kpi-label{font-size:11px;color:var(--text-3);font-weight:500;letter-spacing:.3px;text-transform:uppercase;margin-bottom:4px;display:flex;align-items:center;gap:5px}
+.kpi-label svg{width:12px;height:12px}
+.kpi-val{font-size:24px;font-weight:700;font-family:var(--mono);letter-spacing:-1px;line-height:1}
+.kpi-sub{font-size:11px;color:var(--text-3);margin-top:3px}
+.kpi-val.green{color:var(--green)}
+.kpi-val.warn{color:var(--warn)}
+.kpi-val.accent{color:var(--accent)}
+
+/* ── MAIN GRID ── */
+.main{display:grid;grid-template-columns:1fr 1fr;min-height:calc(100vh - 160px)}
+.col{border-right:1px solid var(--border)}
+.col:last-child{border-right:none}
+
+/* ── COL HEADER ── */
+.col-header{
+  padding:16px 20px 12px;
+  border-bottom:1px solid var(--border);
+  background:var(--surface);
+  position:sticky;top:60px;z-index:80;
+}
+.col-header-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.dtp-badge{
+  width:32px;height:32px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;font-family:var(--mono);flex-shrink:0;
+}
+.dtp1{background:var(--pc1-light);color:var(--pc1);border:1px solid var(--pc1-border)}
+.dtp2{background:var(--pc2-light);color:var(--pc2);border:1px solid var(--pc2-border)}
+.col-header-info{flex:1;min-width:0}
+.col-title{font-size:13px;font-weight:700;color:var(--text-1)}
+.col-series{font-size:11px;color:var(--text-3);margin-top:1px;font-family:var(--mono)}
+.col-count-chip{
+  margin-left:auto;
+  background:var(--surface-2);border:1px solid var(--border);
+  padding:2px 10px;border-radius:var(--radius-chip);
+  font-size:11px;font-weight:600;color:var(--text-2);
+  font-family:var(--mono);flex-shrink:0;
+}
+.prog-wrap{display:flex;flex-direction:column;gap:4px}
+.prog-meta{display:flex;justify-content:space-between;font-size:11px;color:var(--text-3)}
+.prog-track{height:4px;background:var(--border);border-radius:999px;overflow:hidden}
+.prog-fill{height:100%;border-radius:999px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.prog-fill-1{background:linear-gradient(90deg,var(--pc1),#E8A828)}
+.prog-fill-2{background:linear-gradient(90deg,var(--pc2),#5C9EDB)}
+
+/* ── SECTION LABEL ── */
+.sec-label{
+  padding:10px 20px 8px;
+  font-size:11px;font-weight:600;letter-spacing:.5px;
+  display:flex;align-items:center;gap:6px;
+  text-transform:uppercase;
+}
+.sec-label svg{width:13px;height:13px;flex-shrink:0}
+.sec-can{color:var(--green)}
+.sec-short{color:var(--warn)}
+
+/* ── ITEMS ── */
+.items-list{padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow-sm);
+  overflow:hidden;
+  transition:box-shadow .15s,transform .15s,opacity .2s;
+  cursor:pointer;
+  user-select:none;
+}
+.card:hover:not(.card-short):not(.card-done){
+  box-shadow:var(--shadow);
+  transform:translateY(-1px);
+}
+.card:active:not(.card-short){transform:scale(.99)}
+.card-short{cursor:default;opacity:.7}
+.card-done{opacity:.45;cursor:pointer}
+
+.card-body{padding:14px 16px;display:flex;align-items:center;gap:12px}
+
+.check-ring{
+  width:28px;height:28px;border-radius:50%;
+  border:1.5px solid;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all .15s;
+}
+.check-ring svg{width:14px;height:14px}
+.ring-can1{border-color:var(--pc1-border);color:var(--pc1)}
+.ring-can2{border-color:var(--pc2-border);color:var(--pc2)}
+.ring-done{background:var(--green);border-color:var(--green);color:#fff}
+.ring-short{border-color:var(--warn-border);color:var(--warn)}
+
+.card-code{
+  font-family:var(--mono);font-size:13px;font-weight:700;
+  min-width:52px;flex-shrink:0;letter-spacing:-.3px;
+}
+.code-can1{color:var(--pc1)}
+.code-can2{color:var(--pc2)}
+.code-short{color:var(--warn)}
+.code-done{color:var(--done-text)}
+
+.card-info{flex:1;min-width:0}
+.card-color{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-size{font-size:11px;color:var(--text-3);font-family:var(--mono);margin-top:2px}
+.card-done .card-color,.card-done .card-size{color:var(--done-text)}
+
+.card-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.card-qty{font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-1px;line-height:1}
+.qty-can1{color:var(--pc1)}
+.qty-can2{color:var(--pc2)}
+.qty-done{color:var(--done-text)}
+.card-unit{font-size:10px;color:var(--text-3)}
+
+/* STATUS CHIPS */
+.chip{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 9px;border-radius:var(--radius-chip);
+  font-size:10px;font-weight:600;letter-spacing:.2px;white-space:nowrap;
+}
+.chip svg{width:10px;height:10px;flex-shrink:0}
+.chip-can{background:var(--green-light);color:var(--green)}
+.chip-short{background:var(--warn-light);color:var(--warn);border:1px solid var(--warn-border)}
+.chip-done{background:var(--surface-2);color:var(--done-text);border:1px solid var(--border)}
+.chip-wait{background:var(--pc1-light);color:var(--pc1)}
+
+/* SHORTAGE BAR */
+.shortage-row{
+  padding:0 16px 12px;display:flex;align-items:center;gap:8px;
+}
+.shortage-track{flex:1;height:3px;background:var(--border);border-radius:999px;overflow:hidden}
+.shortage-fill{height:100%;border-radius:999px;background:var(--warn);opacity:.7}
+.shortage-txt{font-size:10px;color:var(--text-3);font-family:var(--mono);white-space:nowrap}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--border);margin:4px 14px}
+
+/* EMPTY */
+.empty{padding:40px 20px;text-align:center;color:var(--text-3)}
+.empty svg{width:32px;height:32px;margin:0 auto 12px;display:block;stroke-width:1.5}
+.empty-title{font-size:13px;font-weight:600;margin-bottom:4px;color:var(--text-2)}
+.empty-sub{font-size:12px;line-height:1.6}
+
+/* LOADING */
+.loading{padding:40px;text-align:center;color:var(--text-3)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{
+  width:24px;height:24px;margin:0 auto 12px;display:block;
+  border:2px solid var(--border);border-top-color:var(--accent);
+  border-radius:50%;animation:spin .7s linear infinite;
+}
+
+/* MODAL */
+.modal-backdrop{
+  position:fixed;inset:0;background:rgba(15,17,23,.5);
+  backdrop-filter:blur(6px);z-index:200;display:none;
+  align-items:flex-end;justify-content:center;
+}
+.modal-backdrop.open{display:flex}
+.modal-sheet{
+  width:100%;max-width:540px;
+  background:var(--surface);
+  border-radius:20px 20px 0 0;
+  border:1px solid var(--border);
+  border-bottom:none;
+  padding:20px 20px 36px;
+  animation:slideUp .22s cubic-bezier(.4,0,.2,1);
+}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-knob{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px}
+.modal-title{font-size:15px;font-weight:700;margin-bottom:4px}
+.modal-sub{font-size:12px;color:var(--text-3);margin-bottom:16px}
+.url-row{display:flex;gap:8px;margin-bottom:20px}
+.url-input{
+  flex:1;height:38px;padding:0 12px;
+  background:var(--surface-2);
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  color:var(--text-1);font-size:12px;font-family:var(--mono);outline:none;
+}
+.url-input:focus{border-color:var(--accent)}
+.cfg-label{font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.cfg-label svg{width:14px;height:14px}
+.cfg-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.cfg-chip{
+  padding:4px 11px;border-radius:var(--radius-chip);
+  font-family:var(--mono);font-size:11px;font-weight:700;
+  cursor:pointer;border:1px solid;transition:all .12s;
+}
+.cfg-chip.pc1{background:var(--pc1-light);color:var(--pc1);border-color:var(--pc1-border)}
+.cfg-chip.pc2{background:var(--pc2-light);color:var(--pc2);border-color:var(--pc2-border)}
+.modal-actions{display:flex;gap:8px;margin-top:4px}
+
+/* THEME TOGGLE */
+.theme-dot{
+  width:10px;height:10px;border-radius:50%;
+  background:var(--accent);flex-shrink:0;
+}
+
+/* TOAST */
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  background:var(--text-1);color:var(--surface);
+  padding:10px 20px;border-radius:var(--radius-chip);
+  font-size:12px;font-weight:600;font-family:var(--font);
+  box-shadow:0 8px 24px rgba(0,0,0,.2);
+  animation:toastIn .2s ease;z-index:999;white-space:nowrap;
+  display:none;
+}
+.toast.show{display:block}
+
+/* RESPONSIVE */
+@media(max-width:640px){
+  .main{grid-template-columns:1fr}
+  .col{border-right:none;border-bottom:1px solid var(--border)}
+  .col-header{top:60px}
+  .kpi-bar{padding:12px 16px;gap:0}
+  .kpi-item{padding:0 12px}
+  .header{padding:0 16px}
+  .kpi-val{font-size:20px}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <a class="logo" href="#">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4" y="4" width="16" height="16" rx="2"/>
+        <path d="M8 4v4M16 4v4M4 9h16M8 15h8"/>
+      </svg>
+    </div>
+    <div class="logo-text">
+      <div class="logo-name">뉴욕꼬맹이 인쇄큐</div>
+      <div class="logo-sub">NYKIDS PRINT QUEUE</div>
+    </div>
+  </a>
+  <div class="header-mid">
+    <div class="header-date" id="header-date"></div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-ghost btn-icon" onclick="toggleTheme()" title="다크모드 전환">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>
+      </svg>
+    </button>
+    <button class="btn btn-ghost btn-icon" onclick="resetChecks()" title="체크 초기화">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+        <path d="M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+        <path d="M8 16H3v5"/>
+      </svg>
+    </button>
+    <button class="btn btn-ghost" onclick="openModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+      설정
+    </button>
+    <button class="btn btn-primary" id="load-btn" onclick="loadData()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      구글시트 불러오기
+    </button>
+  </div>
+</header>
+
+<!-- KPI BAR -->
+<div class="kpi-bar">
+  <div class="kpi-item">
+    <div class="kpi-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      총 주문
+    </div>
+    <div class="kpi-val" id="kpi-total">—</div>
+    <div class="kpi-sub" id="kpi-total-sub">건 접수</div>
+  </div>
+  <div class="kpi-item">
+    <div class="kpi-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      인쇄 가능
+    </div>
+    <div class="kpi-val green" id="kpi-can">—</div>
+    <div class="kpi-sub" id="kpi-can-sub">전사지 재고 있음</div>
+  </div>
+  <div class="kpi-item">
+    <div class="kpi-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      전사지 부족
+    </div>
+    <div class="kpi-val warn" id="kpi-short">—</div>
+    <div class="kpi-sub" id="kpi-short-sub">재고 보충 필요</div>
+  </div>
+  <div class="kpi-item">
+    <div class="kpi-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8M12 8v8"/></svg>
+      완료율
+    </div>
+    <div class="kpi-val accent" id="kpi-done">—%</div>
+    <div class="kpi-sub" id="kpi-done-sub">오늘 진행 현황</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- DTP1 -->
+  <div class="col" id="col-pc1">
+    <div class="col-header">
+      <div class="col-header-top">
+        <div class="dtp-badge dtp1">PC1</div>
+        <div class="col-header-info">
+          <div class="col-title">DTP 1번 프린터</div>
+          <div class="col-series" id="pc1-series">W*, A*, G*, TJ*</div>
+        </div>
+        <div class="col-count-chip" id="pc1-count">0건</div>
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-meta">
+          <span id="prog1-label">완료 0/0</span>
+          <span id="prog1-pct">0%</span>
+        </div>
+        <div class="prog-track"><div class="prog-fill prog-fill-1" id="prog1-bar" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div id="pc1-body">
+      <div class="empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        <div class="empty-title">주문 데이터 없음</div>
+        <div class="empty-sub">구글시트 불러오기를<br>클릭해 데이터를 가져오세요</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DTP2 -->
+  <div class="col" id="col-pc2">
+    <div class="col-header">
+      <div class="col-header-top">
+        <div class="dtp-badge dtp2">PC2</div>
+        <div class="col-header-info">
+          <div class="col-title">DTP 2번 프린터</div>
+          <div class="col-series" id="pc2-series">IT*, P*, AS*, WZ*</div>
+        </div>
+        <div class="col-count-chip" id="pc2-count">0건</div>
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-meta">
+          <span id="prog2-label">완료 0/0</span>
+          <span id="prog2-pct">0%</span>
+        </div>
+        <div class="prog-track"><div class="prog-fill prog-fill-2" id="prog2-bar" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div id="pc2-body">
+      <div class="empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        <div class="empty-title">주문 데이터 없음</div>
+        <div class="empty-sub">구글시트 불러오기를<br>클릭해 데이터를 가져오세요</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-backdrop" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-sheet">
+    <div class="modal-knob"></div>
+    <div class="modal-title">연결 설정</div>
+    <div class="modal-sub">Apps Script Web App URL을 입력하고 저장하세요</div>
+    <div class="url-row">
+      <input class="url-input" id="url-input" type="url" placeholder="https://script.google.com/macros/s/.../exec">
+      <button class="btn btn-primary" onclick="saveUrl()">저장</button>
+    </div>
+    <div class="cfg-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      PC1 → DTP1 담당 코드 (클릭해서 변경)
+    </div>
+    <div class="cfg-chips" id="cfg-pc1"></div>
+    <div class="cfg-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      PC2 → DTP2 담당 코드
+    </div>
+    <div class="cfg-chips" id="cfg-pc2"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">닫기</button>
+      <button class="btn btn-primary" style="flex:2" onclick="closeModal();loadData()">저장 후 불러오기</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const S={
+  pcMap: JSON.parse(localStorage.getItem('pcMap')||'null') || {
+    pc1:['W','A','G','TJ','NKM'],
+    pc2:['IT','P','AS','WZ','ASS'],
+  },
+  done: new Set(JSON.parse(localStorage.getItem('done')||'[]')),
+  queue:{pc1:[],pc2:[]},
+  theme: localStorage.getItem('theme')||'light',
+};
+
+// ── INIT ──
+(function init(){
+  document.documentElement.setAttribute('data-theme',S.theme);
+  updateClock();
+  setInterval(updateClock,30000);
+  const cfg=JSON.parse(localStorage.getItem('gs_config')||'{}');
+  if(cfg.url) document.getElementById('url-input').value=cfg.url;
+  renderCfg();
+  updateSeriesLabels();
+})();
+
+function updateClock(){
+  const n=new Date();
+  document.getElementById('header-date').textContent=
+    n.toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'short'})+
+    '  '+n.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+}
+
+// ── THEME ──
+function toggleTheme(){
+  S.theme=S.theme==='light'?'dark':'light';
+  document.documentElement.setAttribute('data-theme',S.theme);
+  localStorage.setItem('theme',S.theme);
+}
+
+// ── LOAD ──
+async function loadData(){
+  const cfg=JSON.parse(localStorage.getItem('gs_config')||'{}');
+  if(!cfg.url){openModal();toast('⚙ 먼저 URL을 설정하세요');return;}
+  const btn=document.getElementById('load-btn');
+  btn.disabled=true;btn.textContent='불러오는 중...';
+  setBodyLoading();
+  try{
+    let json;
+    const isVercel=location.protocol!=='file:'&&!location.hostname.includes('localhost');
+    if(isVercel){
+      const r=await fetch(`/api/inventory?url=${encodeURIComponent(cfg.url)}&action=getInventory`);
+      json=await r.json();
+    }else{
+      const r=await fetch(cfg.url+'?action=getInventory',{redirect:'follow'});
+      json=await r.json();
+    }
+    if(json.status!=='ok') throw new Error(json.message||'응답 오류');
+    calculate(json.data);
+    render();
+    toast('데이터를 불러왔습니다');
+  }catch(e){
+    setBodyError(e.message);
+    toast('연결 실패: '+e.message);
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>구글시트 불러오기';
+  }
+}
+
+function setBodyLoading(){
+  const html='<div class="loading"><div class="spinner"></div><div style="font-size:12px">구글시트 조회 중...</div></div>';
+  document.getElementById('pc1-body').innerHTML=html;
+  document.getElementById('pc2-body').innerHTML=html;
+}
+function setBodyError(msg){
+  const html=`<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><div class="empty-title">연결 실패</div><div class="empty-sub">${msg}<br><br>Apps Script 재배포 후 다시 시도하세요</div></div>`;
+  document.getElementById('pc1-body').innerHTML=html;
+  document.getElementById('pc2-body').innerHTML='';
+}
+
+// ── CALCULATE ──
+function calculate(data){
+  const orders=(data.orders||[]).filter(o=>o.code&&!String(o.status||'').includes('차감완료'));
+  const tMap={};
+  (data.transfer||[]).forEach(t=>{tMap[t.code.toUpperCase()]=parseInt(t.stock)||0;});
+
+  const oMap={};
+  orders.forEach(o=>{
+    const code=o.code.toUpperCase();
+    const key=`${code}||${o.color||''}||${o.size||''}`;
+    if(!oMap[key]) oMap[key]={code,color:o.color||'',size:o.size||'',orderQty:0,id:key};
+    oMap[key].orderQty+=parseInt(o.qty)||1;
+  });
+
+  const codeUsed={};
+  const items=Object.values(oMap).sort((a,b)=>b.orderQty-a.orderQty);
+
+  items.forEach(item=>{
+    const stock=tMap[item.code]??-1;
+    item.transferStock=stock;
+    if(stock<0){item.printQty=0;item.canPrint=false;item.noStock=true;}
+    else{
+      const used=codeUsed[item.code]||0;
+      const rem=Math.max(0,stock-used);
+      item.printQty=Math.min(item.orderQty,rem);
+      item.canPrint=item.printQty>=item.orderQty;
+      codeUsed[item.code]=(codeUsed[item.code]||0)+item.orderQty;
+    }
+  });
+
+  S.queue={pc1:[],pc2:[]};
+  items.forEach(item=>{
+    const pc=getPC(item.code);
+    S.queue[pc].push(item);
+  });
+  ['pc1','pc2'].forEach(pc=>{
+    S.queue[pc].sort((a,b)=>a.canPrint===b.canPrint?b.printQty-a.printQty:a.canPrint?-1:1);
+  });
+  localStorage.setItem('queueData',JSON.stringify(S.queue));
+}
+
+// ── RENDER ──
+function render(){
+  renderCol('pc1');
+  renderCol('pc2');
+  updateKPI();
+  updateProgress();
+}
+
+function renderCol(pc){
+  const items=S.queue[pc];
+  const n=pc==='pc1'?'1':'2';
+  document.getElementById(`pc${n}-count`).textContent=items.length+'건';
+
+  if(!items.length){
+    document.getElementById(`pc${n}-body`).innerHTML=
+      '<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="width:32px;height:32px;margin:0 auto 12px;display:block;stroke-width:1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><div class="empty-title">해당 없음</div></div>';
+    return;
+  }
+
+  const canItems=items.filter(i=>i.canPrint);
+  const shortItems=items.filter(i=>!i.canPrint);
+  let html='';
+
+  if(canItems.length){
+    html+=`<div class="sec-label sec-can">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      인쇄 가능 — ${canItems.length}건
+    </div><div class="items-list">`;
+    canItems.forEach(item=>{html+=renderCard(item,pc);});
+    html+='</div>';
+  }
+
+  if(shortItems.length){
+    if(canItems.length) html+='<div class="divider"></div>';
+    html+=`<div class="sec-label sec-short">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      전사지 부족 — ${shortItems.length}건
+    </div><div class="items-list">`;
+    shortItems.forEach(item=>{html+=renderCard(item,pc);});
+    html+='</div>';
+  }
+
+  document.getElementById(`pc${n}-body`).innerHTML=html;
+}
+
+function renderCard(item,pc){
+  const isDone=S.done.has(item.id);
+  const isShort=!item.canPrint;
+  const pcNum=pc==='pc1'?'1':'2';
+
+  let cardCls=isDone?'card-done':isShort?'card-short':'';
+  let ringCls=isDone?'ring-done':isShort?'ring-short':`ring-can${pcNum}`;
+  let codeCls=isDone?'code-done':isShort?'code-short':`code-can${pcNum}`;
+  let qtyCls=isDone?'qty-done':`qty-can${pcNum}`;
+  let checkIcon=isDone
+    ?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+    :isShort
+    ?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
+    :'';
+
+  let chip='';
+  if(isDone) chip='<div class="chip chip-done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>완료</div>';
+  else if(isShort) chip=`<div class="chip chip-short"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>${item.noStock?'미등록':'재고부족'}</div>`;
+  else chip=`<div class="chip chip-can"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>인쇄가능</div>`;
+
+  const pct=item.transferStock>0?Math.round(item.printQty/item.orderQty*100):0;
+  const shortageBar=isShort&&!isDone?`
+    <div class="shortage-row">
+      <div class="shortage-track"><div class="shortage-fill" style="width:${pct}%"></div></div>
+      <div class="shortage-txt">주문${item.orderQty} / 재고${item.transferStock<0?'없음':item.transferStock}</div>
+    </div>`:'';
+
+  const click=!isShort?`onclick="toggleDone('${item.id}')"`:''
+
+  return `
+  <div class="card ${cardCls}" ${click}>
+    <div class="card-body">
+      <div class="check-ring ${ringCls}">${checkIcon}</div>
+      <div class="card-code ${codeCls}">${item.code}</div>
+      <div class="card-info">
+        <div class="card-color">${item.color||'—'}</div>
+        <div class="card-size">${item.size||'—'} 사이즈</div>
+      </div>
+      <div class="card-right">
+        <div class="card-qty ${qtyCls}">${isShort?item.printQty:item.orderQty}</div>
+        <div class="card-unit">매</div>
+      </div>
+    </div>
+    ${chip?`<div style="padding:0 16px 12px">${chip}</div>`:''}
+    ${shortageBar}
+  </div>`;
+}
+
+// ── TOGGLE DONE (로컬 진행 체크만) ──
+function toggleDone(id){
+  if(S.done.has(id)){
+    S.done.delete(id);
+    toast('체크 해제');
+  } else {
+    S.done.add(id);
+    const all=[...S.queue.pc1,...S.queue.pc2];
+    const item=all.find(i=>i.id===id);
+    if(item) toast(`✓ ${item.code} ${item.color||''} ${item.size||''} 완료 체크`);
+  }
+  localStorage.setItem('done',JSON.stringify([...S.done]));
+  render();
+}
+
+// ── KPI ──
+function updateKPI(){
+  const all=[...S.queue.pc1,...S.queue.pc2];
+  const canItems=all.filter(i=>i.canPrint);
+  const shortItems=all.filter(i=>!i.canPrint);
+  const doneItems=canItems.filter(i=>S.done.has(i.id));
+  const pct=canItems.length?Math.round(doneItems.length/canItems.length*100):0;
+
+  document.getElementById('kpi-total').textContent=all.length;
+  document.getElementById('kpi-total-sub').textContent=`건 접수`;
+  document.getElementById('kpi-can').textContent=canItems.length;
+  document.getElementById('kpi-can-sub').textContent=`매 인쇄 대기`;
+  document.getElementById('kpi-short').textContent=shortItems.length;
+  document.getElementById('kpi-short-sub').textContent=shortItems.length?`건 재고 보충 필요`:`없음`;
+  document.getElementById('kpi-done').textContent=pct+'%';
+  document.getElementById('kpi-done-sub').textContent=`${doneItems.length}/${canItems.length}건 완료`;
+}
+
+// ── PROGRESS ──
+function updateProgress(){
+  ['pc1','pc2'].forEach((pc,i)=>{
+    const n=i+1;
+    const can=S.queue[pc].filter(x=>x.canPrint);
+    const done=can.filter(x=>S.done.has(x.id)).length;
+    const pct=can.length?Math.round(done/can.length*100):0;
+    document.getElementById(`prog${n}-label`).textContent=`완료 ${done}/${can.length}`;
+    document.getElementById(`prog${n}-pct`).textContent=pct+'%';
+    document.getElementById(`prog${n}-bar`).style.width=pct+'%';
+  });
+}
+
+// ── PC MAP ──
+function getPC(code){
+  const u=code.toUpperCase();
+  for(const p of S.pcMap.pc1) if(u.startsWith(p)) return 'pc1';
+  return 'pc2';
+}
+function renderCfg(){
+  const c1=document.getElementById('cfg-pc1');
+  const c2=document.getElementById('cfg-pc2');
+  c1.innerHTML=''; c2.innerHTML='';
+  S.pcMap.pc1.forEach(p=>c1.appendChild(mkChip(p,'pc1')));
+  S.pcMap.pc2.forEach(p=>c2.appendChild(mkChip(p,'pc2')));
+}
+function mkChip(prefix,pc){
+  const el=document.createElement('button');
+  el.className='cfg-chip '+pc;
+  el.textContent=prefix+'*';
+  el.onclick=()=>{
+    if(pc==='pc1'){S.pcMap.pc1=S.pcMap.pc1.filter(x=>x!==prefix);S.pcMap.pc2.push(prefix);}
+    else{S.pcMap.pc2=S.pcMap.pc2.filter(x=>x!==prefix);S.pcMap.pc1.push(prefix);}
+    localStorage.setItem('pcMap',JSON.stringify(S.pcMap));
+    renderCfg(); updateSeriesLabels();
+  };
+  return el;
+}
+function updateSeriesLabels(){
+  document.getElementById('pc1-series').textContent=S.pcMap.pc1.map(p=>p+'*').join(', ');
+  document.getElementById('pc2-series').textContent=S.pcMap.pc2.map(p=>p+'*').join(', ');
+}
+
+// ── MODAL ──
+function openModal(){document.getElementById('modal').classList.add('open')}
+function closeModal(){document.getElementById('modal').classList.remove('open')}
+function saveUrl(){
+  const url=document.getElementById('url-input').value.trim();
+  if(!url) return;
+  localStorage.setItem('gs_config',JSON.stringify({url}));
+  toast('URL이 저장되었습니다');
+}
+
+// ── RESET ──
+function resetChecks(){
+  if(!S.done.size) return;
+  if(confirm('완료 체크를 모두 초기화하시겠습니까?')){
+    S.done.clear(); localStorage.setItem('done','[]');
+    render(); toast('체크를 초기화했습니다');
+  }
+}
+
+// ── TOAST ──
+let _tt;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('show'),2600);
+}
+</script>
+</body>
+</html>
