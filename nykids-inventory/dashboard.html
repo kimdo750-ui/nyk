@@ -1,0 +1,894 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>뉴욕꼬맹이 재고관리 대시보드</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9ecf1 100%);
+            color: #2c3e50;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 48px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 40px auto;
+            padding: 0 30px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .stat-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 0;
+            border-bottom: 1px solid #e9ecf1;
+        }
+
+        .stat-box:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            font-size: 16px;
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: #2c3e50;
+            min-width: 60px;
+            text-align: right;
+        }
+
+        .status-critical { color: #e74c3c !important; }
+        .status-urgent { color: #e67e22 !important; }
+        .status-warning { color: #f39c12 !important; }
+        .status-safe { color: #27ae60 !important; }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+            margin-top: 20px;
+            margin-bottom: 15px;
+        }
+
+        .alert {
+            padding: 16px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            font-size: 15px;
+            border-left: 5px solid;
+            line-height: 1.8;
+        }
+
+        .alert-critical {
+            background: #fadbd8;
+            border-color: #e74c3c;
+            color: #922b21;
+        }
+
+        .alert-urgent {
+            background: #fdebd0;
+            border-color: #e67e22;
+            color: #7d3c0a;
+        }
+
+        .alert-info {
+            background: #d6eaf8;
+            border-color: #3498db;
+            color: #1a4d6d;
+        }
+
+        .bottleneck {
+            padding: 16px;
+            background: linear-gradient(135deg, #fff9e6 0%, #fffbf0 100%);
+            border-left: 5px solid #f39c12;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        .recommend {
+            padding: 18px;
+            background: linear-gradient(135deg, #ebf5fb 0%, #f0f8ff 100%);
+            border-left: 5px solid #667eea;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            font-size: 15px;
+            line-height: 1.8;
+        }
+
+        .recommend strong {
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        .refresh-info {
+            text-align: center;
+            font-size: 13px;
+            color: #bdc3c7;
+            margin-top: 15px;
+            font-weight: 500;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px 30px;
+            color: #95a5a6;
+            font-size: 18px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        @media (max-width: 1200px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 36px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 25px 15px;
+            }
+
+            header h1 {
+                font-size: 24px;
+            }
+
+            header p {
+                font-size: 14px !important;
+            }
+
+            .container {
+                margin: 20px auto;
+                padding: 0 15px;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .card {
+                padding: 20px;
+                border-radius: 12px;
+            }
+
+            .card h2 {
+                font-size: 16px;
+                margin-bottom: 15px;
+            }
+
+            .stat-box {
+                padding: 12px 0;
+            }
+
+            .stat-label {
+                font-size: 14px;
+            }
+
+            .stat-value {
+                font-size: 24px;
+            }
+
+            .chart-container {
+                height: 250px;
+                margin-top: 15px;
+                margin-bottom: 10px;
+            }
+
+            .alert,
+            .bottleneck,
+            .recommend {
+                padding: 12px;
+                font-size: 13px;
+                margin-bottom: 8px;
+            }
+
+            .refresh-info {
+                font-size: 12px;
+                margin-top: 10px;
+            }
+
+            .empty-state {
+                padding: 30px 15px;
+            }
+
+            .empty-state-icon {
+                font-size: 36px;
+                margin-bottom: 8px;
+            }
+
+            .empty-state-text {
+                font-size: 14px;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #95a5a6;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .empty-state-text {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+
+        .stock-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .stock-table thead {
+            background: #f0f3ff;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .stock-table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .stock-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e9ecf1;
+        }
+
+        .stock-table tbody tr:hover {
+            background: #f9f9f9;
+        }
+
+        .stock-table select,
+        .stock-table button {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .stock-table select {
+            background: white;
+            color: #2c3e50;
+        }
+
+        .stock-table select:hover,
+        .stock-table select:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+        }
+
+        .stock-table button {
+            background: #667eea;
+            color: white;
+            border: none;
+            font-weight: 600;
+        }
+
+        .stock-table button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .stock-table button:active {
+            transform: translateY(0);
+        }
+
+        .color-dark { background: #2c2c2c; color: white; }
+        .color-black { background: #000000; color: white; }
+        .color-red { background: #cc0000; color: white; }
+        .color-blue { background: #0052cc; color: white; }
+        .color-violet { background: #6600cc; color: white; }
+
+        .color-white { background: #ffffff; color: black; border: 1px solid #ddd; }
+        .color-skyblue { background: #87ceeb; color: black; }
+        .color-mint { background: #98ff98; color: black; }
+        .color-darkmint { background: #00a86b; color: white; }
+        .color-purple { background: #b366ff; color: black; }
+        .color-beige { background: #f5f5dc; color: black; }
+        .color-gray { background: #d3d3d3; color: black; }
+
+        .color-box {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .table-container {
+                margin-top: 10px;
+            }
+
+            .stock-table {
+                font-size: 12px;
+            }
+
+            .stock-table th,
+            .stock-table td {
+                padding: 8px;
+            }
+
+            .stock-table select,
+            .stock-table button {
+                padding: 4px 8px;
+                font-size: 11px;
+            }
+
+            .color-box {
+                padding: 2px 8px;
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>📊 뉴욕꼬맹이 재고관리</h1>
+        <p style="margin-top: 10px; font-size: 18px; opacity: 0.95;">실시간 모니터링 대시보드</p>
+    </header>
+
+    <div class="container">
+        <!-- 상단: 주요 지표 -->
+        <div class="grid">
+            <div class="card">
+                <h2>🟢 재고 현황</h2>
+                <div class="stat-box">
+                    <span class="stat-label">안전</span>
+                    <span class="stat-value status-safe" id="stat-safe">0</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">부족</span>
+                    <span class="stat-value status-warning" id="stat-warning">0</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">긴급</span>
+                    <span class="stat-value status-urgent" id="stat-urgent">0</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">생산불가</span>
+                    <span class="stat-value status-critical" id="stat-critical">0</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📦 오늘 주문</h2>
+                <div class="stat-box">
+                    <span class="stat-label">미처리</span>
+                    <span class="stat-value" id="stat-pending">0</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">생산가능</span>
+                    <span class="stat-value status-safe" id="stat-producible">0</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">생산불가</span>
+                    <span class="stat-value status-critical" id="stat-not-producible">0</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">전체 수량</span>
+                    <span class="stat-value" id="stat-total-qty">0</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>⚡ 병목 분석</h2>
+                <div id="bottleneck-list" class="loading">로딩 중...</div>
+            </div>
+        </div>
+
+        <!-- 중단: 그래프 -->
+        <div class="grid-2">
+            <div class="card">
+                <h2>📈 무지상품 재고</h2>
+                <div class="chart-container">
+                    <canvas id="blankStockChart"></canvas>
+                </div>
+                <div class="refresh-info" id="refresh-blank">마지막 갱신: -</div>
+            </div>
+
+            <div class="card">
+                <h2>🎨 전사지 재고</h2>
+                <div class="chart-container">
+                    <canvas id="transferStockChart"></canvas>
+                </div>
+                <div class="refresh-info" id="refresh-transfer">마지막 갱신: -</div>
+            </div>
+        </div>
+
+        <!-- 전사지 수량 수정 -->
+        <div class="card" style="margin-top: 30px;">
+            <h2>📝 전사지 수량 수정</h2>
+            <div class="table-container">
+                <table class="stock-table" id="transfer-table">
+                    <thead>
+                        <tr>
+                            <th>전사지 코드</th>
+                            <th>색상</th>
+                            <th>현재 수량</th>
+                            <th>수정 수량</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transfer-tbody">
+                        <tr class="loading"><td colspan="5">로딩 중...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 완제품 수량 수정 -->
+        <div class="card" style="margin-top: 30px;">
+            <h2>🎁 완제품 수량 수정</h2>
+            <div class="table-container">
+                <table class="stock-table" id="finished-table">
+                    <thead>
+                        <tr>
+                            <th>SKU</th>
+                            <th>색상</th>
+                            <th>사이즈</th>
+                            <th>현재 수량</th>
+                            <th>수정 수량</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody id="finished-tbody">
+                        <tr class="loading"><td colspan="6">로딩 중...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 하단: 상세 정보 -->
+        <div class="grid-2" style="margin-top: 30px;">
+            <div class="card">
+                <h2>🔔 재고 부족 알림</h2>
+                <div id="alerts-list" class="loading">로딩 중...</div>
+            </div>
+
+            <div class="card">
+                <h2>💡 발주 추천</h2>
+                <div id="recommend-list" class="loading">로딩 중...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let blankChart = null;
+        let transferChart = null;
+
+        const API_BASE = 'http://localhost:8000';
+
+        const colorMap = {
+            '블랙': 'color-black',
+            '검은색': 'color-black',
+            '화이트': 'color-white',
+            '흰색': 'color-white',
+            '레드': 'color-red',
+            '빨간색': 'color-red',
+            '블루': 'color-blue',
+            '파란색': 'color-blue',
+            '바이올렛': 'color-violet',
+            '보라색': 'color-violet',
+            '스카이블루': 'color-skyblue',
+            '하늘색': 'color-skyblue',
+            '민트': 'color-mint',
+            '민트색': 'color-mint',
+            '다크민트': 'color-darkmint',
+            '진민트색': 'color-darkmint',
+            '퍼플': 'color-purple',
+            '보라색': 'color-purple',
+            '베이지': 'color-beige',
+            '베이지색': 'color-beige',
+            '그레이': 'color-gray',
+            '회색': 'color-gray',
+        };
+
+        function getColorClass(color) {
+            return colorMap[color?.trim()] || 'color-gray';
+        }
+
+        function getColorDisplay(color) {
+            const colorClass = getColorClass(color);
+            const colorName = color || '미지정';
+            return `<span class="color-box ${colorClass}">${colorName}</span>`;
+        }
+
+        async function updateTransferStock(code, qty) {
+            try {
+                const res = await fetch(`${API_BASE}/update-transfer?code=${code}&qty=${qty}`, { method: 'POST' });
+                const data = await res.json();
+                if (res.ok) {
+                    alert(`✅ ${code} 수량이 ${qty}로 업데이트되었습니다`);
+                    refreshData();
+                } else {
+                    alert(`❌ 오류: ${data.detail}`);
+                }
+            } catch (error) {
+                alert(`❌ 업데이트 실패: ${error.message}`);
+            }
+        }
+
+        async function updateFinishedStock(sku, qty) {
+            try {
+                const res = await fetch(`${API_BASE}/update-finished?sku=${sku}&qty=${qty}`, { method: 'POST' });
+                const data = await res.json();
+                if (res.ok) {
+                    alert(`✅ ${sku} 수량이 ${qty}로 업데이트되었습니다`);
+                    refreshData();
+                } else {
+                    alert(`❌ 오류: ${data.detail}`);
+                }
+            } catch (error) {
+                alert(`❌ 업데이트 실패: ${error.message}`);
+            }
+        }
+
+        async function refreshData() {
+            try {
+                const invRes = await fetch(`${API_BASE}/inventory`);
+                const inventory = await invRes.json();
+
+                const ordRes = await fetch(`${API_BASE}/orders`);
+                const orders = await ordRes.json();
+
+                const prodRes = await fetch(`${API_BASE}/production`);
+                const production = await prodRes.json();
+
+                const alertRes = await fetch(`${API_BASE}/alerts?level=urgent`);
+                const alerts = await alertRes.json();
+
+                updateStats(inventory, orders, production, alerts);
+                updateCharts(inventory);
+                updateAlerts(alerts);
+                updateBottlenecks(production);
+                updateRecommendations(inventory, alerts);
+                updateTransferTable(inventory);
+                updateFinishedTable(inventory);
+
+            } catch (error) {
+                console.error("데이터 갱신 오류:", error);
+                document.querySelectorAll('.loading').forEach(el => {
+                    el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">❌</div><div class="empty-state-text">데이터를 불러올 수 없습니다</div></div>';
+                });
+            }
+        }
+
+        function updateStats(inventory, orders, production, alerts) {
+            const blank = inventory.blank || [];
+            const transfer = inventory.transfer || [];
+
+            const stats = { safe: 0, warning: 0, urgent: 0, critical: 0 };
+
+            blank.forEach(b => {
+                if (b.status.includes("안전")) stats.safe++;
+                else if (b.status.includes("부족")) stats.warning++;
+                else if (b.status.includes("긴급")) stats.urgent++;
+                else if (b.status.includes("생산불가")) stats.critical++;
+            });
+
+            transfer.forEach(t => {
+                if (t.status.includes("안전")) stats.safe++;
+                else if (t.status.includes("부족")) stats.warning++;
+                else if (t.status.includes("긴급")) stats.urgent++;
+                else if (t.status.includes("생산불가")) stats.critical++;
+            });
+
+            document.getElementById("stat-safe").textContent = stats.safe;
+            document.getElementById("stat-warning").textContent = stats.warning;
+            document.getElementById("stat-urgent").textContent = stats.urgent;
+            document.getElementById("stat-critical").textContent = stats.critical;
+
+            const orderList = orders.orders || [];
+            document.getElementById("stat-pending").textContent = orderList.length;
+            document.getElementById("stat-total-qty").textContent = 
+                orderList.reduce((sum, o) => sum + o.qty, 0);
+
+            const prodText = production.result || "";
+            const producible = (prodText.match(/🟢/g) || []).length;
+            const notProducible = (prodText.match(/🔴/g) || []).length;
+            document.getElementById("stat-producible").textContent = producible;
+            document.getElementById("stat-not-producible").textContent = notProducible;
+        }
+
+        function updateCharts(inventory) {
+            const blank = inventory.blank || [];
+            const transfer = inventory.transfer || [];
+            const isMobile = window.innerWidth <= 768;
+            const legendFontSize = isMobile ? 11 : 14;
+            const labelFontSize = isMobile ? 10 : 14;
+            const legendPadding = isMobile ? 10 : 20;
+
+            const blankLabels = blank.map(b => `${b.color}/${b.size}`).slice(0, 8);
+            const blankData = blank.map(b => b.stock).slice(0, 8);
+            const blankSafe = blank.map(b => b.safe_stock).slice(0, 8);
+
+            if (blankChart) blankChart.destroy();
+            const blankCtx = document.getElementById("blankStockChart").getContext("2d");
+            blankChart = new Chart(blankCtx, {
+                type: "bar",
+                data: {
+                    labels: blankLabels,
+                    datasets: [
+                        {
+                            label: "현재 재고",
+                            data: blankData,
+                            backgroundColor: "#667eea",
+                            borderRadius: 8,
+                            borderSkipped: false
+                        },
+                        {
+                            label: "안전 재고",
+                            data: blankSafe,
+                            backgroundColor: "#e9ecf1",
+                            borderRadius: 8,
+                            borderSkipped: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: "bottom", labels: { font: { size: legendFontSize }, padding: legendPadding } }
+                    },
+                    scales: { y: { beginAtZero: true, ticks: { font: { size: labelFontSize } } } }
+                }
+            });
+
+            const transferLabels = transfer.map(t => t.code).slice(0, 8);
+            const transferData = transfer.map(t => t.stock).slice(0, 8);
+
+            if (transferChart) transferChart.destroy();
+            const transferCtx = document.getElementById("transferStockChart").getContext("2d");
+            transferChart = new Chart(transferCtx, {
+                type: "bar",
+                data: {
+                    labels: transferLabels,
+                    datasets: [{
+                        label: "전사지 재고",
+                        data: transferData,
+                        backgroundColor: "#764ba2",
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: "bottom", labels: { font: { size: legendFontSize }, padding: legendPadding } }
+                    },
+                    scales: { y: { beginAtZero: true, ticks: { font: { size: labelFontSize } } } }
+                }
+            });
+
+            document.getElementById("refresh-blank").textContent = 
+                "마지막 갱신: " + new Date().toLocaleTimeString('ko-KR');
+            document.getElementById("refresh-transfer").textContent = 
+                "마지막 갱신: " + new Date().toLocaleTimeString('ko-KR');
+        }
+
+        function updateBottlenecks(production) {
+            const text = production.result || "";
+            const bottlenecks = text.split("\n").filter(l => l.includes("[") && l.includes("]"));
+
+            const html = bottlenecks.slice(0, 5).map(b => {
+                return `<div class="bottleneck">🔴 ${b.trim()}</div>`;
+            }).join("");
+
+            document.getElementById("bottleneck-list").innerHTML = 
+                html || '<div class="empty-state"><div class="empty-state-icon">✓</div><div class="empty-state-text">병목 없음</div></div>';
+        }
+
+        function updateAlerts(data) {
+            const text = data.result || "";
+            const alerts = text.split("\n").filter(l => l.includes("🧵") || l.includes("🖨️"));
+
+            const html = alerts.slice(0, 5).map(a => {
+                const cssClass = a.includes("🔴") ? "alert-critical" : "alert-urgent";
+                return `<div class="alert ${cssClass}">${a}</div>`;
+            }).join("");
+
+            document.getElementById("alerts-list").innerHTML = 
+                html || '<div class="empty-state"><div class="empty-state-icon">⭐</div><div class="empty-state-text">재고 부족 알림 없음</div></div>';
+        }
+
+        function updateRecommendations(inventory, alerts) {
+            const blank = inventory.blank || [];
+            const transfer = inventory.transfer || [];
+            const recommendations = [];
+
+            blank.filter(b => b.stock <= 10).slice(0, 3).forEach(b => {
+                recommendations.push(
+                    `<div class="recommend">🧵 <strong>${b.color} ${b.size}</strong> - 현재 ${b.stock}개 → 30개 발주 추천</div>`
+                );
+            });
+
+            transfer.filter(t => t.stock <= 5).slice(0, 3).forEach(t => {
+                recommendations.push(
+                    `<div class="recommend">🖨️ <strong>${t.code}</strong> - 현재 ${t.stock}매 → 20매 발주 추천</div>`
+                );
+            });
+
+            document.getElementById("recommend-list").innerHTML =
+                recommendations.join("") || '<div class="empty-state"><div class="empty-state-icon">✓</div><div class="empty-state-text">발주 추천 없음</div></div>';
+        }
+
+        function updateTransferTable(inventory) {
+            const transfer = inventory.transfer || [];
+            const tbody = document.getElementById("transfer-tbody");
+
+            if (transfer.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px;">전사지 데이터가 없습니다</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = transfer.map(t => `
+                <tr>
+                    <td><strong>${t.code}</strong></td>
+                    <td>${getColorDisplay(t.color)}</td>
+                    <td><strong>${t.stock}</strong></td>
+                    <td>
+                        <select id="qty-${t.code}">
+                            <option value="">선택</option>
+                            <option value="5" ${t.stock === 5 ? 'selected' : ''}>5</option>
+                            <option value="10" ${t.stock === 10 ? 'selected' : ''}>10</option>
+                            <option value="15" ${t.stock === 15 ? 'selected' : ''}>15</option>
+                            <option value="20" ${t.stock === 20 ? 'selected' : ''}>20</option>
+                            <option value="25" ${t.stock === 25 ? 'selected' : ''}>25</option>
+                            <option value="30" ${t.stock === 30 ? 'selected' : ''}>30</option>
+                        </select>
+                    </td>
+                    <td>
+                        <button onclick="updateTransferOnClick('${t.code}')">수정</button>
+                    </td>
+                </tr>
+            `).join("");
+        }
+
+        function updateTransferOnClick(code) {
+            const select = document.getElementById(`qty-${code}`);
+            const qty = select.value;
+            if (!qty) {
+                alert("수량을 선택하세요");
+                return;
+            }
+            updateTransferStock(code, parseInt(qty));
+        }
+
+        function updateFinishedTable(inventory) {
+            const finished = inventory.finished || [];
+            const tbody = document.getElementById("finished-tbody");
+
+            if (finished.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px;">완제품 데이터가 없습니다</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = finished.map(f => `
+                <tr>
+                    <td><strong>${f.sku}</strong></td>
+                    <td>${getColorDisplay(f.color)}</td>
+                    <td>${f.size}</td>
+                    <td><strong>${f.stock}</strong></td>
+                    <td>
+                        <select id="qty-finished-${f.sku}">
+                            <option value="">선택</option>
+                            <option value="5" ${f.stock === 5 ? 'selected' : ''}>5</option>
+                            <option value="10" ${f.stock === 10 ? 'selected' : ''}>10</option>
+                            <option value="15" ${f.stock === 15 ? 'selected' : ''}>15</option>
+                            <option value="20" ${f.stock === 20 ? 'selected' : ''}>20</option>
+                            <option value="25" ${f.stock === 25 ? 'selected' : ''}>25</option>
+                            <option value="30" ${f.stock === 30 ? 'selected' : ''}>30</option>
+                        </select>
+                    </td>
+                    <td>
+                        <button onclick="updateFinishedOnClick('${f.sku}')">수정</button>
+                    </td>
+                </tr>
+            `).join("");
+        }
+
+        function updateFinishedOnClick(sku) {
+            const select = document.getElementById(`qty-finished-${sku}`);
+            const qty = select.value;
+            if (!qty) {
+                alert("수량을 선택하세요");
+                return;
+            }
+            updateFinishedStock(sku, parseInt(qty));
+        }
+
+        refreshData();
+        setInterval(refreshData, 30000);
+    </script>
+</body>
+</html>
