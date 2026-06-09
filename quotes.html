@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>명언 컬렉션 - 프린팅 문구 라이브러리</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&family=Noto+Serif+KR:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --ink-light: #2d2d44;
+    --paper: #faf8f3;
+    --cream: #f5f0e8;
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --red: #c0392b;
+    --sage: #6b8f71;
+    --dusty-blue: #4a6fa5;
+    --warm-gray: #8a8070;
+    --border: rgba(201,168,76,0.3);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Noto Sans KR', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* ─── 헤더 ─── */
+  .page-header {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 60px 40px 50px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 40px,
+      rgba(201,168,76,0.04) 40px,
+      rgba(201,168,76,0.04) 41px
+    );
+  }
+  .header-badge {
+    display: inline-block;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-size: 11px;
+    letter-spacing: 3px;
+    padding: 5px 16px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+  }
+  .page-header h1 {
+    font-family: 'Noto Serif KR', serif;
+    font-size: clamp(26px, 5vw, 46px);
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 12px;
+  }
+  .page-header h1 span { color: var(--gold-light); }
+  .page-header p {
+    font-size: 14px;
+    color: rgba(250,248,243,0.6);
+    letter-spacing: 1px;
+  }
+
+  /* ─── 네비 탭 ─── */
+  .nav-tabs {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--ink-light);
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 2px;
+    padding: 8px 16px;
+    border-bottom: 2px solid var(--gold);
+  }
+  .nav-tab {
+    background: transparent;
+    border: none;
+    color: rgba(250,248,243,0.55);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13px;
+    padding: 8px 18px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .nav-tab:hover { color: var(--paper); background: rgba(201,168,76,0.15); }
+  .nav-tab.active { background: var(--gold); color: var(--ink); font-weight: 700; }
+
+  /* ─── 본문 컨테이너 ─── */
+  .container { max-width: 1100px; margin: 0 auto; padding: 60px 24px 80px; }
+
+  /* ─── 섹션 제목 ─── */
+  .section { display: none; animation: fadeUp 0.4s ease; }
+  .section.active { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 52px; height: 52px;
+    background: var(--ink);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .section-title h2 {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .section-title p { font-size: 13px; color: var(--warm-gray); margin-top: 4px; }
+
+  /* ─── 명언 카드 그리드 ─── */
+  .quotes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+
+  .quote-card {
+    background: white;
+    border: 1px solid rgba(0,0,0,0.07);
+    border-radius: 12px;
+    padding: 28px 26px 22px;
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+  }
+  .quote-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  }
+  .quote-card.featured {
+    border-color: var(--gold);
+    border-width: 2px;
+    background: linear-gradient(135deg, #fffdf5, #fff);
+  }
+  .quote-card.featured::after {
+    content: '★ 추천';
+    position: absolute;
+    top: -1px; right: 16px;
+    background: var(--gold);
+    color: var(--ink);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 0 0 6px 6px;
+    letter-spacing: 1px;
+  }
+
+  .quote-text {
+    font-family: 'Nanum Brush Script', cursive;
+    font-size: 22px;
+    line-height: 1.5;
+    color: var(--ink);
+    margin-bottom: 14px;
+    word-break: keep-all;
+  }
+  .quote-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .quote-source {
+    font-size: 12px;
+    color: var(--warm-gray);
+    font-style: italic;
+  }
+  .quote-chars {
+    font-size: 11px;
+    background: var(--cream);
+    color: var(--warm-gray);
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+
+  /* ─── 미리보기 오버레이 ─── */
+  .preview-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,26,46,0.85);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    backdrop-filter: blur(6px);
+  }
+  .preview-overlay.open { display: flex; }
+
+  .preview-box {
+    background: var(--paper);
+    border-radius: 16px;
+    max-width: 520px;
+    width: 100%;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+  }
+  .preview-header {
+    background: var(--ink);
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .preview-header span { color: var(--gold); font-size: 13px; letter-spacing: 1px; }
+  .close-btn {
+    background: none; border: none;
+    color: rgba(250,248,243,0.6);
+    font-size: 22px; cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s;
+  }
+  .close-btn:hover { color: var(--paper); }
+
+  .preview-tshirt {
+    padding: 36px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    background: var(--cream);
+  }
+
+  /* 티셔츠 SVG 스타일 */
+  .tshirt-container { position: relative; width: 220px; }
+  .tshirt-svg { width: 100%; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15)); }
+  .tshirt-text-overlay {
+    position: absolute;
+    top: 54%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60%;
+    text-align: center;
+    font-family: 'Nanum Brush Script', cursive;
+    font-size: clamp(14px, 3vw, 20px);
+    line-height: 1.4;
+    color: #1a1a2e;
+    word-break: keep-all;
+    pointer-events: none;
+  }
+
+  .preview-info {
+    padding: 20px 28px 28px;
+    border-top: 1px solid var(--border);
+  }
+  .preview-quote-full {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 8px;
+    line-height: 1.6;
+  }
+  .preview-source-line {
+    font-size: 13px;
+    color: var(--warm-gray);
+    margin-bottom: 16px;
+  }
+  .preview-tags {
+    display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  .preview-tag {
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: var(--ink);
+    color: var(--gold);
+    letter-spacing: 0.5px;
+  }
+
+  /* ─── 사훈 섹션 특별 레이아웃 ─── */
+  .motto-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+  .motto-card {
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 10px;
+    padding: 22px 20px;
+    transition: transform 0.2s, background 0.2s;
+    cursor: pointer;
+  }
+  .motto-card:hover { background: var(--ink-light); transform: translateY(-2px); }
+  .motto-card.global {
+    background: linear-gradient(135deg, #2d1a4a, #1a2d4a);
+    border: 1px solid rgba(201,168,76,0.3);
+  }
+  .motto-text {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+  .motto-card.global .motto-text { color: var(--gold-light); }
+  .motto-sub {
+    font-size: 11px;
+    color: rgba(250,248,243,0.4);
+    letter-spacing: 1px;
+  }
+  .motto-card.global .motto-sub { color: rgba(232,201,122,0.6); }
+
+  .subsection-title {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 32px 0 16px;
+    padding-left: 12px;
+    border-left: 3px solid var(--gold);
+  }
+
+  /* ─── 통계 바 ─── */
+  .stats-bar {
+    background: var(--ink);
+    border-radius: 12px;
+    padding: 24px 32px;
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 48px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .stat-item { text-align: center; }
+  .stat-num {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--gold);
+    display: block;
+  }
+  .stat-label { font-size: 12px; color: rgba(250,248,243,0.55); letter-spacing: 1px; margin-top: 4px; }
+
+  /* ─── 반응형 ─── */
+  @media (max-width: 600px) {
+    .page-header { padding: 40px 20px 36px; }
+    .container { padding: 40px 16px 60px; }
+    .quotes-grid { grid-template-columns: 1fr; }
+    .motto-grid { grid-template-columns: 1fr 1fr; }
+    .stats-bar { padding: 20px; }
+    .nav-tab { font-size: 12px; padding: 7px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── 헤더 ─── -->
+<div class="page-header">
+  <div class="header-badge">PRINT COPY LIBRARY</div>
+  <h1>프린팅 <span>명언</span> 컬렉션</h1>
+  <p>아동복 DTP 프린팅 사업 · 의류 문구 데이터베이스 · 2026</p>
+</div>
+
+<!-- ─── 탭 네비게이션 ─── -->
+<div class="nav-tabs">
+  <button class="nav-tab active" onclick="showTab('all')">전체</button>
+  <button class="nav-tab" onclick="showTab('love')">❤️ 사랑</button>
+  <button class="nav-tab" onclick="showTab('friend')">🤝 우정</button>
+  <button class="nav-tab" onclick="showTab('success')">🏆 성공</button>
+  <button class="nav-tab" onclick="showTab('challenge')">🔥 도전</button>
+  <button class="nav-tab" onclick="showTab('happy')">🌟 행복</button>
+  <button class="nav-tab" onclick="showTab('motto')">🏢 사훈</button>
+</div>
+
+<!-- ─── 본문 ─── -->
+<div class="container">
+
+  <!-- 통계 바 -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-num">62</span>
+      <div class="stat-label">총 명언 수</div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">5</span>
+      <div class="stat-label">카테고리</div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">30+</span>
+      <div class="stat-label">★ 추천 문구</div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">41</span>
+      <div class="stat-label">사훈 후보</div>
+    </div>
+  </div>
+
+  <!-- ─── 전체 탭 ─── -->
+  <div class="section active" id="tab-all">
+    <div class="section-title">
+      <div class="section-icon">📚</div>
+      <div>
+        <h2>전체 명언 컬렉션</h2>
+        <p>카테고리별 ★ 추천 문구 모음</p>
+      </div>
+    </div>
+    <div class="quotes-grid" id="grid-all"></div>
+  </div>
+
+  <!-- ─── 사랑 탭 ─── -->
+  <div class="section" id="tab-love">
+    <div class="section-title">
+      <div class="section-icon">❤️</div>
+      <div>
+        <h2>사랑 (Love)</h2>
+        <p>사랑과 감성을 담은 프린팅 문구</p>
+      </div>
+    </div>
+    <div class="quotes-grid" id="grid-love"></div>
+  </div>
+
+  <!-- ─── 우정 탭 ─── -->
+  <div class="section" id="tab-friend">
+    <div class="section-title">
+      <div class="section-icon">🤝</div>
+      <div>
+        <h2>우정 (Friendship)</h2>
+        <p>함께함의 가치를 담은 문구</p>
+      </div>
+    </div>
+    <div class="quotes-grid" id="grid-friend"></div>
+  </div>
+
+  <!-- ─── 성공 탭 ─── -->
+  <div class="section" id="tab-success">
+    <div class="section-title">
+      <div class="section-icon">🏆</div>
+      <div>
+        <h2>성공 (Success)</h2>
+        <p>도전과 성취를 위한 동기부여 문구</p>
+      </div>
+    </div>
+    <div class="quotes-grid" id="grid-success"></div>
+  </div>
+
+  <!-- ─── 도전 탭 ─── -->
+  <div class="section" id="tab-challenge">
+    <div class="section-title">
+      <div class="section-icon">🔥</div>
+      <div>
+        <h2>도전 (Challenge)</h2>
+        <p>두려움을 넘어서는 용기의 문구</p>
+      </div>
+    </div>
+    <div class="quotes-grid" id="grid-challenge"></div>
+  </div>
+
+  <!-- ─── 행복 탭 ─── -->
+  <div class="section" id="tab-happy">
+    <div class="section-title">
+      <div class="section-icon">🌟</div>
+      <div>
+        <h2>행복 & 긍정 (Happiness)</h2>
+        <p>일상의 감사와 긍정을 담은 문구</p>
+      </div>
+    </div>
+    <div class="quotes-grid" id="grid-happy"></div>
+  </div>
+
+  <!-- ─── 사훈 탭 ─── -->
+  <div class="section" id="tab-motto">
+    <div class="section-title">
+      <div class="section-icon">🏢</div>
+      <div>
+        <h2>사훈 & 슬로건</h2>
+        <p>단체복 · 기업복 · 기관용 추천 문구</p>
+      </div>
+    </div>
+    <div class="subsection-title">🇰🇷 한국형 사훈 추천 30선</div>
+    <div class="motto-grid" id="grid-motto-kr"></div>
+    <div class="subsection-title">🌏 세계 500대 기업 슬로건</div>
+    <div class="motto-grid" id="grid-motto-global"></div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- ─── 미리보기 오버레이 ─── -->
+<div class="preview-overlay" id="previewOverlay" onclick="closePreview(event)">
+  <div class="preview-box">
+    <div class="preview-header">
+      <span>👕 티셔츠 미리보기</span>
+      <button class="close-btn" onclick="closePreview()">×</button>
+    </div>
+    <div class="preview-tshirt">
+      <div class="tshirt-container">
+        <!-- 티셔츠 SVG -->
+        <svg class="tshirt-svg" viewBox="0 0 220 240" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="shirtGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#2c2c4a"/>
+              <stop offset="100%" stop-color="#1a1a32"/>
+            </linearGradient>
+            <filter id="shadow">
+              <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="rgba(0,0,0,0.3)"/>
+            </filter>
+          </defs>
+          <path d="M60,20 L10,60 L35,70 L35,220 L185,220 L185,70 L210,60 L160,20 L140,36 Q110,50 80,36 Z"
+                fill="url(#shirtGrad)" filter="url(#shadow)"/>
+          <path d="M60,20 L80,36 Q110,50 140,36 L160,20" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
+        </svg>
+        <div class="tshirt-text-overlay" id="previewText"></div>
+      </div>
+    </div>
+    <div class="preview-info">
+      <div class="preview-quote-full" id="previewQuoteFull"></div>
+      <div class="preview-source-line" id="previewSourceLine"></div>
+      <div class="preview-tags">
+        <span class="preview-tag" id="previewCat"></span>
+        <span class="preview-tag" id="previewChars"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── 데이터 ───
+const DATA = {
+  love: [
+    { text:"사랑은 모든 것을 이긴다", source:"베르길리우스", chars:"12자", featured:true },
+    { text:"사랑하라, 한 번도 상처받지 않은 것처럼", source:"알프레드 디 수자", chars:"21자", featured:false },
+    { text:"사랑은 주는 것이다", source:"에리히 프롬", chars:"9자", featured:true },
+    { text:"사랑받는 존재임을 아는 것이 모든 것이다", source:"빅토르 위고", chars:"21자", featured:false },
+    { text:"사랑은 눈으로 보지 않고 마음으로 본다", source:"셰익스피어", chars:"20자", featured:true },
+    { text:"사랑은 기다림을 모른다", source:"에밀리 브론테", chars:"11자", featured:false },
+    { text:"진정한 사랑은 조용히 자란다", source:"헤르만 헤세", chars:"14자", featured:false },
+    { text:"사랑이 없는 곳에 사랑을 심어라", source:"십자가의 성 요한", chars:"16자", featured:true },
+    { text:"사랑은 삶을 두 배로 만든다", source:"괴테", chars:"13자", featured:false },
+    { text:"사랑은 모든 언어를 안다", source:"알 아노", chars:"12자", featured:true },
+  ],
+  friend: [
+    { text:"친구는 제2의 자신이다", source:"아리스토텔레스", chars:"11자", featured:true },
+    { text:"진정한 친구는 어둠 속에서 빛난다", source:"키케로", chars:"16자", featured:true },
+    { text:"우정은 영혼과 영혼의 만남이다", source:"플라톤", chars:"15자", featured:false },
+    { text:"좋은 친구는 별과 같다, 항상 거기 있다", source:"작자미상", chars:"19자", featured:false },
+    { text:"우정은 천천히 자라는 식물이다", source:"조지 워싱턴", chars:"15자", featured:true },
+    { text:"진정한 우정은 거리를 모른다", source:"라빈드라나트 타고르", chars:"14자", featured:false },
+    { text:"행복은 나눌수록 커진다", source:"프란시스 베이컨", chars:"11자", featured:true },
+    { text:"친구가 있다면 그것이 재산이다", source:"에머슨", chars:"15자", featured:false },
+    { text:"함께라면 더 멀리 갈 수 있다", source:"아프리카 속담", chars:"14자", featured:true },
+    { text:"우정은 사랑보다 오래간다", source:"몽테뉴", chars:"12자", featured:false },
+  ],
+  success: [
+    { text:"성공은 준비와 기회의 만남이다", source:"세네카", chars:"15자", featured:true },
+    { text:"성공하려면 먼저 믿어야 한다", source:"나폴레옹", chars:"14자", featured:false },
+    { text:"1%의 영감과 99%의 노력", source:"에디슨", chars:"14자", featured:true },
+    { text:"성공은 최선을 다한 결과다", source:"존 우든", chars:"13자", featured:false },
+    { text:"포기하지 않는 자가 이긴다", source:"처칠", chars:"13자", featured:true },
+    { text:"실패는 성공의 어머니다", source:"에디슨", chars:"11자", featured:true },
+    { text:"성공의 비결은 목적의 일관성이다", source:"디즈레일리", chars:"16자", featured:false },
+    { text:"꿈꾸는 자만이 성공한다", source:"월트 디즈니", chars:"11자", featured:false },
+    { text:"지금 하지 않으면 언제 하겠는가", source:"티모시 페리스", chars:"16자", featured:true },
+    { text:"작은 습관이 위대함을 만든다", source:"제임스 클리어", chars:"14자", featured:false },
+  ],
+  challenge: [
+    { text:"하면 된다", source:"정주영", chars:"5자", featured:true },
+    { text:"불가능은 없다", source:"나폴레옹", chars:"7자", featured:true },
+    { text:"피할 수 없으면 즐겨라", source:"로버트 엘리엇", chars:"11자", featured:true },
+    { text:"천 리 길도 한 걸음부터", source:"노자", chars:"11자", featured:true },
+    { text:"두려움이 있는 곳에 기회가 있다", source:"아리스토텔레스", chars:"16자", featured:false },
+    { text:"넘어지는 것은 실패가 아니다. 그냥 있는 것이 실패다", source:"메리 피크포드", chars:"25자", featured:false },
+    { text:"도전하지 않으면 아무것도 얻지 못한다", source:"작자미상", chars:"19자", featured:true },
+    { text:"용기는 두려움 없음이 아니라 두려움을 이기는 것이다", source:"마크 트웨인", chars:"25자", featured:false },
+    { text:"지금 이 순간이 내 인생 최고의 순간", source:"닐 암스트롱", chars:"18자", featured:false },
+    { text:"시작이 반이다", source:"아리스토텔레스", chars:"7자", featured:true },
+  ],
+  happy: [
+    { text:"행복은 습관이다", source:"아리스토텔레스", chars:"8자", featured:true },
+    { text:"삶이 있는 한 희망은 있다", source:"키케로", chars:"13자", featured:true },
+    { text:"웃어라, 세상이 웃는다", source:"엘라 휠러", chars:"11자", featured:true },
+    { text:"오늘은 선물이다", source:"엘리너 루즈벨트", chars:"8자", featured:true },
+    { text:"너 자신을 믿어라", source:"에머슨", chars:"9자", featured:false },
+    { text:"너 자신을 알라", source:"소크라테스", chars:"8자", featured:true },
+    { text:"꿈은 이루어진다", source:"월트 디즈니", chars:"8자", featured:true },
+    { text:"용기는 곧 힘이다", source:"발자크", chars:"9자", featured:false },
+    { text:"오늘을 살아라", source:"호라티우스", chars:"7자", featured:true },
+    { text:"마음이 가난한 자는 복이 있다", source:"예수", chars:"14자", featured:false },
+    { text:"사랑은 모든 것을 이긴다", source:"베르길리우스", chars:"12자", featured:false },
+    { text:"친구는 제2의 자신이다", source:"아리스토텔레스", chars:"11자", featured:false },
+  ],
+};
+
+const MOTTO_KR = [
+  {text:"사람이 먼저다", sub:"현대 경영철학 · 7자", featured:true},
+  {text:"최선을 다하면 길이 열린다", sub:"한국 속담 · 14자", featured:true},
+  {text:"정직이 최선의 전략이다", sub:"벤자민 프랭클린 · 12자", featured:true},
+  {text:"함께 성장한다", sub:"협력 경영 · 7자", featured:true},
+  {text:"신뢰로 세상을 잇는다", sub:"경영 격언 · 11자", featured:false},
+  {text:"작은 것도 소중히", sub:"장인 정신 · 9자", featured:true},
+  {text:"변화가 곧 기회다", sub:"현대 경영철학 · 9자", featured:true},
+  {text:"도전하는 자가 미래를 만든다", sub:"기업 격언 · 15자", featured:false},
+  {text:"고객의 신뢰가 우리의 자산이다", sub:"서비스 철학 · 16자", featured:true},
+  {text:"품질이 곧 자존심이다", sub:"장인 정신 · 11자", featured:true},
+  {text:"오늘보다 나은 내일", sub:"발전 철학 · 10자", featured:true},
+  {text:"혁신은 습관이다", sub:"현대 경영철학 · 8자", featured:true},
+  {text:"고객의 미소가 목표다", sub:"서비스 정신 · 11자", featured:true},
+  {text:"정성을 다하면 통한다", sub:"한국 전통 격언 · 11자", featured:true},
+  {text:"책임지는 자가 리더다", sub:"리더십 철학 · 11자", featured:true},
+  {text:"끝까지 해내는 것이 실력이다", sub:"기업 철학 · 15자", featured:true},
+  {text:"겸손하게, 치열하게", sub:"경영 철학 · 10자", featured:true},
+  {text:"기본에 충실하라", sub:"장인 정신 · 8자", featured:true},
+  {text:"진심은 반드시 통한다", sub:"한국 전통 격언 · 11자", featured:true},
+  {text:"나눌수록 더 커진다", sub:"나눔 경영 · 10자", featured:false},
+  {text:"세상에 없던 것을 만든다", sub:"혁신 기업 정신 · 13자", featured:true},
+  {text:"바른 길이 빠른 길이다", sub:"한국 속담 응용 · 12자", featured:true},
+  {text:"함께라면 불가능은 없다", sub:"팀워크 철학 · 13자", featured:false},
+  {text:"배움을 멈추지 마라", sub:"공자 응용 · 10자", featured:true},
+  {text:"우리의 땀이 세상을 바꾼다", sub:"기업 철학 · 14자", featured:false},
+  {text:"열정이 탁월함을 만든다", sub:"경영 격언 · 12자", featured:false},
+  {text:"내일의 표준을 오늘 만든다", sub:"혁신 철학 · 14자", featured:false},
+  {text:"작은 차이가 큰 결과를 만든다", sub:"경영 격언 · 16자", featured:false},
+  {text:"사람을 키우는 것이 경영이다", sub:"유한킨벌리 정신 · 15자", featured:false},
+  {text:"한 걸음씩, 멈추지 않는다", sub:"한국 속담 응용 · 13자", featured:false},
+];
+
+const MOTTO_GLOBAL = [
+  {text:"Just Do It", sub:"나이키 · 그냥 해라", featured:true},
+  {text:"Think Different", sub:"애플 · 다르게 생각하라", featured:true},
+  {text:"Don't Be Evil", sub:"구글 · 사악해지지 말자", featured:true},
+  {text:"Customer Obsession", sub:"아마존 · 고객에게 집착하라", featured:true},
+  {text:"If you can dream it, you can do it", sub:"디즈니 · 꿈을 꿀 수 있다면 이룰 수 있다", featured:true},
+  {text:"Imagination at Work", sub:"GE · 상상을 현실로", featured:true},
+  {text:"Think", sub:"IBM · 생각하라", featured:true},
+  {text:"Open Happiness", sub:"코카콜라 · 행복을 열어라", featured:true},
+  {text:"Save Money, Live Better", sub:"월마트 · 더 낮은 가격, 더 나은 삶", featured:true},
+  {text:"무한도전, 창의적 발상", sub:"현대 · 슬로건", featured:true},
+  {text:"사람이 미래다", sub:"SK · 사훈", featured:true},
+  {text:"인재와 기술로 세계 일류", sub:"삼성 · 사훈", featured:false},
+];
+
+// ─── 카테고리 레이블 ───
+const CAT_LABEL = {
+  love:"❤️ 사랑", friend:"🤝 우정", success:"🏆 성공", challenge:"🔥 도전", happy:"🌟 행복"
+};
+
+// ─── 카드 생성 ───
+function makeCard(item, cat) {
+  const card = document.createElement('div');
+  card.className = 'quote-card' + (item.featured ? ' featured' : '');
+  card.innerHTML = `
+    <div class="quote-text">${item.text}</div>
+    <div class="quote-meta">
+      <span class="quote-source">— ${item.source}</span>
+      <span class="quote-chars">${item.chars}</span>
+    </div>
+  `;
+  card.onclick = () => openPreview(item, cat);
+  return card;
+}
+
+// ─── 그리드 채우기 ───
+function fillGrids() {
+  const allGrid = document.getElementById('grid-all');
+  ['love','friend','success','challenge','happy'].forEach(cat => {
+    const grid = document.getElementById('grid-' + cat);
+    DATA[cat].forEach(item => {
+      const card = makeCard(item, cat);
+      grid.appendChild(card);
+      if (item.featured) allGrid.appendChild(makeCard(item, cat));
+    });
+  });
+
+  // 사훈 한국
+  const krGrid = document.getElementById('grid-motto-kr');
+  MOTTO_KR.forEach(m => {
+    const el = document.createElement('div');
+    el.className = 'motto-card';
+    el.innerHTML = `<div class="motto-text">${m.text}</div><div class="motto-sub">${m.sub}</div>`;
+    krGrid.appendChild(el);
+  });
+
+  // 사훈 글로벌
+  const globalGrid = document.getElementById('grid-motto-global');
+  MOTTO_GLOBAL.forEach(m => {
+    const el = document.createElement('div');
+    el.className = 'motto-card global';
+    el.innerHTML = `<div class="motto-text">${m.text}</div><div class="motto-sub">${m.sub}</div>`;
+    globalGrid.appendChild(el);
+  });
+}
+
+// ─── 탭 전환 ───
+function showTab(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ─── 미리보기 ───
+function openPreview(item, cat) {
+  document.getElementById('previewText').textContent = item.text;
+  document.getElementById('previewQuoteFull').textContent = item.text;
+  document.getElementById('previewSourceLine').textContent = '— ' + item.source;
+  document.getElementById('previewCat').textContent = CAT_LABEL[cat] || cat;
+  document.getElementById('previewChars').textContent = item.chars;
+  document.getElementById('previewOverlay').classList.add('open');
+}
+function closePreview(e) {
+  if (!e || e.target === document.getElementById('previewOverlay') || e.target.classList.contains('close-btn')) {
+    document.getElementById('previewOverlay').classList.remove('open');
+  }
+}
+
+fillGrids();
+</script>
+</body>
+</html>
