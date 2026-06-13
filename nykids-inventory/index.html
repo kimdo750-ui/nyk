@@ -640,7 +640,7 @@ body{
     <div class="sec-head">① 의류 종류</div>
     <div class="sec-body">
       <div class="color-grid" style="grid-template-columns:repeat(3,1fr)">
-        <button class="color-btn" onclick="selectGarment(this,'NT반팔티셔츠')" data-v="NT반팔티셔츠">👕 NT반팔</button>
+        <button class="color-btn" onclick="selectGarment(this,'NY반팔')" data-v="NY반팔">👕 NY반팔</button>
         <button class="color-btn" onclick="selectGarment(this,'디즈니반팔')" data-v="디즈니반팔">👕 디즈니</button>
         <button class="color-btn" onclick="selectGarment(this,'옆트임 밴딩반바지')" data-v="옆트임 밴딩반바지">👖 옆트임반바지</button>
         <button class="color-btn" onclick="selectGarment(this,'데일리 반바지')" data-v="데일리 반바지">👖 데일리반바지</button>
@@ -1164,7 +1164,7 @@ function addCode(type) {
 function selectGarment(btn, val) {
   sel.blank.garment = val;
   document.querySelectorAll('#panel-blank .color-btn[data-v]').forEach(b=>{
-    if(b.dataset.v && ['NT반팔티셔츠','디즈니반팔','옆트임 밴딩반바지','데일리 반바지','오버핏 맨투맨','맨투맨','기모팬츠'].includes(b.dataset.v))
+    if(b.dataset.v && ['NY반팔','디즈니반팔','옆트임 밴딩반바지','데일리 반바지','오버핏 맨투맨','맨투맨','기모팬츠'].includes(b.dataset.v))
       b.classList.remove('active');
   });
   btn.classList.add('active');
@@ -1390,7 +1390,7 @@ function parseBatch(type) {
     if (type === 'blank') {
       const colorM = line.match(new RegExp(COLORS_RE));
       const sizeM  = line.match(new RegExp(SIZES_RE));
-      const garmentM = line.match(/NT반팔티셔츠|디즈니반팔|옆트임 밴딩반바지|데일리 반바지|오버핏 맨투맨|맨투맨|기모팬츠/);
+      const garmentM = line.match(/NY반팔|디즈니반팔|옆트임 밴딩반바지|데일리 반바지|오버핏 맨투맨|맨투맨|기모팬츠/);
       const color  = colorM ? colorM[0] : '';
       const size   = sizeM  ? sizeM[0] : '';
       const garment = garmentM ? garmentM[0] : sel.blank.garment || 'NT반팔티셔츠';

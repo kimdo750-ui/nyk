@@ -56,6 +56,21 @@ function setupSheets() {
   );
 }
 
+// ── 의류 이름 정규화 (NT반팔티셔츠 → NY반팔) ──
+function normalizeGarmentNames() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = ss.getSheetByName(SHEET_NAMES.BLANK);
+  if(!sh || sh.getLastRow() < 2) return;
+
+  const data = sh.getRange(2, 1, sh.getLastRow()-1, 1).getValues();
+  data.forEach((r, i) => {
+    const garment = String(r[0]).trim();
+    if(garment === 'NT반팔티셔츠' || garment === 'NY반팔티셔츠') {
+      sh.getRange(i+2, 1).setValue('NY반팔');
+    }
+  });
+}
+
 // ── 인쇄용 무지상품 양식 생성 ──
 function generatePrintSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -66,6 +81,9 @@ function generatePrintSheet() {
     return;
   }
 
+  // 의류 이름 정규화
+  normalizeGarmentNames();
+
   // 기존 인쇄용 탭 있으면 삭제, 없으면 생성
   const PRINT_SHEET = '인쇄용_무지상품';
   let printSh = ss.getSheetByName(PRINT_SHEET);
@@ -74,63 +92,82 @@ function generatePrintSheet() {
   }
   printSh = ss.insertSheet(PRINT_SHEET);
 
-  // 무지상품재고 데이터 읽기 (A:E 열, 헤더 제외)
+  // 무지상품재고 데이터 읽기 (A:E 열, 헤더 제외) - NY반팔과 디즈니반팔만 필터링
   const data = srcSh.getRange(2, 1, srcSh.getLastRow()-1, 5).getValues();
+  const BRANDS = ['NY반팔', '디즈니반팔'];
+  const filteredData = data.filter(r => r[0] && r[1] && BRANDS.includes(String(r[0]).trim()));
 
   // 사이즈 정렬
   const SIZES = ['110','120','130','140','150','160','170'];
 
-  // 색상별 데이터 그룹화
-  const colorData = {};
-  data.filter(r=>r[0]&&r[1]).forEach(r=>{
+  // 색상별 데이터 그룹화 (브랜드별 분류)
+  const brandColorData = {};
+  filteredData.forEach(r => {
+    const brand = String(r[0]).trim();
     const color = String(r[1]).trim();
     const size = String(r[2]).trim();
     const stock = r[3]||0;
 
-    if(!colorData[color]) colorData[color] = {};
-    colorData[color][size] = stock;
+    if(!brandColorData[brand]) brandColorData[brand] = {};
+    if(!brandColorData[brand][color]) brandColorData[brand][color] = {};
+    brandColorData[brand][color][size] = stock;
   });
-
-  // 색상 정렬
-  const colors = Object.keys(colorData).sort();
 
   // A1: 날짜
   const today = Utilities.formatDate(new Date(),'Asia/Seoul','yyyy/M/d');
   printSh.getRange('A1').setValue(today).setFontSize(14).setFontWeight('bold');
 
-  // A3: 헤더 (색상, 사이즈...)
-  const header = ['색상',...SIZES];
-  printSh.getRange(3, 1, 1, header.length).setValues([header]);
-  _styleHeader(printSh, header.length);
+  let currentRow = 3;
+  BRANDS.forEach(brand => {
+    const colorData = brandColorData[brand] || {};
+    const colors = Object.keys(colorData).sort();
 
-  // 데이터 행 입력
-  let row = 4;
-  colors.forEach(color=>{
-    const colorValues = colorData[color];
-    const dataRow = [color, ...SIZES.map(sz=>{
-      const stock = colorValues[sz];
-      return (stock === 0 || stock === '') ? 'X' : stock;
-    })];
-    printSh.getRange(row, 1, 1, dataRow.length).setValues([dataRow]);
-    row++;
+    if(colors.length === 0) return; // 데이터가 없으면 스킵
+
+    // 브랜드명 섹션 헤더
+    printSh.getRange(currentRow, 1).setValue(`📦 ${brand}`).setFontWeight('bold').setFontSize(12);
+    currentRow++;
+
+    // 색상/사이즈 헤더
+    const header = ['색상', ...SIZES];
+    printSh.getRange(currentRow, 1, 1, header.length).setValues([header]);
+    _styleHeader(printSh.getRange(currentRow, 1, 1, header.length));
+    currentRow++;
+
+    // 색상별 데이터 행
+    colors.forEach(color => {
+      const colorValues = colorData[color];
+      const dataRow = [color, ...SIZES.map(sz => {
+        const stock = colorValues[sz];
+        return (stock === 0 || stock === '' || stock === undefined) ? 0 : stock;
+      })];
+      printSh.getRange(currentRow, 1, 1, dataRow.length).setValues([dataRow]);
+
+      // 5 이하면 빨간색 배경
+      for(let col = 1; col <= header.length; col++) {
+        const cellVal = dataRow[col-1];
+        if(col > 1 && cellVal !== undefined && cellVal <= 5) {
+          printSh.getRange(currentRow, col).setBackground('#ffcccc');
+        }
+      }
+      currentRow++;
+    });
+
+    currentRow++; // 브랜드 간 공백
   });
 
   // 스타일링
   // 열 너비 조정
-  printSh.setColumnWidth(1, 75);  // 색상 열
-  SIZES.forEach((_, i)=>printSh.setColumnWidth(i+2, 60));  // 사이즈 열들
-
-  // 셀 높이 조정
-  printSh.setRowHeight(1, 25);
-  printSh.setRowHeight(3, 25);
-  for(let i=4; i<row; i++) {
-    printSh.setRowHeight(i, 30);
-  }
+  printSh.setColumnWidth(1, 75);
+  SIZES.forEach((_, i) => printSh.setColumnWidth(i+2, 60));
 
   // 중앙 정렬 + 테두리
-  const dataRange = printSh.getRange(3, 1, row-3, header.length);
-  dataRange.setHorizontalAlignment('center').setVerticalAlignment('middle');
-  dataRange.setBorder(true, true, true, true, true, true);
+  const lastRow = currentRow - 1;
+  if(lastRow > 3) {
+    const dataRange = printSh.getRange(3, 1, lastRow-2, SIZES.length+1);
+    dataRange.setHorizontalAlignment('center').setVerticalAlignment('middle');
+    dataRange.setBorder(true, true, true, true, true, true);
+  }
 
   // 인쇄 설정
   const pageLayout = printSh.getPageLayout();
@@ -139,7 +176,7 @@ function generatePrintSheet() {
   pageLayout.setMargins(5, 5, 5, 5);
 
   SpreadsheetApp.getUi().alert(
-    `✅ 인쇄용 양식 생성 완료!\n\n색상: ${colors.length}개\n${PRINT_SHEET} 탭에서 확인 후 인쇄하세요.`
+    `✅ 인쇄용 양식 생성 완료!\n\nNY반팔 & 디즈니반팔\n${PRINT_SHEET} 탭에서 확인 후 인쇄하세요.`
   );
 }
 
