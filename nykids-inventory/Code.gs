@@ -150,8 +150,8 @@ function generatePrintSheet() {
     printSh.getRange(currentRow, 1).setValue(`📦 ${brand}`).setFontWeight('bold').setFontSize(12);
     currentRow++;
 
-    // 색상/사이즈 헤더
-    const header = ['색상', ...SIZES];
+    // 색상/사이즈 헤더 (합계 칼럼 추가)
+    const header = ['색상', ...SIZES, '합계'];
     printSh.getRange(currentRow, 1, 1, header.length).setValues([header])
       .setBackground('#1a1814').setFontColor('#ffffff')
       .setFontWeight('bold').setFontSize(11).setHorizontalAlignment('center');
@@ -160,16 +160,18 @@ function generatePrintSheet() {
     // 색상별 데이터 행
     colors.forEach(color => {
       const colorValues = colorData[color];
-      const dataRow = [color, ...SIZES.map(sz => {
+      const sizeValues = SIZES.map(sz => {
         const stock = colorValues[sz];
         return (stock === 0 || stock === '' || stock === undefined) ? 0 : stock;
-      })];
+      });
+      const total = sizeValues.reduce((a, b) => a + b, 0); // 합계 계산
+      const dataRow = [color, ...sizeValues, total];
       printSh.getRange(currentRow, 1, 1, dataRow.length).setValues([dataRow]);
 
-      // 5 이하면 빨간색 배경
-      for(let col = 1; col <= header.length; col++) {
+      // 5 이하면 빨간색 배경 (합계 제외)
+      for(let col = 1; col <= SIZES.length + 1; col++) {
         const cellVal = dataRow[col-1];
-        if(col > 1 && cellVal !== undefined && cellVal <= 5) {
+        if(col > 1 && col <= SIZES.length + 1 && cellVal !== undefined && cellVal <= 5) {
           printSh.getRange(currentRow, col).setBackground('#ffcccc');
         }
       }
