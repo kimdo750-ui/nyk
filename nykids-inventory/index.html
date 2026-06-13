@@ -247,10 +247,10 @@ body{
   width:100%;
 }
 .qty-btn{
-  min-width:56px;width:56px;height:56px;
+  min-width:48px;width:48px;height:48px;
   background:var(--accent);
   border:none;
-  font-size:24px;font-weight:700;color:#fff;
+  font-size:20px;font-weight:700;color:#fff;
   cursor:pointer;display:flex;align-items:center;justify-content:center;
   flex-shrink:0;transition:background .1s;
 }
@@ -517,6 +517,20 @@ body{
 .cdot-인디핑크{background:#d4809a}
 .cdot-바이올렛{background:#8040c0}
 .cdot-퍼플{background:#a855f7}
+.cdot-색종이{background:#ffc0cb}
+.cdot-오색반팔{background:#ff6b35}
+.cdot-다홍{background:#c41e3a}
+.cdot-피치{background:#ffcba4}
+.cdot-네온오렌지{background:#ff7f00}
+.cdot-네온그린{background:#39ff14}
+.cdot-네온핑크{background:#ff10f0}
+.cdot-코랄핑크{background:#ff7f7f}
+.cdot-머스트{background:#935c3d}
+.cdot-멜란지{background:#b0a8b0}
+.cdot-네이비{background:#001f3f}
+.cdot-카키{background:#c3b091}
+.cdot-그린{background:#2d7c2d}
+.cdot-오렌지{background:#ff8c00}
 </style>
 </head>
 <body>
@@ -562,11 +576,14 @@ body{
     <div class="sec-head">① 의류 종류</div>
     <div class="sec-body">
       <div class="color-grid" style="grid-template-columns:repeat(3,1fr)">
-        <button class="color-btn" onclick="selectGarment(this,'NY반팔티셔츠')" data-v="NY반팔티셔츠">👕 NY반팔</button>
+        <button class="color-btn" onclick="selectGarment(this,'NT반팔티셔츠')" data-v="NT반팔티셔츠">👕 NT반팔</button>
         <button class="color-btn" onclick="selectGarment(this,'디즈니반팔')" data-v="디즈니반팔">👕 디즈니</button>
+        <button class="color-btn" onclick="selectGarment(this,'옆트임 밴딩반바지')" data-v="옆트임 밴딩반바지">👖 옆트임반바지</button>
+        <button class="color-btn" onclick="selectGarment(this,'데일리 반바지')" data-v="데일리 반바지">👖 데일리반바지</button>
+        <button class="color-btn" onclick="selectGarment(this,'오버핏 맨투맨')" data-v="오버핏 맨투맨">👕 오버핏</button>
         <button class="color-btn" onclick="selectGarment(this,'맨투맨')" data-v="맨투맨">👕 맨투맨</button>
-        <button class="color-btn" onclick="selectGarment(this,'후드티')" data-v="후드티">🧥 후드티</button>
-        <button class="color-btn" onclick="selectGarment(this,'실내복')" data-v="실내복">🩲 실내복</button>
+        <button class="color-btn" onclick="selectGarment(this,'기모팬츠')" data-v="기모팬츠">👖 기모팬츠</button>
+        <button class="color-btn" onclick="showAddGarment()" style="border-style:dashed;color:var(--ink3)">➕ 나중에 추가</button>
       </div>
     </div>
   </div>
@@ -605,7 +622,7 @@ body{
     <div class="sec-body">
       <div class="qty-wrap">
         <button class="qty-btn" onclick="adjQty('blank',-1)">−</button>
-        <input class="qty-num" id="blank-qty" type="number" value="1" min="1" inputmode="numeric">
+        <input class="qty-num" id="blank-qty" type="number" value="1" min="0" inputmode="numeric">
         <button class="qty-btn" onclick="adjQty('blank',1)">+</button>
       </div>
       <div class="quick-qtys">
@@ -955,11 +972,12 @@ body{
 <script>
 // ══════════════════════════ DATA ══════════════════════════
 const COLORS = [
-  '화이트','블랙','그레이','베이지','블루','레드',
-  '핑크','민트','다크민트','옐로우','스카이블루',
-  '인디핑크','바이올렛','퍼플'
+  '그레이','바이올렛','옐로우','화이트','블랙','인디핑크',
+  '핑크','베이지','색종이','퍼플','블루','스카이블루',
+  '오색반팔','레드','다홍','다크민트','피치','민트',
+  '네온오렌지','네온그린','네온핑크'
 ];
-const SIZES = ['100','110','120','130','140','150','160','170','M','L','2XL','3XL'];
+const SIZES = ['110','120','130','140','150','160','170','M','L','2XL','3XL'];
 
 // 코드 프리셋 (저장된 코드 목록)
 let savedCodes = {
@@ -1082,11 +1100,15 @@ function addCode(type) {
 function selectGarment(btn, val) {
   sel.blank.garment = val;
   document.querySelectorAll('#panel-blank .color-btn[data-v]').forEach(b=>{
-    if(b.dataset.v && ['NY반팔티셔츠','디즈니반팔','맨투맨','후드티','실내복'].includes(b.dataset.v))
+    if(b.dataset.v && ['NT반팔티셔츠','디즈니반팔','옆트임 밴딩반바지','데일리 반바지','오버핏 맨투맨','맨투맨','기모팬츠'].includes(b.dataset.v))
       b.classList.remove('active');
   });
   btn.classList.add('active');
   updateSummary('blank');
+}
+
+function showAddGarment() {
+  toast('⏳ 의류 추가 기능은 추후 업데이트 예정입니다');
 }
 
 function selectColor(type, val, btn) {
@@ -1119,7 +1141,7 @@ function onCustomSize(type, val) {
 
 function adjQty(type, d) {
   const input = document.getElementById(type+'-qty');
-  const min = type==='finished' ? 0 : 1;
+  const min = type==='transfer' ? 1 : 0;
   const v = Math.max(min, (parseInt(input.value)||1) + d);
   input.value = v;
   sel[type].qty = v;
@@ -1155,18 +1177,27 @@ function updateSummary(type) {
 
   if (type === 'blank') {
     if (s.garment) tags += `<span class="sel-tag">${s.garment}</span>`;
-    if (s.color)   tags += `<span class="sel-tag color">${s.color}</span>`;
+    if (s.color) {
+      const colorCls = `cdot-${s.color}`.replace(/\s/g,'-');
+      tags += `<span class="sel-tag color"><span class="color-dot ${colorCls}" style="width:10px;height:10px;margin-right:4px;border:1px solid rgba(0,0,0,.15)"></span>${s.color}</span>`;
+    }
     if (s.size)    tags += `<span class="sel-tag size">${s.size}사이즈</span>`;
     tags += `<span class="sel-tag qty">${qty}개</span>`;
     ready = !!(s.garment && s.color && s.size);
   } else if (type === 'transfer') {
     if (s.code)  tags += `<span class="sel-tag">${s.code}</span>`;
-    if (s.color) tags += `<span class="sel-tag color">${s.color}</span>`;
+    if (s.color) {
+      const colorCls = `cdot-${s.color}`.replace(/\s/g,'-');
+      tags += `<span class="sel-tag color"><span class="color-dot ${colorCls}" style="width:10px;height:10px;margin-right:4px;border:1px solid rgba(0,0,0,.15)"></span>${s.color}</span>`;
+    }
     tags += `<span class="sel-tag qty">${qty}매</span>`;
     ready = !!(s.code && s.color);
   } else {
     if (s.code)  tags += `<span class="sel-tag">${s.code}</span>`;
-    if (s.color) tags += `<span class="sel-tag color">${s.color}</span>`;
+    if (s.color) {
+      const colorCls = `cdot-${s.color}`.replace(/\s/g,'-');
+      tags += `<span class="sel-tag color"><span class="color-dot ${colorCls}" style="width:10px;height:10px;margin-right:4px;border:1px solid rgba(0,0,0,.15)"></span>${s.color}</span>`;
+    }
     if (s.size)  tags += `<span class="sel-tag size">${s.size}사이즈</span>`;
     tags += `<span class="sel-tag qty">${qty}개</span>`;
     ready = !!(s.code && s.color && s.size);
@@ -1295,10 +1326,10 @@ function parseBatch(type) {
     if (type === 'blank') {
       const colorM = line.match(new RegExp(COLORS_RE));
       const sizeM  = line.match(new RegExp(SIZES_RE));
-      const garmentM = line.match(/NY반팔티셔츠|디즈니반팔|맨투맨|후드티|실내복/);
+      const garmentM = line.match(/NT반팔티셔츠|디즈니반팔|옆트임 밴딩반바지|데일리 반바지|오버핏 맨투맨|맨투맨|기모팬츠/);
       const color  = colorM ? colorM[0] : '';
       const size   = sizeM  ? sizeM[0] : '';
-      const garment = garmentM ? garmentM[0] : sel.blank.garment || 'NY반팔티셔츠';
+      const garment = garmentM ? garmentM[0] : sel.blank.garment || 'NT반팔티셔츠';
       if (color && size) {
         const item = { garment, color, size, qty, id: Date.now()+Math.random() };
         merge('blank', item);
