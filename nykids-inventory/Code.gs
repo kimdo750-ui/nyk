@@ -231,13 +231,13 @@ function _ensureAllSheets(ss) {
 
 function _setupOrderSheet(ss) {
   const sh = ss.insertSheet(SHEET_NAMES.ORDER,0);
-  const h=['쇼핑몰명','수령자','판매처상품명','쿠팡옵션명','노출명','수량','','제품코드','컬러','사이즈','파싱수량','파싱상태','의류종류','전사지코드','전사지필요'];
+  const h=['쇼핑몰명','수령자','판매처상품명','쿠팡옵션명','노출명','수량','','제품코드','컬러','사이즈','파싱수량','파싱상태'];
   sh.getRange(1,1,1,h.length).setValues([h]);
   _styleHeader(sh,h.length);
-  [90,105,270,90,300,45,30,90,75,60,60,75,75,75,130].forEach((w,i)=>sh.setColumnWidth(i+1,w));
+  [90,105,270,90,300,45,30,90,75,60,60,75].forEach((w,i)=>sh.setColumnWidth(i+1,w));
   sh.getRange('G1').setBackground('#cccccc').setValue('│');
   sh.setFrozenRows(1);
-  sh.getRange('A1').setNote('A~F: 원본 붙여넣기 | H~O: 자동 파싱');
+  sh.getRange('A1').setNote('A~F: 원본 붙여넣기 | H~L: 자동 파싱');
 }
 
 function _setupBlankSheet(ss) {
@@ -431,7 +431,7 @@ function parseOrders() {
     const pname=String(row[2]||'').trim(),ename=String(row[4]||'').trim();
     if(!pname)return;
     const res=_parseProductName(pname,ename);
-    sh.getRange(i+2,8,1,7).setValues([[res.code,res.color,res.size,row[5]||1,res.status,res.garment,res.transfer]]);
+    sh.getRange(i+2,8,1,7).setValues([[res.code,res.color,res.size,row[5]||1,res.status,res.type,res.code]]);
     sh.getRange(i+2,1,1,12).setBackground(res.status==='✅ 완료'?'#f0fff4':res.status==='⚠️ 수동확인'?'#fffde7':'#fff8f5');
     res.status==='✅ 완료'?ok++:warn++;
   });
@@ -440,9 +440,9 @@ function parseOrders() {
 
 function _parseProductName(pname,ename) {
   const CODE_RE=/\b([A-Z]{1,4}\d{2,4})\b/g;
-  const TRANSFER_RE=/\b([A-Z]\d+)\b/;
   const SIZE_RE=/\b(70|80|90|100|110|120|130|140|150|160|170|180|S|M|L|XL)\b/g;
   const COLOR_RE=/(블랙|화이트|그레이|네이비|베이지|카멜|레드|핑크|민트|카키|옐로우|바이올렛|스틸블루|인디핑크|네온핑크|그린|오렌지|스카이블루|아이보리|백멜란지|멜란지|청록|파랑|one\s?color)/g;
+  const TYPE_RE=/(반팔|반바지|맨투맨|기모팬츠|팬츠|7부|9부)/;
 
   const codesE=[...ename.matchAll(CODE_RE)].map(m=>m[1]);
   const codesP=[...pname.replace(/[()아동성인]/g,'').matchAll(CODE_RE)].map(m=>m[1]);
@@ -450,15 +450,12 @@ function _parseProductName(pname,ename) {
   const sil=pname.match(/(\d+_[\w가-힣]+(?:7부|9부))/);
   if(sil)code=sil[1];
 
-  const transferMatch=pname.match(TRANSFER_RE);
-  const transfer=transferMatch?transferMatch[1]:'';
-
   const sizes=[...pname.matchAll(SIZE_RE)].map(m=>m[1]);
   const colors=[...pname.matchAll(COLOR_RE)].map(m=>m[1]);
-  const garmentMatch=pname.match(/(NY반팔|디즈니반팔)/);
-  const garment=garmentMatch?garmentMatch[1]:'';
+  const typeMatch=pname.match(TYPE_RE);
+  const type=typeMatch?typeMatch[1]:'';
   const status=(!code||pname.includes('베개'))?'⚠️ 수동확인':'✅ 완료';
-  return{code,transfer,color:colors[0]||'',size:sizes[sizes.length-1]||'',garment,status};
+  return{code,color:colors[0]||'',size:sizes[sizes.length-1]||'',type,status};
 }
 
 function syncTransferCodes() {
