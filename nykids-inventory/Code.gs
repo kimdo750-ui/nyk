@@ -28,6 +28,7 @@ function onOpen() {
     .addSeparator()
     .addItem('📊 요약 대시보드 생성', 'generateDashboard')
     .addItem('🔍 주문→완제품 매칭 확인', 'matchOrdersWithFinished')
+    .addItem('🖨️ 전사지 필요수량 계산', 'calculateTransferNeeds')
     .addSeparator()
     .addItem('🖨️ 인쇄용 무지상품 양식 생성', 'generatePrintSheet')
     .addSeparator()
@@ -230,13 +231,13 @@ function _ensureAllSheets(ss) {
 
 function _setupOrderSheet(ss) {
   const sh = ss.insertSheet(SHEET_NAMES.ORDER,0);
-  const h=['쇼핑몰명','수령자','판매처상품명','쿠팡옵션명','노출명','수량','','제품코드','컬러','사이즈','파싱수량','파싱상태'];
+  const h=['쇼핑몰명','수령자','판매처상품명','쿠팡옵션명','노출명','수량','','제품코드','컬러','사이즈','파싱수량','파싱상태','의류종류','전사지코드','전사지필요'];
   sh.getRange(1,1,1,h.length).setValues([h]);
   _styleHeader(sh,h.length);
-  [90,105,270,90,300,45,30,90,75,60,60,75].forEach((w,i)=>sh.setColumnWidth(i+1,w));
+  [90,105,270,90,300,45,30,90,75,60,60,75,75,75,130].forEach((w,i)=>sh.setColumnWidth(i+1,w));
   sh.getRange('G1').setBackground('#cccccc').setValue('│');
   sh.setFrozenRows(1);
-  sh.getRange('A1').setNote('A~F: 원본 붙여넣기 | H~L: 자동 파싱');
+  sh.getRange('A1').setNote('A~F: 원본 붙여넣기 | H~O: 자동 파싱');
 }
 
 function _setupBlankSheet(ss) {
@@ -620,6 +621,81 @@ function generateDashboard() {
   dash.setColumnWidth(3,30);
 
   SpreadsheetApp.getUi().alert('✅ 대시보드 생성 완료!\n\n금일 주문: '+orderTodayQty+'건\n완제품: '+finTotalQty+'개\n무지상품: '+blankTotalQty+'개\n전사지: '+transTotalQty+'개');
+}
+
+// ── 전사지 필요수량 계산 (색상별 White/Black 구분) ──
+function calculateTransferNeeds() {
+  const ss=SpreadsheetApp.getActiveSpreadsheet();
+  const orderSh=ss.getSheetByName(SHEET_NAMES.ORDER);
+  const transSh=ss.getSheetByName(SHEET_NAMES.TRANSFER);
+
+  if(!orderSh || !transSh) {
+    SpreadsheetApp.getUi().alert('❌ 주문확인 또는 전사지재고 시트가 없습니다');
+    return;
+  }
+
+  // White 전사지 필요 색상 (어두운색)
+  const DARK_COLORS=['레드','검은색','바이올렛','블루'];
+
+  // 전사지재고 데이터 읽기 (코드, 색상, 수량)
+  const transData=transSh.getLastRow()>1?transSh.getRange(2,1,transSh.getLastRow()-1,3).getValues():[];
+
+  // 주문 데이터 읽기 (파싱된 항목들)
+  const orderData=orderSh.getLastRow()>1?orderSh.getRange(2,1,orderSh.getLastRow()-1,14).getValues():[];
+
+  let needsList={};
+  let processedCount=0;
+
+  orderData.forEach((r,i)=>{
+    const transfer=String(r[13]||'').trim();
+    const color=String(r[8]||'').trim();
+    const qty=Number(r[10])||1;
+    const status=String(r[11]||'').trim();
+
+    // 파싱 완료되고 transfer 코드가 있는 주문만 처리
+    if(!transfer || !color || !status.includes('✅')) return;
+
+    // 주문 색상에 따라 필요한 전사지 색상 결정
+    const needsInkColor=DARK_COLORS.includes(color)?'흰색':'검은색';
+
+    // 전사지재고에서 해당 코드+색상 찾기
+    const transRow=transData.find(t=>
+      String(t[0]).trim()===transfer && String(t[1]).trim()===needsInkColor
+    );
+
+    const currentStock=transRow?Number(transRow[2])||0:0;
+    const needsQty=Math.max(0, qty-currentStock);
+
+    if(needsQty>0) {
+      const key=`${transfer}(${needsInkColor})`;
+      if(!needsList[key]) {
+        needsList[key]={code:transfer, inkColor:needsInkColor, total:0, orders:[]};
+      }
+      needsList[key].total+=needsQty;
+      needsList[key].orders.push({color, qty, current:currentStock});
+    }
+
+    // 주문확인 시트의 O열(전사지필요)에 표시
+    const needsText=needsQty>0?`🔴 ${needsInkColor} ${needsQty}개 필요`:'✅ 충분';
+    orderSh.getRange(i+2, 15).setValue(needsText).setFontColor(needsQty>0?'#c02820':'#1a7a40');
+    processedCount++;
+  });
+
+  // 요약 메시지 생성
+  let summaryMsg='✅ 전사지 필요수량 계산 완료!\n\n';
+  const needsArray=Object.values(needsList);
+
+  if(needsArray.length===0) {
+    summaryMsg+='🟢 모든 전사지 충분합니다';
+  } else {
+    summaryMsg+='🔴 인쇄 필요:\n\n';
+    needsArray.forEach(item=>{
+      summaryMsg+=`${item.code} (${item.inkColor}): ${item.total}개 필요\n`;
+    });
+  }
+
+  summaryMsg+=`\n처리된 주문: ${processedCount}건`;
+  SpreadsheetApp.getUi().alert(summaryMsg);
 }
 
 // ── 주문→완제품/무지상품 차감 ──
