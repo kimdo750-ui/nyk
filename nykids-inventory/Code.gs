@@ -75,7 +75,7 @@ function normalizeGarmentNames() {
   });
 }
 
-// ── 인쇄용 무지상품 양식 생성 ──
+// ── 인쇄용 무지상품 양식 생성 (색상별 NY+디즈니 비교) ──
 function generatePrintSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const srcSh = ss.getSheetByName(SHEET_NAMES.BLANK);
@@ -85,119 +85,93 @@ function generatePrintSheet() {
     return;
   }
 
-  // 의류 이름 정규화
   normalizeGarmentNames();
 
-  // 기존 인쇄용 탭 있으면 삭제, 없으면 생성
   const PRINT_SHEET = '인쇄용_무지상품';
   let printSh = ss.getSheetByName(PRINT_SHEET);
-  if(printSh) {
-    ss.deleteSheet(printSh);
-  }
+  if(printSh) ss.deleteSheet(printSh);
   printSh = ss.insertSheet(PRINT_SHEET);
 
-  // 무지상품재고 데이터 읽기
   const data = srcSh.getRange(2, 1, srcSh.getLastRow()-1, 5).getValues();
   const BRANDS = ['NY반팔', '디즈니반팔'];
+  const SIZES = ['110','120','130','140','150','160','170'];
 
-  // 필터링 (의류종류가 NY반팔 또는 디즈니반팔)
-  const filteredData = data.filter(r => {
-    const garment = String(r[0]||'').trim();
-    return garment && r[1] && BRANDS.includes(garment);
+  // 색상별로 데이터 정리 (색상 > 사이즈 > 브랜드)
+  const colorSizeData = {};
+  data.forEach(r => {
+    const brand = String(r[0]||'').trim();
+    const color = String(r[1]||'').trim();
+    const size = String(r[2]||'').trim();
+    const stock = r[3] || 0;
+
+    if(!color || !size || !BRANDS.includes(brand)) return;
+
+    if(!colorSizeData[color]) colorSizeData[color] = {};
+    if(!colorSizeData[color][size]) colorSizeData[color][size] = {};
+    colorSizeData[color][size][brand] = stock;
   });
 
-  // 데이터 없음 체크
-  if(filteredData.length === 0) {
-    SpreadsheetApp.getUi().alert(
-      '❌ 필터링된 데이터 없음\n\n확인:\n' +
-      '• A열(의류종류)에 "NY반팔" 또는 "디즈니반팔"이 있나요?\n' +
-      '• B열(색상)이 비어있지 않나요?\n\n' +
-      '데이터 예시:\n' +
-      '행: NY반팔 | 화이트 | 130 | 5'
-    );
+  if(Object.keys(colorSizeData).length === 0) {
+    SpreadsheetApp.getUi().alert('❌ 필터링된 데이터 없음');
     ss.deleteSheet(printSh);
     return;
   }
 
-  // 사이즈 정렬
-  const SIZES = ['110','120','130','140','150','160','170'];
-
-  // 색상별 데이터 그룹화 (브랜드별 분류)
-  const brandColorData = {};
-  filteredData.forEach(r => {
-    const brand = String(r[0]).trim();
-    const color = String(r[1]).trim();
-    const size = String(r[2]).trim();
-    const stock = r[3]||0;
-
-    if(!brandColorData[brand]) brandColorData[brand] = {};
-    if(!brandColorData[brand][color]) brandColorData[brand][color] = {};
-    brandColorData[brand][color][size] = stock;
-  });
-
-  // A1: 날짜
+  // 날짜
   const today = Utilities.formatDate(new Date(),'Asia/Seoul','yyyy/M/d');
   printSh.getRange('A1').setValue(today).setFontSize(14).setFontWeight('bold');
 
   let currentRow = 3;
-  BRANDS.forEach(brand => {
-    const colorData = brandColorData[brand] || {};
-    const colors = Object.keys(colorData).sort();
+  const colors = Object.keys(colorSizeData).sort();
 
-    if(colors.length === 0) return; // 데이터가 없으면 스킵
+  // 색상별 섹션
+  colors.forEach(color => {
+    const sizeData = colorSizeData[color];
 
-    // 브랜드명 섹션 헤더
-    printSh.getRange(currentRow, 1).setValue(`📦 ${brand}`).setFontWeight('bold').setFontSize(12);
+    // 색상명 헤더
+    printSh.getRange(currentRow, 1).setValue(`🎨 ${color}`).setFontWeight('bold').setFontSize(12);
     currentRow++;
 
-    // 색상/사이즈 헤더 (합계 칼럼 추가)
-    const header = ['색상', ...SIZES, '합계'];
+    // 사이즈 헤더 (NY반팔 | 디즈니반팔)
+    const header = ['사이즈', 'NY반팔', '디즈니반팔'];
     printSh.getRange(currentRow, 1, 1, header.length).setValues([header])
       .setBackground('#1a1814').setFontColor('#ffffff')
       .setFontWeight('bold').setFontSize(11).setHorizontalAlignment('center');
     currentRow++;
 
-    // 색상별 데이터 행
-    colors.forEach(color => {
-      const colorValues = colorData[color];
-      const sizeValues = SIZES.map(sz => {
-        const stock = colorValues[sz];
-        return (stock === 0 || stock === '' || stock === undefined) ? 0 : stock;
-      });
-      const total = sizeValues.reduce((a, b) => a + b, 0); // 합계 계산
-      const dataRow = [color, ...sizeValues, total];
-      printSh.getRange(currentRow, 1, 1, dataRow.length).setValues([dataRow]);
+    // 각 사이즈별 NY + 디즈니 표시
+    SIZES.forEach(size => {
+      if(!sizeData[size]) return;
 
-      // 5 이하면 빨간색 배경 (합계 제외)
-      for(let col = 1; col <= SIZES.length + 1; col++) {
-        const cellVal = dataRow[col-1];
-        if(col > 1 && col <= SIZES.length + 1 && cellVal !== undefined && cellVal <= 5) {
-          printSh.getRange(currentRow, col).setBackground('#ffcccc');
-        }
+      const ny = sizeData[size]['NY반팔'] || 0;
+      const disney = sizeData[size]['디즈니반팔'] || 0;
+      const dataRow = [size, ny, disney];
+
+      printSh.getRange(currentRow, 1, 1, header.length).setValues([dataRow]);
+
+      // 5 이하 빨간색
+      if(ny !== undefined && ny <= 5 && ny !== '') {
+        printSh.getRange(currentRow, 2).setBackground('#ffcccc');
       }
+      if(disney !== undefined && disney <= 5 && disney !== '') {
+        printSh.getRange(currentRow, 3).setBackground('#ffcccc');
+      }
+
       currentRow++;
     });
 
-    currentRow++; // 브랜드 간 공백
+    currentRow++; // 색상 간 공백
   });
 
   // 스타일링
-  // 열 너비 조정
-  printSh.setColumnWidth(1, 75);
-  SIZES.forEach((_, i) => printSh.setColumnWidth(i+2, 60));
+  printSh.setColumnWidth(1, 80);
+  printSh.setColumnWidth(2, 80);
+  printSh.setColumnWidth(3, 80);
 
-  // 중앙 정렬 + 테두리
-  const lastRow = currentRow - 1;
-  if(lastRow > 3) {
-    const dataRange = printSh.getRange(3, 1, lastRow-2, SIZES.length+1);
-    dataRange.setHorizontalAlignment('center').setVerticalAlignment('middle');
-    dataRange.setBorder(true, true, true, true, true, true);
-  }
-
-  // 인쇄 설정 (try-catch로 에러 무시)
+  // 인쇄 설정
   try {
     const pageLayout = printSh.getPageLayout();
-    pageLayout.setOrientation(SpreadsheetApp.PageOrientation.LANDSCAPE);
+    pageLayout.setOrientation(SpreadsheetApp.PageOrientation.PORTRAIT);
     pageLayout.setPaperSize(SpreadsheetApp.PaperSize.A4);
     pageLayout.setMargins(5, 5, 5, 5);
   } catch(e) {
@@ -205,7 +179,7 @@ function generatePrintSheet() {
   }
 
   SpreadsheetApp.getUi().alert(
-    `✅ 인쇄용 양식 생성 완료!\n\nNY반팔 & 디즈니반팔\n${PRINT_SHEET} 탭에서 확인 후 인쇄하세요.`
+    `✅ 인쇄용 양식 생성 완료!\n\n색상별 NY반팔 vs 디즈니반팔\n${PRINT_SHEET} 탭에서 확인하세요.`
   );
 }
 
