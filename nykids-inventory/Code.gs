@@ -263,13 +263,12 @@ function _setupTransferSheet(ss) {
 
 function _setupFinishedSheet(ss) {
   const sh=ss.insertSheet(SHEET_NAMES.FINISHED);
-  const h=['완제품SKU','컬러','사이즈','완제품재고','일평균판매량','예상소진일','비고'];
+  const h=['완제품SKU','컬러','사이즈','완제품재고','업데이트날짜','발견/미발견'];
   sh.getRange(1,1,1,h.length).setValues([h]);
   _styleHeader(sh,h.length);
-  [90,75,60,90,90,90,150].forEach((w,i)=>sh.setColumnWidth(i+1,w));
+  [90,75,60,90,120,90].forEach((w,i)=>sh.setColumnWidth(i+1,w));
   sh.setFrozenRows(1);
-  sh.getRange(2,1,1,5).setValues([['W281','화이트','130',0,3]]);
-  sh.getRange('F2').setFormula('=IF(OR(D2="",E2="",E2=0),"",IF(D2=0,"재고없음",ROUND(D2/E2,0)&"일"))');
+  sh.getRange(2,1,1,4).setValues([['W281','화이트','130',0]]);
 }
 
 function _styleHeader(sh,n) {
@@ -489,7 +488,7 @@ function matchOrdersWithFinished() {
 
   const orderData = orderSh.getRange(2, 1, orderSh.getLastRow()-1, 12).getValues();
   const finData = finSh && finSh.getLastRow() > 1
-    ? finSh.getRange(2, 1, finSh.getLastRow()-1, 7).getValues()
+    ? finSh.getRange(2, 1, finSh.getLastRow()-1, 6).getValues()
     : [];
 
   let matched = 0, unmatched = 0, deleted = 0;
@@ -533,12 +532,14 @@ function matchOrdersWithFinished() {
         rowsToDelete.push(finSheetRow);
         deleted++;
       } else {
-        // 수량 감소
+        // 수량 감소 (D열)
         finSh.getRange(finSheetRow, 4).setValue(newStock);
       }
 
-      // 출고일 기록 (G열)
-      finSh.getRange(finSheetRow, 7).setValue(today);
+      // 업데이트날짜 기록 (E열)
+      finSh.getRange(finSheetRow, 5).setValue(today);
+      // 발견 표시 (F열)
+      finSh.getRange(finSheetRow, 6).setValue('✅ 발견').setFontColor('#1a7a40');
       matched++;
     } else {
       orderSh.getRange(i+2, 13).setValue('❌ 미발견').setFontColor('#c02820');
