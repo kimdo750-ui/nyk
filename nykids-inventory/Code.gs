@@ -476,7 +476,7 @@ function syncTransferCodes() {
   SpreadsheetApp.getActiveSpreadsheet().toast(`동기화 완료. 신규 ${added}건 추가`,'✅',3);
 }
 
-// ── 주문→완제품 매칭 확인 ──
+// ── 주문→완제품 매칭 확인 (자동 수량 감소 & 삭제) ──
 function matchOrdersWithFinished() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const orderSh = ss.getSheetByName(SHEET_NAMES.ORDER);
@@ -489,30 +489,56 @@ function matchOrdersWithFinished() {
 
   const orderData = orderSh.getRange(2, 1, orderSh.getLastRow()-1, 12).getValues();
   const finData = finSh && finSh.getLastRow() > 1
-    ? finSh.getRange(2, 1, finSh.getLastRow()-1, 3).getValues()
+    ? finSh.getRange(2, 1, finSh.getLastRow()-1, 7).getValues()
     : [];
 
-  let matched = 0, unmatched = 0;
+  let matched = 0, unmatched = 0, deleted = 0;
+  const today = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd');
+  const rowsToDelete = [];
 
   orderData.forEach((r, i) => {
     const code = String(r[7]||'').trim();
     const color = String(r[8]||'').trim();
     const size = String(r[9]||'').trim();
+    const orderQty = Number(r[10]) || 1;
 
     if(!code || !color || !size) {
       orderSh.getRange(i+2, 13).setValue('⚠️ 불완전');
       return;
     }
 
-    // 완제품재고에서 찾기 (SKU, 컬러, 사이즈 매칭)
-    const found = finData.find(f =>
-      String(f[0]||'').trim() === code &&
-      String(f[1]||'').trim() === color &&
-      String(f[2]||'').trim() === size
-    );
+    // 완제품재고에서 찾기
+    let foundIdx = -1;
+    for(let j = 0; j < finData.length; j++) {
+      if(String(finData[j][0]||'').trim() === code &&
+         String(finData[j][1]||'').trim() === color &&
+         String(finData[j][2]||'').trim() === size) {
+        foundIdx = j;
+        break;
+      }
+    }
 
-    if(found) {
+    if(foundIdx >= 0) {
+      const finRow = finData[foundIdx];
+      const currentStock = Number(finRow[3]) || 0;
+      const newStock = currentStock - orderQty;
+      const finSheetRow = foundIdx + 2;
+
+      // 주문확인에 발견 표시
       orderSh.getRange(i+2, 13).setValue('✅ 발견').setFontColor('#1a7a40');
+
+      // 완제품재고 처리
+      if(newStock <= 0) {
+        // 0 이하면 삭제
+        rowsToDelete.push(finSheetRow);
+        deleted++;
+      } else {
+        // 수량 감소
+        finSh.getRange(finSheetRow, 4).setValue(newStock);
+      }
+
+      // 출고일 기록 (G열)
+      finSh.getRange(finSheetRow, 7).setValue(today);
       matched++;
     } else {
       orderSh.getRange(i+2, 13).setValue('❌ 미발견').setFontColor('#c02820');
@@ -520,8 +546,13 @@ function matchOrdersWithFinished() {
     }
   });
 
+  // 역순으로 삭제 (행 인덱스 변경 방지)
+  rowsToDelete.sort((a, b) => b - a).forEach(row => {
+    finSh.deleteRow(row);
+  });
+
   SpreadsheetApp.getUi().alert(
-    `✅ 매칭 완료!\n\n발견: ${matched}건\n미발견: ${unmatched}건`
+    `✅ 완료!\n\n발견 & 처리: ${matched}건\n미발견: ${unmatched}건\n삭제: ${deleted}건`
   );
 }
 
