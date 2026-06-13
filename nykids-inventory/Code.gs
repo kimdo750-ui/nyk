@@ -245,107 +245,140 @@ function _styleHeader(sh,n) {
 }
 
 // ════════════════════════════════════════════════════════
-// 백업 & 복원 기능
+// 백업 & 복원 기능 (3개 시트: 무지상품재고, 전사지재고, 완제품재고)
 // ════════════════════════════════════════════════════════
 function createBackup() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const timestamp = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd_HH-mm-ss');
-  const backupName = `🔒백업_${timestamp}`;
+  const timestamp = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss');
 
-  // 무지상품재고 시트만 백업
-  const srcSh = ss.getSheetByName(SHEET_NAMES.BLANK);
-  if (!srcSh) {
-    SpreadsheetApp.getUi().alert('❌ 무지상품재고 시트가 없습니다');
-    return;
-  }
+  // 백업할 시트들
+  const BACKUP_SHEETS = [SHEET_NAMES.BLANK, SHEET_NAMES.TRANSFER, SHEET_NAMES.FINISHED];
+  const backupPrefix = `🔒백업`;
 
-  // 기존 백업 시트 중 가장 오래된 것 삭제 (최대 10개 유지)
+  // 기존 백업 개수 세기 (timestamp 기준)
   const allSheets = ss.getSheets().map(s => s.getName());
-  const backups = allSheets.filter(n => n.startsWith('🔒백업_')).sort().reverse();
-  if (backups.length >= 10) {
-    const oldest = backups[backups.length - 1];
-    try { ss.deleteSheet(ss.getSheetByName(oldest)); } catch(e) {}
+  const existingBackups = allSheets.filter(n => n.startsWith(backupPrefix)).map(n => {
+    const match = n.match(/\[(.*?)\]/);
+    return match ? match[1] : null;
+  }).filter(Boolean);
+
+  const uniqueTimestamps = [...new Set(existingBackups)];
+
+  // 최대 10개 백업 유지 (가장 오래된 것 삭제)
+  if (uniqueTimestamps.length >= 10) {
+    const oldestTimestamp = uniqueTimestamps.sort()[0];
+    const sheetsToDelete = allSheets.filter(n => n.includes(`[${oldestTimestamp}]`));
+    sheetsToDelete.forEach(name => {
+      try { ss.deleteSheet(ss.getSheetByName(name)); } catch(e) {}
+    });
   }
 
-  // 새 백업 시트 생성
-  const backupSh = ss.insertSheet(backupName);
-  const srcData = srcSh.getRange(1, 1, srcSh.getLastRow(), srcSh.getLastColumn()).getValues();
-  backupSh.getRange(1, 1, srcData.length, srcData[0].length).setValues(srcData);
+  // 각 시트별로 백업 생성
+  BACKUP_SHEETS.forEach(sheetName => {
+    const srcSh = ss.getSheetByName(sheetName);
+    if (!srcSh) return;
 
-  SpreadsheetApp.getUi().alert(`✅ 백업 생성됨!\n${backupName}`);
+    const backupName = `${backupPrefix} [${timestamp}] ${sheetName}`;
+    const backupSh = ss.insertSheet(backupName);
+
+    const srcData = srcSh.getRange(1, 1, srcSh.getLastRow(), srcSh.getLastColumn()).getValues();
+    backupSh.getRange(1, 1, srcData.length, srcData[0].length).setValues(srcData);
+  });
+
+  SpreadsheetApp.getUi().alert(`✅ 백업 생성 완료!\n\n무지상품재고\n전사지재고\n완제품재고\n\n[${timestamp}]`);
 }
 
 function listBackups() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const allSheets = ss.getSheets().map(s => s.getName());
-  const backups = allSheets.filter(n => n.startsWith('🔒백업_')).sort().reverse();
+  const backups = allSheets.filter(n => n.startsWith('🔒백업')).map(n => {
+    const match = n.match(/\[(.*?)\]/);
+    return match ? match[1] : null;
+  }).filter(Boolean);
 
-  if (backups.length === 0) {
+  const uniqueBackups = [...new Set(backups)].sort().reverse();
+
+  if (uniqueBackups.length === 0) {
     SpreadsheetApp.getUi().alert('📂 백업이 없습니다.\n💾 백업 생성을 먼저 실행하세요.');
     return;
   }
 
-  SpreadsheetApp.getUi().alert(`📂 사용 가능한 백업 (${backups.length}개):\n\n${backups.join('\n')}`);
+  let msg = `📂 사용 가능한 백업 (${uniqueBackups.length}개):\n\n`;
+  uniqueBackups.forEach((ts, i) => {
+    msg += `${i+1}번: ${ts}\n`;
+  });
+  SpreadsheetApp.getUi().alert(msg);
 }
 
 function restoreBackupUI() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const allSheets = ss.getSheets().map(s => s.getName());
-  const backups = allSheets.filter(n => n.startsWith('🔒백업_')).sort().reverse();
+  const backups = allSheets.filter(n => n.startsWith('🔒백업')).map(n => {
+    const match = n.match(/\[(.*?)\]/);
+    return match ? match[1] : null;
+  }).filter(Boolean);
 
-  if (backups.length === 0) {
+  const uniqueBackups = [...new Set(backups)].sort().reverse();
+
+  if (uniqueBackups.length === 0) {
     SpreadsheetApp.getUi().alert('📂 백업이 없습니다.');
     return;
   }
 
+  let msg = `📂 복원할 백업 선택 (번호 입력):\n\n`;
+  uniqueBackups.forEach((ts, i) => {
+    msg += `${i+1}번: ${ts}\n`;
+  });
+
   const ui = SpreadsheetApp.getUi();
-  const response = ui.prompt(
-    `📂 복원할 백업 선택\n(정확한 이름 입력)\n\n사용 가능:\n${backups.join('\n')}`,
-    ui.ButtonSet.OK_CANCEL
-  );
+  const response = ui.prompt(msg + '\n예) 1 (엔터)', ui.ButtonSet.OK_CANCEL);
 
   if (response.getSelectedButton() === ui.Button.OK) {
-    const selectedBackup = response.getResponseText().trim();
-    restoreBackup(selectedBackup);
+    const idx = parseInt(response.getResponseText().trim()) - 1;
+    if (idx >= 0 && idx < uniqueBackups.length) {
+      restoreBackup(uniqueBackups[idx]);
+    } else {
+      SpreadsheetApp.getUi().alert('❌ 잘못된 번호입니다.');
+    }
   }
 }
 
-function restoreBackup(backupName) {
+function restoreBackup(timestamp) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const backupSh = ss.getSheetByName(backupName);
-
-  if (!backupSh) {
-    SpreadsheetApp.getUi().alert(`❌ 백업을 찾을 수 없습니다: ${backupName}`);
-    return;
-  }
-
-  const blankSh = ss.getSheetByName(SHEET_NAMES.BLANK);
-  if (!blankSh) {
-    SpreadsheetApp.getUi().alert('❌ 무지상품재고 시트가 없습니다');
-    return;
-  }
+  const RESTORE_SHEETS = [SHEET_NAMES.BLANK, SHEET_NAMES.TRANSFER, SHEET_NAMES.FINISHED];
 
   // 확인 다이얼로그
   const ui = SpreadsheetApp.getUi();
   const response = ui.alert(
-    `⚠️ 현재 데이터가 삭제되고 백업으로 복원됩니다.\n계속하시겠습니까?\n\n[${backupName}]에서 복원`,
+    `⚠️ 주의: 현재 데이터가 삭제되고 다음으로 복원됩니다:\n\n무지상품재고\n전사지재고\n완제품재고\n\n[${timestamp}]\n\n계속하시겠습니까?`,
     ui.ButtonSet.YES_NO
   );
 
-  if (response === ui.Button.YES) {
+  if (response !== ui.Button.YES) return;
+
+  // 각 시트 복원
+  let restored = 0;
+  RESTORE_SHEETS.forEach(sheetName => {
+    const backupName = `🔒백업 [${timestamp}] ${sheetName}`;
+    const backupSh = ss.getSheetByName(backupName);
+    const targetSh = ss.getSheetByName(sheetName);
+
+    if (!backupSh || !targetSh) return;
+
     // 데이터 복사
     const backupData = backupSh.getRange(1, 1, backupSh.getLastRow(), backupSh.getLastColumn()).getValues();
 
-    // 기존 데이터 삭제
-    if (blankSh.getLastRow() > 1) {
-      blankSh.deleteRows(2, blankSh.getLastRow() - 1);
+    // 기존 데이터 삭제 (헤더 제외)
+    if (targetSh.getLastRow() > 1) {
+      targetSh.deleteRows(2, targetSh.getLastRow() - 1);
     }
 
     // 새 데이터 입력
-    blankSh.getRange(1, 1, backupData.length, backupData[0].length).setValues(backupData);
+    targetSh.getRange(1, 1, backupData.length, backupData[0].length).setValues(backupData);
+    restored++;
+  });
 
-    SpreadsheetApp.getUi().alert(`✅ 복원 완료!\n${backupName}에서 복원되었습니다.`);
-  }
+  SpreadsheetApp.getUi().alert(`✅ 복원 완료!\n\n${restored}개 시트 복원됨\n[${timestamp}]`);
 }
 
 // ── 주문서 파싱 (자동 백업 포함) ──
