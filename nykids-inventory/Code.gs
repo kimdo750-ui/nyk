@@ -28,6 +28,10 @@ function onOpen() {
     .addSeparator()
     .addItem('🖨️ 인쇄용 무지상품 양식 생성', 'generatePrintSheet')
     .addSeparator()
+    .addItem('💾 백업 생성', 'createBackup')
+    .addItem('📂 백업 복원', 'restoreBackupUI')
+    .addItem('📋 백업 목록', 'listBackups')
+    .addSeparator()
     .addItem('🤖 AI 재고 분석 채팅', 'openChatSidebar')
     .addSeparator()
     .addItem('⚙️ Anthropic API 키 설정', 'setApiKey')
@@ -239,8 +243,114 @@ function _styleHeader(sh,n) {
   try{sh.setRowHeight(1,30);}catch(e){}
 }
 
-// ── 주문서 파싱 ──
+// ════════════════════════════════════════════════════════
+// 백업 & 복원 기능
+// ════════════════════════════════════════════════════════
+function createBackup() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const timestamp = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd_HH-mm-ss');
+  const backupName = `🔒백업_${timestamp}`;
+
+  // 무지상품재고 시트만 백업
+  const srcSh = ss.getSheetByName(SHEET_NAMES.BLANK);
+  if (!srcSh) {
+    SpreadsheetApp.getUi().alert('❌ 무지상품재고 시트가 없습니다');
+    return;
+  }
+
+  // 기존 백업 시트 중 가장 오래된 것 삭제 (최대 10개 유지)
+  const allSheets = ss.getSheets().map(s => s.getName());
+  const backups = allSheets.filter(n => n.startsWith('🔒백업_')).sort().reverse();
+  if (backups.length >= 10) {
+    const oldest = backups[backups.length - 1];
+    try { ss.deleteSheet(ss.getSheetByName(oldest)); } catch(e) {}
+  }
+
+  // 새 백업 시트 생성
+  const backupSh = ss.insertSheet(backupName);
+  const srcData = srcSh.getRange(1, 1, srcSh.getLastRow(), srcSh.getLastColumn()).getValues();
+  backupSh.getRange(1, 1, srcData.length, srcData[0].length).setValues(srcData);
+
+  SpreadsheetApp.getUi().alert(`✅ 백업 생성됨!\n${backupName}`);
+}
+
+function listBackups() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const allSheets = ss.getSheets().map(s => s.getName());
+  const backups = allSheets.filter(n => n.startsWith('🔒백업_')).sort().reverse();
+
+  if (backups.length === 0) {
+    SpreadsheetApp.getUi().alert('📂 백업이 없습니다.\n💾 백업 생성을 먼저 실행하세요.');
+    return;
+  }
+
+  SpreadsheetApp.getUi().alert(`📂 사용 가능한 백업 (${backups.length}개):\n\n${backups.join('\n')}`);
+}
+
+function restoreBackupUI() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const allSheets = ss.getSheets().map(s => s.getName());
+  const backups = allSheets.filter(n => n.startsWith('🔒백업_')).sort().reverse();
+
+  if (backups.length === 0) {
+    SpreadsheetApp.getUi().alert('📂 백업이 없습니다.');
+    return;
+  }
+
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.prompt(
+    `📂 복원할 백업 선택\n(정확한 이름 입력)\n\n사용 가능:\n${backups.join('\n')}`,
+    ui.ButtonSet.OK_CANCEL
+  );
+
+  if (response.getSelectedButton() === ui.Button.OK) {
+    const selectedBackup = response.getResponseText().trim();
+    restoreBackup(selectedBackup);
+  }
+}
+
+function restoreBackup(backupName) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const backupSh = ss.getSheetByName(backupName);
+
+  if (!backupSh) {
+    SpreadsheetApp.getUi().alert(`❌ 백업을 찾을 수 없습니다: ${backupName}`);
+    return;
+  }
+
+  const blankSh = ss.getSheetByName(SHEET_NAMES.BLANK);
+  if (!blankSh) {
+    SpreadsheetApp.getUi().alert('❌ 무지상품재고 시트가 없습니다');
+    return;
+  }
+
+  // 확인 다이얼로그
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.alert(
+    `⚠️ 현재 데이터가 삭제되고 백업으로 복원됩니다.\n계속하시겠습니까?\n\n[${backupName}]에서 복원`,
+    ui.ButtonSet.YES_NO
+  );
+
+  if (response === ui.Button.YES) {
+    // 데이터 복사
+    const backupData = backupSh.getRange(1, 1, backupSh.getLastRow(), backupSh.getLastColumn()).getValues();
+
+    // 기존 데이터 삭제
+    if (blankSh.getLastRow() > 1) {
+      blankSh.deleteRows(2, blankSh.getLastRow() - 1);
+    }
+
+    // 새 데이터 입력
+    blankSh.getRange(1, 1, backupData.length, backupData[0].length).setValues(backupData);
+
+    SpreadsheetApp.getUi().alert(`✅ 복원 완료!\n${backupName}에서 복원되었습니다.`);
+  }
+}
+
+// ── 주문서 파싱 (자동 백업 포함) ──
 function parseOrders() {
+  // 파싱 전 자동 백업
+  createBackup();
   const ss=SpreadsheetApp.getActiveSpreadsheet();
   _ensureAllSheets(ss);
   const sh=ss.getSheetByName(SHEET_NAMES.ORDER);
