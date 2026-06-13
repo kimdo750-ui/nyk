@@ -138,9 +138,9 @@ function generatePrintSheet() {
       const dataRow = [color, ...SIZES.map(sz => sizeData[sz] || 0)];
       printSh.getRange(currentRow, 1, 1, dataRow.length).setValues([dataRow]);
 
-      // 5 이하 빨간색
+      // 5 이하 모두 빨간색 (0 포함)
       for(let col = 2; col <= SIZES.length + 1; col++) {
-        if(dataRow[col-1] <= 5 && dataRow[col-1] !== 0) {
+        if(dataRow[col-1] <= 5) {
           printSh.getRange(currentRow, col).setBackground('#ffcccc');
         }
       }
@@ -188,8 +188,9 @@ function generatePrintSheet() {
       const dataRow = [color, ...SIZES.map(sz => sizeData[sz] || 0)];
       printSh.getRange(currentRow, 1, 1, dataRow.length).setValues([dataRow]);
 
+      // 5 이하 모두 빨간색 (0 포함)
       for(let col = 2; col <= SIZES.length + 1; col++) {
-        if(dataRow[col-1] <= 5 && dataRow[col-1] !== 0) {
+        if(dataRow[col-1] <= 5) {
           printSh.getRange(currentRow, col).setBackground('#ffcccc');
         }
       }
