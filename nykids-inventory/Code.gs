@@ -532,18 +532,27 @@ function generateDashboard() {
   row+=1;
 
   // 완제품재고
-  let finTotalQty=0,finTotalItems=0;
+  let finTotalQty=0,finTotalItems=0,finTodayQty=0;
   if(finSh && finSh.getLastRow()>1) {
-    const finData=finSh.getRange(2,1,finSh.getLastRow()-1,4).getValues();
+    const finData=finSh.getRange(2,1,finSh.getLastRow()-1,6).getValues();
     finTotalItems=finData.filter(r=>r[0]).length;
     finData.forEach(r=>{
-      if(r[0]) finTotalQty+=Number(r[3])||0;
+      if(r[0]) {
+        finTotalQty+=Number(r[3])||0;
+        if(String(r[4]||'').includes(today)&&String(r[5]||'').includes('✅')) {
+          finTodayQty+=Number(r[3])||0;
+        }
+      }
     });
   }
 
   dash.getRange(row,1).setValue('📦 완제품재고').setFontWeight('bold').setBackground('#e8f5e9').setFontSize(12);
   dash.getRange(row,2).setValue(finTotalQty+'개').setBackground('#e8f5e9').setFontSize(12);
   dash.getRange(row,3).setValue('('+finTotalItems+'항목)').setBackground('#e8f5e9').setFontSize(11).setFontColor('#666');
+  row+=1;
+
+  // 금일 발견 완제품
+  dash.getRange(row,2).setValue('  └ 금일 발견: '+finTodayQty+'개').setFontColor('#1a7a40').setFontWeight('bold');
   row+=1;
 
   // 무지상품재고
@@ -599,8 +608,8 @@ function generateDashboard() {
   const statusOrder=['🔴 생산불가','🔴 긴급','🟡 부족','🟢 안전','미분류'];
   statusOrder.forEach(s=>{
     if(transByStatus[s]) {
-      const color=s.includes('생산')?'#ffcdd2':s.includes('긴급')?'#ffcdd2':s.includes('부족')?'#fff9c4':'#c8e6c9';
-      dash.getRange(row,2).setValue('  └ '+s+': '+transByStatus[s]+'종').setFontColor('#666').setBackground(color).setOpacity(0.2);
+      const color=s.includes('생산')?'#ffebee':s.includes('긴급')?'#ffebee':s.includes('부족')?'#fffde7':'#f1f8e9';
+      dash.getRange(row,2).setValue('  └ '+s+': '+transByStatus[s]+'종').setFontColor('#666').setBackground(color);
       row+=1;
     }
   });
@@ -672,15 +681,15 @@ function matchOrdersWithFinished() {
 
       orderSh.getRange(i+2, 13).setValue('✅ 발견').setFontColor('#1a7a40');
 
+      finSh.getRange(finSheetRow, 4).setValue(newStock);
+      finSh.getRange(finSheetRow, 5).setValue(today);
+
       if(newStock <= 0) {
-        finRowsToDelete.push(finSheetRow);
+        finSh.getRange(finSheetRow, 6).setValue('✅ 완매').setFontColor('#e67e22');
         finDeleted++;
       } else {
-        finSh.getRange(finSheetRow, 4).setValue(newStock);
+        finSh.getRange(finSheetRow, 6).setValue('✅ 발견').setFontColor('#1a7a40');
       }
-
-      finSh.getRange(finSheetRow, 5).setValue(today);
-      finSh.getRange(finSheetRow, 6).setValue('✅ 발견').setFontColor('#1a7a40');
       matched++;
     } else {
       orderSh.getRange(i+2, 13).setValue('❌ 미발견').setFontColor('#c02820');
@@ -744,11 +753,7 @@ function matchOrdersWithFinished() {
     }
   });
 
-  // 역순으로 삭제
-  finRowsToDelete.sort((a, b) => b - a).forEach(row => {
-    finSh.deleteRow(row);
-  });
-
+  // 역순으로 삭제 (무지상품, 전사지만)
   blankRowsToDelete.sort((a, b) => b - a).forEach(row => {
     blankSh.deleteRow(row);
   });
