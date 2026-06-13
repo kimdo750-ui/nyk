@@ -96,10 +96,28 @@ function generatePrintSheet() {
   }
   printSh = ss.insertSheet(PRINT_SHEET);
 
-  // 무지상품재고 데이터 읽기 (A:E 열, 헤더 제외) - NY반팔과 디즈니반팔만 필터링
+  // 무지상품재고 데이터 읽기
   const data = srcSh.getRange(2, 1, srcSh.getLastRow()-1, 5).getValues();
   const BRANDS = ['NY반팔', '디즈니반팔'];
-  const filteredData = data.filter(r => r[0] && r[1] && BRANDS.includes(String(r[0]).trim()));
+
+  // 필터링 (의류종류가 NY반팔 또는 디즈니반팔)
+  const filteredData = data.filter(r => {
+    const garment = String(r[0]||'').trim();
+    return garment && r[1] && BRANDS.includes(garment);
+  });
+
+  // 데이터 없음 체크
+  if(filteredData.length === 0) {
+    SpreadsheetApp.getUi().alert(
+      '❌ 필터링된 데이터 없음\n\n확인:\n' +
+      '• A열(의류종류)에 "NY반팔" 또는 "디즈니반팔"이 있나요?\n' +
+      '• B열(색상)이 비어있지 않나요?\n\n' +
+      '데이터 예시:\n' +
+      '행: NY반팔 | 화이트 | 130 | 5'
+    );
+    ss.deleteSheet(printSh);
+    return;
+  }
 
   // 사이즈 정렬
   const SIZES = ['110','120','130','140','150','160','170'];
