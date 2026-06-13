@@ -134,8 +134,9 @@ function generatePrintSheet() {
 
     // 색상/사이즈 헤더
     const header = ['색상', ...SIZES];
-    printSh.getRange(currentRow, 1, 1, header.length).setValues([header]);
-    _styleHeader(printSh.getRange(currentRow, 1, 1, header.length));
+    printSh.getRange(currentRow, 1, 1, header.length).setValues([header])
+      .setBackground('#1a1814').setFontColor('#ffffff')
+      .setFontWeight('bold').setFontSize(11).setHorizontalAlignment('center');
     currentRow++;
 
     // 색상별 데이터 행
