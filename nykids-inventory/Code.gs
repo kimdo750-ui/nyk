@@ -192,11 +192,15 @@ function generatePrintSheet() {
     dataRange.setBorder(true, true, true, true, true, true);
   }
 
-  // 인쇄 설정
-  const pageLayout = printSh.getPageLayout();
-  pageLayout.setOrientation(SpreadsheetApp.PageOrientation.LANDSCAPE);
-  pageLayout.setPaperSize(SpreadsheetApp.PaperSize.A4);
-  pageLayout.setMargins(5, 5, 5, 5);
+  // 인쇄 설정 (try-catch로 에러 무시)
+  try {
+    const pageLayout = printSh.getPageLayout();
+    pageLayout.setOrientation(SpreadsheetApp.PageOrientation.LANDSCAPE);
+    pageLayout.setPaperSize(SpreadsheetApp.PaperSize.A4);
+    pageLayout.setMargins(5, 5, 5, 5);
+  } catch(e) {
+    Logger.log('인쇄 설정 스킵: ' + e.message);
+  }
 
   SpreadsheetApp.getUi().alert(
     `✅ 인쇄용 양식 생성 완료!\n\nNY반팔 & 디즈니반팔\n${PRINT_SHEET} 탭에서 확인 후 인쇄하세요.`
