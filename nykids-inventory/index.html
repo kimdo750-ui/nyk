@@ -145,6 +145,17 @@ body{
   text-overflow:ellipsis;
   padding:0;
 }
+
+@media (max-width:480px) {
+  .code-scroll{
+    grid-template-columns:repeat(3,1fr);
+    gap:6px;
+  }
+  .code-pill{
+    height:36px;
+    font-size:11px;
+  }
+}
 .code-pill.active{
   border-color:var(--accent);
   background:var(--accent-lt);
@@ -194,6 +205,21 @@ body{
   transition:all .12s;
   font-family:var(--sans);
   position:relative;
+  padding:6px 8px;
+  min-height:40px;
+}
+
+@media (max-width:480px) {
+  .color-grid{
+    grid-template-columns:repeat(3,1fr);
+    gap:6px;
+  }
+  .color-btn{
+    height:auto;
+    font-size:11px;
+    min-height:38px;
+    padding:4px 6px;
+  }
 }
 .color-btn:active{transform:scale(.95)}
 .color-btn.active{
@@ -232,6 +258,20 @@ body{
   color:var(--ink);
   cursor:pointer;
   transition:all .12s;
+  padding:8px 4px;
+}
+
+@media (max-width:480px) {
+  .size-grid{
+    grid-template-columns:repeat(3,1fr);
+    gap:6px;
+  }
+  .size-btn{
+    height:auto;
+    font-size:12px;
+    min-height:40px;
+    padding:6px 4px;
+  }
 }
 .size-btn:active{transform:scale(.95)}
 .size-btn.active{
@@ -247,10 +287,10 @@ body{
   width:100%;
 }
 .qty-btn{
-  min-width:48px;width:48px;height:48px;
+  min-width:44px;width:44px;height:44px;
   background:var(--accent);
   border:none;
-  font-size:20px;font-weight:700;color:#fff;
+  font-size:18px;font-weight:700;color:#fff;
   cursor:pointer;display:flex;align-items:center;justify-content:center;
   flex-shrink:0;transition:background .1s;
 }
@@ -263,9 +303,21 @@ body{
 .qty-btn:active{background:var(--border)}
 .qty-num{
   flex:1;text-align:center;
-  font-family:var(--mono);font-size:24px;font-weight:700;
+  font-family:var(--mono);font-size:20px;font-weight:700;
   border:none;outline:none;background:transparent;
   color:var(--ink);
+  min-width:40px;
+}
+
+/* 모바일 반응형 (320px ~ 480px) */
+@media (max-width:480px) {
+  .qty-btn{
+    min-width:40px;width:40px;height:40px;
+    font-size:16px;
+  }
+  .qty-num{
+    font-size:18px;
+  }
 }
 .quick-qtys{
   display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;
@@ -279,6 +331,18 @@ body{
   font-family:var(--mono);font-size:12px;font-weight:700;
   color:var(--ink2);cursor:pointer;
   transition:all .12s;
+}
+
+@media (max-width:480px) {
+  .quick-qtys{
+    gap:5px;
+  }
+  .qqty-btn{
+    height:32px;
+    min-width:40px;
+    padding:0 8px;
+    font-size:11px;
+  }
 }
 .qqty-btn:active{background:var(--accent-lt);border-color:var(--accent);color:var(--accent)}
 
