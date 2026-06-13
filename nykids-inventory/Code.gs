@@ -26,6 +26,7 @@ function onOpen() {
     .addItem('③ 전사지코드 자동 동기화', 'syncTransferCodes')
     .addItem('④ 주문 기반 재고 차감 확인', 'openDeductSidebar')
     .addSeparator()
+    .addItem('📊 요약 대시보드 생성', 'generateDashboard')
     .addItem('🔍 주문→완제품 매칭 확인', 'matchOrdersWithFinished')
     .addSeparator()
     .addItem('🖨️ 인쇄용 무지상품 양식 생성', 'generatePrintSheet')
@@ -429,7 +430,7 @@ function parseOrders() {
     const pname=String(row[2]||'').trim(),ename=String(row[4]||'').trim();
     if(!pname)return;
     const res=_parseProductName(pname,ename);
-    sh.getRange(i+2,8,1,6).setValues([[res.code,res.color,res.size,row[5]||1,res.status,res.garment]]);
+    sh.getRange(i+2,8,1,7).setValues([[res.code,res.color,res.size,row[5]||1,res.status,res.garment,res.transfer]]);
     sh.getRange(i+2,1,1,12).setBackground(res.status==='✅ 완료'?'#f0fff4':res.status==='⚠️ 수동확인'?'#fffde7':'#fff8f5');
     res.status==='✅ 완료'?ok++:warn++;
   });
@@ -438,19 +439,25 @@ function parseOrders() {
 
 function _parseProductName(pname,ename) {
   const CODE_RE=/\b([A-Z]{1,4}\d{2,4})\b/g;
+  const TRANSFER_RE=/\b([A-Z]\d+)\b/;
   const SIZE_RE=/\b(70|80|90|100|110|120|130|140|150|160|170|180|S|M|L|XL)\b/g;
   const COLOR_RE=/(블랙|화이트|그레이|네이비|베이지|카멜|레드|핑크|민트|카키|옐로우|바이올렛|스틸블루|인디핑크|네온핑크|그린|오렌지|스카이블루|아이보리|백멜란지|멜란지|청록|파랑|one\s?color)/g;
+
   const codesE=[...ename.matchAll(CODE_RE)].map(m=>m[1]);
   const codesP=[...pname.replace(/[()아동성인]/g,'').matchAll(CODE_RE)].map(m=>m[1]);
   let code=codesE[0]||codesP[0]||'';
   const sil=pname.match(/(\d+_[\w가-힣]+(?:7부|9부))/);
   if(sil)code=sil[1];
+
+  const transferMatch=pname.match(TRANSFER_RE);
+  const transfer=transferMatch?transferMatch[1]:'';
+
   const sizes=[...pname.matchAll(SIZE_RE)].map(m=>m[1]);
   const colors=[...pname.matchAll(COLOR_RE)].map(m=>m[1]);
   const garmentMatch=pname.match(/(NY반팔|디즈니반팔)/);
   const garment=garmentMatch?garmentMatch[1]:'';
   const status=(!code||pname.includes('베개'))?'⚠️ 수동확인':'✅ 완료';
-  return{code,color:colors[0]||'',size:sizes[sizes.length-1]||'',garment,status};
+  return{code,transfer,color:colors[0]||'',size:sizes[sizes.length-1]||'',garment,status};
 }
 
 function syncTransferCodes() {
@@ -477,12 +484,142 @@ function syncTransferCodes() {
   SpreadsheetApp.getActiveSpreadsheet().toast(`동기화 완료. 신규 ${added}건 추가`,'✅',3);
 }
 
+// ── 요약 대시보드 생성 ──
+function generateDashboard() {
+  const ss=SpreadsheetApp.getActiveSpreadsheet();
+  const DASHBOARD='요약대시보드';
+  let dash=ss.getSheetByName(DASHBOARD);
+  if(dash) ss.deleteSheet(dash);
+  dash=ss.insertSheet(DASHBOARD,0);
+
+  const today=Utilities.formatDate(new Date(),'Asia/Seoul','yyyy-MM-dd');
+  const time=Utilities.formatDate(new Date(),'Asia/Seoul','HH:mm:ss');
+
+  // 데이터 읽기
+  const orderSh=ss.getSheetByName(SHEET_NAMES.ORDER);
+  const finSh=ss.getSheetByName(SHEET_NAMES.FINISHED);
+  const blankSh=ss.getSheetByName(SHEET_NAMES.BLANK);
+  const transSh=ss.getSheetByName(SHEET_NAMES.TRANSFER);
+
+  let row=1;
+
+  // 제목
+  dash.getRange(row,1,1,3).merge().setValue('📊 재고 요약 대시보드')
+    .setBackground('#1a1814').setFontColor('#ffffff').setFontWeight('bold').setFontSize(16)
+    .setHorizontalAlignment('center').setVerticalAlignment('middle');
+  dash.setRowHeight(row,30);
+  row+=2;
+
+  // 생성 정보
+  dash.getRange(row,1).setValue('생성 날짜:').setFontWeight('bold');
+  dash.getRange(row,2,1,2).setValue(today+' '+time);
+  row+=2;
+
+  // 주문 현황
+  let orderTodayQty=0,orderTotalRows=0;
+  if(orderSh && orderSh.getLastRow()>1) {
+    const orderData=orderSh.getRange(2,1,orderSh.getLastRow()-1,5).getValues();
+    orderTotalRows=orderData.filter(r=>r[0]).length;
+    orderData.forEach(r=>{
+      if(String(r[0]||'').trim()===today) {
+        orderTodayQty+=Number(r[4])||1;
+      }
+    });
+  }
+
+  dash.getRange(row,1).setValue('📋 금일 주문').setFontWeight('bold').setBackground('#fff3cd').setFontSize(12);
+  dash.getRange(row,2).setValue(orderTodayQty+'건').setBackground('#fff3cd').setFontSize(12);
+  row+=1;
+
+  // 완제품재고
+  let finTotalQty=0,finTotalItems=0;
+  if(finSh && finSh.getLastRow()>1) {
+    const finData=finSh.getRange(2,1,finSh.getLastRow()-1,4).getValues();
+    finTotalItems=finData.filter(r=>r[0]).length;
+    finData.forEach(r=>{
+      if(r[0]) finTotalQty+=Number(r[3])||0;
+    });
+  }
+
+  dash.getRange(row,1).setValue('📦 완제품재고').setFontWeight('bold').setBackground('#e8f5e9').setFontSize(12);
+  dash.getRange(row,2).setValue(finTotalQty+'개').setBackground('#e8f5e9').setFontSize(12);
+  dash.getRange(row,3).setValue('('+finTotalItems+'항목)').setBackground('#e8f5e9').setFontSize(11).setFontColor('#666');
+  row+=1;
+
+  // 무지상품재고
+  let blankTotalQty=0,blankTotalItems=0;
+  const blankByType={};
+  if(blankSh && blankSh.getLastRow()>1) {
+    const blankData=blankSh.getRange(2,1,blankSh.getLastRow()-1,4).getValues();
+    blankTotalItems=blankData.filter(r=>r[0]).length;
+    blankData.forEach(r=>{
+      if(r[0]) {
+        blankTotalQty+=Number(r[3])||0;
+        const type=String(r[0]).trim();
+        blankByType[type]=(blankByType[type]||0)+(Number(r[3])||0);
+      }
+    });
+  }
+
+  dash.getRange(row,1).setValue('🧵 무지상품재고').setFontWeight('bold').setBackground('#e3f2fd').setFontSize(12);
+  dash.getRange(row,2).setValue(blankTotalQty+'개').setBackground('#e3f2fd').setFontSize(12);
+  dash.getRange(row,3).setValue('('+blankTotalItems+'항목)').setBackground('#e3f2fd').setFontSize(11).setFontColor('#666');
+  row+=1;
+
+  // 무지상품 종류별
+  Object.keys(blankByType).sort().forEach(type=>{
+    const qty=blankByType[type];
+    dash.getRange(row,2).setValue('  └ '+type+': '+qty+'개').setFontColor('#666');
+    row+=1;
+  });
+  row+=1;
+
+  // 전사지재고
+  let transTotalQty=0,transTotalItems=0;
+  const transByStatus={};
+  if(transSh && transSh.getLastRow()>1) {
+    const transData=transSh.getRange(2,1,transSh.getLastRow()-1,5).getValues();
+    transData.forEach(r=>{
+      if(r[0]) {
+        const qty=Number(r[2])||0;
+        transTotalQty+=qty;
+        transTotalItems++;
+        const status=String(r[4]).trim()||'미분류';
+        transByStatus[status]=(transByStatus[status]||0)+1;
+      }
+    });
+  }
+
+  dash.getRange(row,1).setValue('🖨️ 전사지재고').setFontWeight('bold').setBackground('#f3e5f5').setFontSize(12);
+  dash.getRange(row,2).setValue(transTotalQty+'개').setBackground('#f3e5f5').setFontSize(12);
+  dash.getRange(row,3).setValue('('+transTotalItems+'종류)').setBackground('#f3e5f5').setFontSize(11).setFontColor('#666');
+  row+=1;
+
+  // 전사지 상태별
+  const statusOrder=['🔴 생산불가','🔴 긴급','🟡 부족','🟢 안전','미분류'];
+  statusOrder.forEach(s=>{
+    if(transByStatus[s]) {
+      const color=s.includes('생산')?'#ffcdd2':s.includes('긴급')?'#ffcdd2':s.includes('부족')?'#fff9c4':'#c8e6c9';
+      dash.getRange(row,2).setValue('  └ '+s+': '+transByStatus[s]+'종').setFontColor('#666').setBackground(color).setOpacity(0.2);
+      row+=1;
+    }
+  });
+
+  // 컬럼 너비 조정
+  dash.setColumnWidth(1,20);
+  dash.setColumnWidth(2,30);
+  dash.setColumnWidth(3,30);
+
+  SpreadsheetApp.getUi().alert('✅ 대시보드 생성 완료!\n\n금일 주문: '+orderTodayQty+'건\n완제품: '+finTotalQty+'개\n무지상품: '+blankTotalQty+'개\n전사지: '+transTotalQty+'개');
+}
+
 // ── 주문→완제품/무지상품 차감 ──
 function matchOrdersWithFinished() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const orderSh = ss.getSheetByName(SHEET_NAMES.ORDER);
   const finSh = ss.getSheetByName(SHEET_NAMES.FINISHED);
   const blankSh = ss.getSheetByName(SHEET_NAMES.BLANK);
+  const transSh = ss.getSheetByName(SHEET_NAMES.TRANSFER);
 
   if(!orderSh || !finSh) {
     SpreadsheetApp.getUi().alert('❌ 주문확인 또는 완제품재고 시트가 없습니다');
@@ -493,18 +630,22 @@ function matchOrdersWithFinished() {
     ? finSh.getRange(2, 1, finSh.getLastRow()-1, 6).getValues() : [];
   const blankData = blankSh && blankSh.getLastRow() > 1
     ? blankSh.getRange(2, 1, blankSh.getLastRow()-1, 4).getValues() : [];
-  const orderData = orderSh.getRange(2, 1, orderSh.getLastRow()-1, 13).getValues();
+  const transData = transSh && transSh.getLastRow() > 1
+    ? transSh.getRange(2, 1, transSh.getLastRow()-1, 6).getValues() : [];
+  const orderData = orderSh.getRange(2, 1, orderSh.getLastRow()-1, 14).getValues();
 
-  let matched = 0, unmatched = 0, finDeleted = 0, blankDeleted = 0;
+  let matched = 0, unmatched = 0, finDeleted = 0, blankDeleted = 0, transDeleted = 0;
   const today = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd');
   const finRowsToDelete = [];
   const blankRowsToDelete = [];
+  const transRowsToDelete = [];
 
   orderData.forEach((r, i) => {
     const code = String(r[7]||'').trim();
     const color = String(r[8]||'').trim();
     const size = String(r[9]||'').trim();
     const garment = String(r[12]||'').trim();
+    const transfer = String(r[13]||'').trim();
     const orderQty = Number(r[10]) || 1;
 
     if(!code || !color || !size) {
@@ -574,6 +715,33 @@ function matchOrdersWithFinished() {
         blankSh.getRange(blankSheetRow, 7).setValue(today);
       }
     }
+
+    // 3. 전사지재고 차감 (전사지 코드)
+    if(transfer && transSh) {
+      let transFoundIdx = -1;
+      for(let j = 0; j < transData.length; j++) {
+        if(String(transData[j][0]||'').trim() === transfer) {
+          transFoundIdx = j;
+          break;
+        }
+      }
+
+      if(transFoundIdx >= 0) {
+        const transRow = transData[transFoundIdx];
+        const currentTransStock = Number(transRow[2]) || 0;
+        const newTransStock = currentTransStock - orderQty;
+        const transSheetRow = transFoundIdx + 2;
+
+        if(newTransStock <= 0) {
+          transRowsToDelete.push(transSheetRow);
+          transDeleted++;
+        } else {
+          transSh.getRange(transSheetRow, 3).setValue(newTransStock);
+        }
+
+        transSh.getRange(transSheetRow, 6).setValue(today);
+      }
+    }
   });
 
   // 역순으로 삭제
@@ -585,8 +753,12 @@ function matchOrdersWithFinished() {
     blankSh.deleteRow(row);
   });
 
+  transRowsToDelete.sort((a, b) => b - a).forEach(row => {
+    transSh.deleteRow(row);
+  });
+
   SpreadsheetApp.getUi().alert(
-    `✅ 완료!\n\n완제품:\n  발견 & 처리: ${matched}건\n  미발견: ${unmatched}건\n  삭제: ${finDeleted}건\n\n무지상품:\n  삭제: ${blankDeleted}건`
+    `✅ 완료!\n\n완제품:\n  발견 & 처리: ${matched}건\n  미발견: ${unmatched}건\n  삭제: ${finDeleted}건\n\n무지상품:\n  삭제: ${blankDeleted}건\n\n전사지:\n  삭제: ${transDeleted}건`
   );
 }
 
