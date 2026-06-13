@@ -429,7 +429,7 @@ function parseOrders() {
     const pname=String(row[2]||'').trim(),ename=String(row[4]||'').trim();
     if(!pname)return;
     const res=_parseProductName(pname,ename);
-    sh.getRange(i+2,8,1,5).setValues([[res.code,res.color,res.size,row[5]||1,res.status]]);
+    sh.getRange(i+2,8,1,6).setValues([[res.code,res.color,res.size,row[5]||1,res.status,res.garment]]);
     sh.getRange(i+2,1,1,12).setBackground(res.status==='✅ 완료'?'#f0fff4':res.status==='⚠️ 수동확인'?'#fffde7':'#fff8f5');
     res.status==='✅ 완료'?ok++:warn++;
   });
@@ -447,8 +447,10 @@ function _parseProductName(pname,ename) {
   if(sil)code=sil[1];
   const sizes=[...pname.matchAll(SIZE_RE)].map(m=>m[1]);
   const colors=[...pname.matchAll(COLOR_RE)].map(m=>m[1]);
+  const garmentMatch=pname.match(/(NY반팔|디즈니반팔)/);
+  const garment=garmentMatch?garmentMatch[1]:'';
   const status=(!code||pname.includes('베개'))?'⚠️ 수동확인':'✅ 완료';
-  return{code,color:colors[0]||'',size:sizes[sizes.length-1]||'',status};
+  return{code,color:colors[0]||'',size:sizes[sizes.length-1]||'',garment,status};
 }
 
 function syncTransferCodes() {
@@ -475,30 +477,34 @@ function syncTransferCodes() {
   SpreadsheetApp.getActiveSpreadsheet().toast(`동기화 완료. 신규 ${added}건 추가`,'✅',3);
 }
 
-// ── 주문→완제품 매칭 확인 (자동 수량 감소 & 삭제) ──
+// ── 주문→완제품/무지상품 차감 ──
 function matchOrdersWithFinished() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const orderSh = ss.getSheetByName(SHEET_NAMES.ORDER);
   const finSh = ss.getSheetByName(SHEET_NAMES.FINISHED);
+  const blankSh = ss.getSheetByName(SHEET_NAMES.BLANK);
 
   if(!orderSh || !finSh) {
     SpreadsheetApp.getUi().alert('❌ 주문확인 또는 완제품재고 시트가 없습니다');
     return;
   }
 
-  const orderData = orderSh.getRange(2, 1, orderSh.getLastRow()-1, 12).getValues();
   const finData = finSh && finSh.getLastRow() > 1
-    ? finSh.getRange(2, 1, finSh.getLastRow()-1, 6).getValues()
-    : [];
+    ? finSh.getRange(2, 1, finSh.getLastRow()-1, 6).getValues() : [];
+  const blankData = blankSh && blankSh.getLastRow() > 1
+    ? blankSh.getRange(2, 1, blankSh.getLastRow()-1, 4).getValues() : [];
+  const orderData = orderSh.getRange(2, 1, orderSh.getLastRow()-1, 13).getValues();
 
-  let matched = 0, unmatched = 0, deleted = 0;
+  let matched = 0, unmatched = 0, finDeleted = 0, blankDeleted = 0;
   const today = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd');
-  const rowsToDelete = [];
+  const finRowsToDelete = [];
+  const blankRowsToDelete = [];
 
   orderData.forEach((r, i) => {
     const code = String(r[7]||'').trim();
     const color = String(r[8]||'').trim();
     const size = String(r[9]||'').trim();
+    const garment = String(r[12]||'').trim();
     const orderQty = Number(r[10]) || 1;
 
     if(!code || !color || !size) {
@@ -506,54 +512,81 @@ function matchOrdersWithFinished() {
       return;
     }
 
-    // 완제품재고에서 찾기
-    let foundIdx = -1;
+    // 1. 완제품재고 차감 (코드 + 색상 + 사이즈)
+    let finFoundIdx = -1;
     for(let j = 0; j < finData.length; j++) {
       if(String(finData[j][0]||'').trim() === code &&
          String(finData[j][1]||'').trim() === color &&
          String(finData[j][2]||'').trim() === size) {
-        foundIdx = j;
+        finFoundIdx = j;
         break;
       }
     }
 
-    if(foundIdx >= 0) {
-      const finRow = finData[foundIdx];
+    if(finFoundIdx >= 0) {
+      const finRow = finData[finFoundIdx];
       const currentStock = Number(finRow[3]) || 0;
       const newStock = currentStock - orderQty;
-      const finSheetRow = foundIdx + 2;
+      const finSheetRow = finFoundIdx + 2;
 
-      // 주문확인에 발견 표시
       orderSh.getRange(i+2, 13).setValue('✅ 발견').setFontColor('#1a7a40');
 
-      // 완제품재고 처리
       if(newStock <= 0) {
-        // 0 이하면 삭제
-        rowsToDelete.push(finSheetRow);
-        deleted++;
+        finRowsToDelete.push(finSheetRow);
+        finDeleted++;
       } else {
-        // 수량 감소 (D열)
         finSh.getRange(finSheetRow, 4).setValue(newStock);
       }
 
-      // 업데이트날짜 기록 (E열)
       finSh.getRange(finSheetRow, 5).setValue(today);
-      // 발견 표시 (F열)
       finSh.getRange(finSheetRow, 6).setValue('✅ 발견').setFontColor('#1a7a40');
       matched++;
     } else {
       orderSh.getRange(i+2, 13).setValue('❌ 미발견').setFontColor('#c02820');
       unmatched++;
     }
+
+    // 2. 무지상품재고 차감 (의류종류 + 색상 + 사이즈)
+    if(garment && blankSh) {
+      let blankFoundIdx = -1;
+      for(let j = 0; j < blankData.length; j++) {
+        if(String(blankData[j][0]||'').trim() === garment &&
+           String(blankData[j][1]||'').trim() === color &&
+           String(blankData[j][2]||'').trim() === size) {
+          blankFoundIdx = j;
+          break;
+        }
+      }
+
+      if(blankFoundIdx >= 0) {
+        const blankRow = blankData[blankFoundIdx];
+        const currentBlankStock = Number(blankRow[3]) || 0;
+        const newBlankStock = currentBlankStock - orderQty;
+        const blankSheetRow = blankFoundIdx + 2;
+
+        if(newBlankStock <= 0) {
+          blankRowsToDelete.push(blankSheetRow);
+          blankDeleted++;
+        } else {
+          blankSh.getRange(blankSheetRow, 4).setValue(newBlankStock);
+        }
+
+        blankSh.getRange(blankSheetRow, 7).setValue(today);
+      }
+    }
   });
 
-  // 역순으로 삭제 (행 인덱스 변경 방지)
-  rowsToDelete.sort((a, b) => b - a).forEach(row => {
+  // 역순으로 삭제
+  finRowsToDelete.sort((a, b) => b - a).forEach(row => {
     finSh.deleteRow(row);
   });
 
+  blankRowsToDelete.sort((a, b) => b - a).forEach(row => {
+    blankSh.deleteRow(row);
+  });
+
   SpreadsheetApp.getUi().alert(
-    `✅ 완료!\n\n발견 & 처리: ${matched}건\n미발견: ${unmatched}건\n삭제: ${deleted}건`
+    `✅ 완료!\n\n완제품:\n  발견 & 처리: ${matched}건\n  미발견: ${unmatched}건\n  삭제: ${finDeleted}건\n\n무지상품:\n  삭제: ${blankDeleted}건`
   );
 }
 
