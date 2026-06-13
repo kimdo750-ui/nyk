@@ -441,7 +441,7 @@ function parseOrders() {
 function _parseProductName(pname,ename) {
   const CODE_RE=/\b([A-Z]{1,4}\d{2,4})\b/g;
   const SIZE_RE=/\b(70|80|90|100|110|120|130|140|150|160|170|180|S|M|L|XL)\b/g;
-  const COLOR_RE=/(블랙|화이트|그레이|네이비|베이지|카멜|레드|핑크|민트|카키|옐로우|바이올렛|스틸블루|인디핑크|네온핑크|그린|오렌지|스카이블루|아이보리|백멜란지|멜란지|청록|파랑|one\s?color)/g;
+  const COLOR_RE=/(블랙|화이트|그레이|네이비|베이지|카멜|레드|핑크|민트|카키|옐로우|바이올렛|퍼플|블루|스틸블루|인디핑크|네온핑크|그린|오렌지|스카이블루|아이보리|백멜란지|멜란지|청록|파랑|one\s?color)/g;
   const TYPE_RE=/(반팔|반바지|맨투맨|기모팬츠|팬츠|7부|9부)/;
 
   const codesE=[...ename.matchAll(CODE_RE)].map(m=>m[1]);
