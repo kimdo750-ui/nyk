@@ -26,6 +26,8 @@ function onOpen() {
     .addItem('③ 전사지코드 자동 동기화', 'syncTransferCodes')
     .addItem('④ 주문 기반 재고 차감 확인', 'openDeductSidebar')
     .addSeparator()
+    .addItem('🔍 주문→완제품 매칭 확인', 'matchOrdersWithFinished')
+    .addSeparator()
     .addItem('🖨️ 인쇄용 무지상품 양식 생성', 'generatePrintSheet')
     .addSeparator()
     .addItem('💾 백업 생성', 'createBackup')
@@ -472,6 +474,55 @@ function syncTransferCodes() {
     }
   });
   SpreadsheetApp.getActiveSpreadsheet().toast(`동기화 완료. 신규 ${added}건 추가`,'✅',3);
+}
+
+// ── 주문→완제품 매칭 확인 ──
+function matchOrdersWithFinished() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const orderSh = ss.getSheetByName(SHEET_NAMES.ORDER);
+  const finSh = ss.getSheetByName(SHEET_NAMES.FINISHED);
+
+  if(!orderSh || !finSh) {
+    SpreadsheetApp.getUi().alert('❌ 주문확인 또는 완제품재고 시트가 없습니다');
+    return;
+  }
+
+  const orderData = orderSh.getRange(2, 1, orderSh.getLastRow()-1, 12).getValues();
+  const finData = finSh && finSh.getLastRow() > 1
+    ? finSh.getRange(2, 1, finSh.getLastRow()-1, 3).getValues()
+    : [];
+
+  let matched = 0, unmatched = 0;
+
+  orderData.forEach((r, i) => {
+    const code = String(r[7]||'').trim();
+    const color = String(r[8]||'').trim();
+    const size = String(r[9]||'').trim();
+
+    if(!code || !color || !size) {
+      orderSh.getRange(i+2, 13).setValue('⚠️ 불완전');
+      return;
+    }
+
+    // 완제품재고에서 찾기 (SKU, 컬러, 사이즈 매칭)
+    const found = finData.find(f =>
+      String(f[0]||'').trim() === code &&
+      String(f[1]||'').trim() === color &&
+      String(f[2]||'').trim() === size
+    );
+
+    if(found) {
+      orderSh.getRange(i+2, 13).setValue('✅ 발견').setFontColor('#1a7a40');
+      matched++;
+    } else {
+      orderSh.getRange(i+2, 13).setValue('❌ 미발견').setFontColor('#c02820');
+      unmatched++;
+    }
+  });
+
+  SpreadsheetApp.getUi().alert(
+    `✅ 매칭 완료!\n\n발견: ${matched}건\n미발견: ${unmatched}건`
+  );
 }
 
 function openChatSidebar() {
