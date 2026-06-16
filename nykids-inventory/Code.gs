@@ -31,10 +31,9 @@ function onOpen() {
     .addItem('🖨️ 전사지 필요수량 계산', 'calculateTransferNeeds')
     .addSeparator()
     .addItem('🖨️ 인쇄용 무지상품 양식 생성', 'generatePrintSheet')
+    .addItem('📋 전사지 출력목록 생성', 'generateTransferPrintList')
     .addSeparator()
-    .addItem('💾 백업 생성', 'createBackup')
-    .addItem('📂 백업 복원', 'restoreBackupUI')
-    .addItem('📋 백업 목록', 'listBackups')
+    .addItem('📋 히스토리 기록', 'recordBackupHistory')
     .addSeparator()
     .addItem('🤖 AI 재고 분석 채팅', 'openChatSidebar')
     .addSeparator()
@@ -280,6 +279,53 @@ function _styleHeader(sh,n) {
 }
 
 // ════════════════════════════════════════════════════════
+// 백업 히스토리 (한 탭에 데이터 누적)
+// ════════════════════════════════════════════════════════
+function _ensureBackupHistorySheet(ss) {
+  const HISTORY_SHEET = '📋 백업 히스토리';
+  let sh = ss.getSheetByName(HISTORY_SHEET);
+  if (!sh) {
+    sh = ss.insertSheet(HISTORY_SHEET);
+    const headers = ['백업시간', '시트명', 'A', 'B', 'C', 'D', 'E', 'F', 'G'];
+    sh.getRange(1, 1, 1, headers.length).setValues([headers])
+      .setBackground('#1a1814').setFontColor('#ffffff')
+      .setFontWeight('bold').setHorizontalAlignment('center');
+    sh.setColumnWidth(1, 120);
+    sh.setColumnWidth(2, 80);
+    for (let i = 3; i <= 9; i++) sh.setColumnWidth(i, 100);
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+function recordBackupHistory(ss) {
+  if (!ss) ss = SpreadsheetApp.getActiveSpreadsheet();
+  const histSh = _ensureBackupHistorySheet(ss);
+  const timestamp = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss');
+  const SHEETS_TO_RECORD = [
+    { name: SHEET_NAMES.TRANSFER, label: '전사지재고' },
+    { name: SHEET_NAMES.BLANK, label: '무지상품재고' },
+    { name: SHEET_NAMES.FINISHED, label: '완제품재고' }
+  ];
+
+  let totalRows = 0;
+  SHEETS_TO_RECORD.forEach(sheet => {
+    const sh = ss.getSheetByName(sheet.name);
+    if (!sh || sh.getLastRow() < 2) return;
+
+    const data = sh.getRange(2, 1, sh.getLastRow() - 1, 7).getValues();
+    data.forEach(row => {
+      if (!row[0]) return;
+      const histRow = [timestamp, sheet.label, row[0], row[1], row[2], row[3], row[4], row[5], row[6]];
+      histSh.appendRow(histRow);
+      totalRows++;
+    });
+  });
+
+  SpreadsheetApp.getUi().alert(`✅ 히스토리 기록 완료!\n\n${totalRows}건의 데이터가 기록되었습니다.`);
+}
+
+// ════════════════════════════════════════════════════════
 // 백업 & 복원 기능 (3개 시트: 무지상품재고, 전사지재고, 완제품재고)
 // ════════════════════════════════════════════════════════
 function createBackup() {
@@ -416,22 +462,22 @@ function restoreBackup(timestamp) {
   SpreadsheetApp.getUi().alert(`✅ 복원 완료!\n\n${restored}개 시트 복원됨\n[${timestamp}]`);
 }
 
-// ── 주문서 파싱 (자동 백업 포함) ──
+// ── 주문서 파싱 ──
 function parseOrders() {
-  // 파싱 전 자동 백업
-  createBackup();
   const ss=SpreadsheetApp.getActiveSpreadsheet();
   _ensureAllSheets(ss);
   const sh=ss.getSheetByName(SHEET_NAMES.ORDER);
   const lastRow=sh.getLastRow();
   if(lastRow<2){SpreadsheetApp.getUi().alert('A2부터 주문 데이터를 붙여넣으세요.');return;}
   const data=sh.getRange(2,1,lastRow-1,6).getValues();
+  const now=Utilities.formatDate(new Date(),'Asia/Seoul','yyyy-MM-dd HH:mm');
   let ok=0,warn=0;
   data.forEach((row,i)=>{
     const pname=String(row[2]||'').trim(),ename=String(row[4]||'').trim();
     if(!pname)return;
     const res=_parseProductName(pname,ename);
-    sh.getRange(i+2,8,1,7).setValues([[res.code,res.color,res.size,row[5]||1,res.status,res.type,res.code]]);
+    const statusWithTime=res.status==='✅ 완료'?`✅ 파싱완료 ${now}`:res.status;
+    sh.getRange(i+2,8,1,5).setValues([[res.code,res.color,res.size,row[5]||1,statusWithTime]]);
     sh.getRange(i+2,1,1,12).setBackground(res.status==='✅ 완료'?'#f0fff4':res.status==='⚠️ 수동확인'?'#fffde7':'#fff8f5');
     res.status==='✅ 완료'?ok++:warn++;
   });
@@ -513,17 +559,24 @@ function generateDashboard() {
   dash.getRange(row,2,1,2).setValue(today+' '+time);
   row+=2;
 
-  // 주문 현황
+  // 주문 현황 (L열: 파싱상태+날짜)
   let orderTodayQty=0,orderTotalRows=0;
   if(orderSh && orderSh.getLastRow()>1) {
-    const orderData=orderSh.getRange(2,1,orderSh.getLastRow()-1,5).getValues();
+    const orderData=orderSh.getRange(2,1,orderSh.getLastRow()-1,15).getValues();
     orderTotalRows=orderData.filter(r=>r[0]).length;
-    orderData.forEach(r=>{
-      if(String(r[0]||'').trim()===today) {
-        orderTodayQty+=Number(r[4])||1;
+    orderData.forEach((r,i)=>{
+      const status=String(r[11]||'');
+      const dateMatch=status.match(/(\d{4}-\d{2}-\d{2})/);
+      if(status.includes('✅')) {
+        Logger.log(`행 ${i+2}: status=[${status}], dateMatch=[${dateMatch}], today=[${today}]`);
+        if(dateMatch && dateMatch[1]===today) {
+          orderTodayQty+=1;
+          Logger.log(`  ✅ 매칭됨! 개수: ${orderTodayQty}`);
+        }
       }
     });
   }
+  Logger.log(`최종 금일 주문: ${orderTodayQty}건`);
 
   dash.getRange(row,1).setValue('📋 금일 주문').setFontWeight('bold').setBackground('#fff3cd').setFontSize(12);
   dash.getRange(row,2).setValue(orderTodayQty+'건').setBackground('#fff3cd').setFontSize(12);
@@ -534,11 +587,13 @@ function generateDashboard() {
   if(finSh && finSh.getLastRow()>1) {
     const finData=finSh.getRange(2,1,finSh.getLastRow()-1,6).getValues();
     finTotalItems=finData.filter(r=>r[0]).length;
-    finData.forEach(r=>{
+    finTotalQty=finData.reduce((sum,r)=>sum+(Number(r[3])||0),0);
+    finData.forEach((r,i)=>{
       if(r[0]) {
-        finTotalQty+=Number(r[3])||0;
-        if(String(r[4]||'').includes(today)&&String(r[5]||'').includes('✅')) {
-          finTodayQty+=Number(r[3])||0;
+        const date=String(r[4]||'');
+        const status=String(r[5]||'');
+        if(date.includes(today)&&status.includes('✅')) {
+          finTodayQty+=1;
         }
       }
     });
@@ -549,7 +604,6 @@ function generateDashboard() {
   dash.getRange(row,3).setValue('('+finTotalItems+'항목)').setBackground('#e8f5e9').setFontSize(11).setFontColor('#666');
   row+=1;
 
-  // 금일 발견 완제품
   dash.getRange(row,2).setValue('  └ 금일 발견: '+finTodayQty+'개').setFontColor('#1a7a40').setFontWeight('bold');
   row+=1;
 
@@ -581,6 +635,39 @@ function generateDashboard() {
   });
   row+=1;
 
+  // 발주 필요 (모든 사이즈 중 어느 하나라도 < 5개면 발주 필요)
+  const needColors=new Set();
+  const colorSizeStock={};
+
+  if(blankSh && blankSh.getLastRow()>1) {
+    const blankData=blankSh.getRange(2,1,blankSh.getLastRow()-1,4).getValues();
+
+    blankData.forEach(r=>{
+      if(!r[0] || !r[1] || !r[2]) return;
+      const color=String(r[1]).trim();
+      const size=String(r[2]).trim();
+      const current=Number(r[3])||0;
+
+      if(!colorSizeStock[color]) colorSizeStock[color]={};
+      colorSizeStock[color][size]=current;
+    });
+
+    Object.entries(colorSizeStock).forEach(([color, sizes])=>{
+      // 110~170 중 5개 미만인 사이즈가 3개 이상이면 발주 필요
+      const lowStockCount=Object.values(sizes).filter(stock=>stock<5).length;
+      if(lowStockCount>=3) {
+        needColors.add(color);
+      }
+    });
+  }
+
+  if(needColors.size>0) {
+    const colorList=Array.from(needColors).sort().join(', ');
+    dash.getRange(row,1).setValue('📍 발주 필요').setFontWeight('bold').setBackground('#ffcccc').setFontSize(12);
+    dash.getRange(row,2).setValue(colorList).setBackground('#ffcccc').setFontSize(12).setFontColor('#c02820').setFontWeight('bold');
+    row+=1;
+  }
+
   // 전사지재고
   let transTotalQty=0,transTotalItems=0;
   const transByStatus={};
@@ -611,13 +698,44 @@ function generateDashboard() {
       row+=1;
     }
   });
+  row+=1;
+
+  // 전사지 인쇄 필요량
+  let transPrintNeeds=0;
+  const DARK_COLORS=['레드','검은색','바이올렛','블루','차콜','다홍','보라'];
+  if(orderSh && orderSh.getLastRow()>1) {
+    const orderData=orderSh.getRange(2,1,orderSh.getLastRow()-1,14).getValues();
+    let printList={};
+    orderData.forEach(r=>{
+      const transfer=String(r[13]||'').trim();
+      const color=String(r[8]||'').trim();
+      const qty=Number(r[10])||1;
+      const status=String(r[11]||'').trim();
+      if(!transfer || !color || !status.includes('✅')) return;
+      const inkColor=DARK_COLORS.includes(color)?'흰색':'검은색';
+      const key=`${transfer}|${inkColor}`;
+      if(!printList[key]) printList[key]={code:transfer,inkColor:inkColor,totalQty:0};
+      printList[key].totalQty+=qty;
+    });
+    const transData=transSh && transSh.getLastRow()>1?transSh.getRange(2,1,transSh.getLastRow()-1,5).getValues():[];
+    Object.values(printList).forEach(item=>{
+      const transRow=transData.find(t=>String(t[0]).trim()===item.code && String(t[1]).trim()===item.inkColor);
+      const currentStock=transRow?Number(transRow[2])||0:0;
+      const needsQty=Math.max(0,item.totalQty-currentStock);
+      transPrintNeeds+=needsQty;
+    });
+  }
+
+  dash.getRange(row,1).setValue('🖨️ 인쇄 필요').setFontWeight('bold').setBackground('#ffebee').setFontSize(12);
+  dash.getRange(row,2).setValue(transPrintNeeds+'개').setBackground('#ffebee').setFontSize(12).setFontColor('#c02820').setFontWeight('bold');
+  row+=1;
 
   // 컬럼 너비 조정
   dash.setColumnWidth(1,20);
   dash.setColumnWidth(2,30);
   dash.setColumnWidth(3,30);
 
-  SpreadsheetApp.getUi().alert('✅ 대시보드 생성 완료!\n\n금일 주문: '+orderTodayQty+'건\n완제품: '+finTotalQty+'개\n무지상품: '+blankTotalQty+'개\n전사지: '+transTotalQty+'개');
+  SpreadsheetApp.getUi().alert('✅ 대시보드 생성 완료!\n\n금일 주문: '+orderTodayQty+'건\n완제품: '+finTotalQty+'개\n무지상품: '+blankTotalQty+'개\n전사지 재고: '+transTotalQty+'개\n🔴 인쇄 필요: '+transPrintNeeds+'개');
 }
 
 // ── 전사지 필요수량 계산 (색상별 White/Black 구분) ──
@@ -729,11 +847,15 @@ function matchOrdersWithFinished() {
     const garment = String(r[12]||'').trim();
     const transfer = String(r[13]||'').trim();
     const orderQty = Number(r[10]) || 1;
+    const status = String(r[11]||'').trim();
 
     if(!code || !color || !size) {
       orderSh.getRange(i+2, 13).setValue('⚠️ 불완전');
       return;
     }
+
+    // 이미 차감완료된 주문은 스킵
+    if(status.includes('차감완료')) return;
 
     // 1. 완제품재고 차감 (코드 + 색상 + 사이즈)
     let finFoundIdx = -1;
@@ -752,7 +874,8 @@ function matchOrdersWithFinished() {
       const newStock = currentStock - orderQty;
       const finSheetRow = finFoundIdx + 2;
 
-      orderSh.getRange(i+2, 13).setValue('✅ 발견').setFontColor('#1a7a40');
+      orderSh.getRange(i+2, 12).setValue('✅ 차감완료 ' + today);
+      orderSh.getRange(i+2, 1, 1, 12).setBackground('#e8f5e9');
 
       finSh.getRange(finSheetRow, 4).setValue(newStock);
       finSh.getRange(finSheetRow, 5).setValue(today);
@@ -765,7 +888,7 @@ function matchOrdersWithFinished() {
       }
       matched++;
     } else {
-      orderSh.getRange(i+2, 13).setValue('❌ 미발견').setFontColor('#c02820');
+      orderSh.getRange(i+2, 12).setValue('❌ 미발견 ' + today);
       unmatched++;
     }
 
@@ -881,6 +1004,155 @@ function callClaudeApi(userMessage,conversationHistory) {
 }
 
 function getScriptProperty(key){return PropertiesService.getScriptProperties().getProperty(key);}
+
+// ════════════════════════════════════════════════════════
+// 텔레그램 대시보드 발송
+// ════════════════════════════════════════════════════════
+function sendDashboardToTelegram() {
+  const TELEGRAM_TOKEN = '8695707104:AAGqDo1BANfoz94EsECd4suADMdVE5nA2gE';
+  const CHAT_ID = '439664573';
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  const today = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd');
+  const time = Utilities.formatDate(new Date(), 'Asia/Seoul', 'HH:mm:ss');
+
+  let msg = `📊 *뉴욕꼬맹이 일일 재고현황*\n\n`;
+  msg += `📅 ${today} ${time}\n\n`;
+
+  // 주문 현황
+  const orderSh = ss.getSheetByName(SHEET_NAMES.ORDER);
+  let orderTodayQty = 0;
+  if (orderSh && orderSh.getLastRow() > 1) {
+    const orderData = orderSh.getRange(2, 1, orderSh.getLastRow()-1, 12).getValues();
+    orderData.forEach(r => {
+      if (r[0] && String(r[11]||'').includes('✅')) {
+        orderTodayQty += Number(r[5]) || 1;
+      }
+    });
+  }
+  msg += `📋 파싱완료 주문: *${orderTodayQty}건*\n`;
+
+  // 완제품재고
+  const finSh = ss.getSheetByName(SHEET_NAMES.FINISHED);
+  let finTotalQty = 0, finTotalItems = 0, finTodayQty = 0;
+  if (finSh && finSh.getLastRow() > 1) {
+    const finData = finSh.getRange(2, 1, finSh.getLastRow()-1, 6).getValues();
+    finTotalItems = finData.filter(r => r[0]).length;
+    finData.forEach(r => {
+      if (r[0]) {
+        finTotalQty += Number(r[3]) || 0;
+        if (String(r[4]||'').includes(today) && String(r[5]||'').includes('✅')) {
+          finTodayQty += Number(r[3]) || 0;
+        }
+      }
+    });
+  }
+  msg += `📦 완제품: *${finTotalQty}개* (${finTotalItems}항목)\n`;
+  msg += `  └ 금일 발견: ${finTodayQty}개\n\n`;
+
+  // 무지상품재고
+  const blankSh = ss.getSheetByName(SHEET_NAMES.BLANK);
+  let blankTotalQty = 0;
+  if (blankSh && blankSh.getLastRow() > 1) {
+    const blankData = blankSh.getRange(2, 1, blankSh.getLastRow()-1, 4).getValues();
+    blankData.forEach(r => {
+      if (r[0]) {
+        blankTotalQty += Number(r[3]) || 0;
+      }
+    });
+  }
+  msg += `🧵 무지상품: *${blankTotalQty}개*\n`;
+
+  // 발주 필요 색상
+  const needColors = new Set();
+  const colorSizeStock = {};
+  if (blankSh && blankSh.getLastRow() > 1) {
+    const blankData = blankSh.getRange(2, 1, blankSh.getLastRow()-1, 4).getValues();
+    blankData.forEach(r => {
+      if (!r[0] || !r[1] || !r[2]) return;
+      const color = String(r[1]).trim();
+      const size = String(r[2]).trim();
+      const current = Number(r[3]) || 0;
+      if (!colorSizeStock[color]) colorSizeStock[color] = {};
+      colorSizeStock[color][size] = current;
+    });
+    Object.entries(colorSizeStock).forEach(([color, sizes]) => {
+      const lowStockCount = Object.values(sizes).filter(stock => stock < 5).length;
+      if (lowStockCount >= 3) {
+        needColors.add(color);
+      }
+    });
+  }
+  if (needColors.size > 0) {
+    const colorList = Array.from(needColors).sort().join(', ');
+    msg += `📍 *발주 필요: ${colorList}*\n`;
+  }
+  msg += `\n`;
+
+  // 전사지재고
+  const transSh = ss.getSheetByName(SHEET_NAMES.TRANSFER);
+  let transTotalQty = 0;
+  if (transSh && transSh.getLastRow() > 1) {
+    const transData = transSh.getRange(2, 1, transSh.getLastRow()-1, 5).getValues();
+    transData.forEach(r => {
+      if (r[0]) {
+        transTotalQty += Number(r[2]) || 0;
+      }
+    });
+  }
+  msg += `🖨️ 전사지: *${transTotalQty}개*\n\n`;
+
+  // 인쇄 필요량
+  let transPrintNeeds = 0;
+  const DARK_COLORS = ['레드','검은색','바이올렛','블루','차콜','다홍','보라'];
+  if (orderSh && orderSh.getLastRow() > 1) {
+    const orderData = orderSh.getRange(2, 1, orderSh.getLastRow()-1, 14).getValues();
+    let printList = {};
+    orderData.forEach(r => {
+      const transfer = String(r[13]||'').trim();
+      const color = String(r[8]||'').trim();
+      const qty = Number(r[10]) || 1;
+      const status = String(r[11]||'').trim();
+      if (!transfer || !color || !status.includes('✅')) return;
+      const inkColor = DARK_COLORS.includes(color) ? '흰색' : '검은색';
+      const key = `${transfer}|${inkColor}`;
+      if (!printList[key]) printList[key] = {code: transfer, inkColor: inkColor, totalQty: 0};
+      printList[key].totalQty += qty;
+    });
+    const transData = transSh && transSh.getLastRow() > 1 ? transSh.getRange(2, 1, transSh.getLastRow()-1, 5).getValues() : [];
+    Object.values(printList).forEach(item => {
+      const transRow = transData.find(t => String(t[0]).trim() === item.code && String(t[1]).trim() === item.inkColor);
+      const currentStock = transRow ? Number(transRow[2]) || 0 : 0;
+      const needsQty = Math.max(0, item.totalQty - currentStock);
+      transPrintNeeds += needsQty;
+    });
+  }
+
+  if (transPrintNeeds > 0) {
+    msg += `🔴 *인쇄 필요: ${transPrintNeeds}개*\n`;
+  } else {
+    msg += `✅ *전사지 충분*\n`;
+  }
+
+  // 텔레그램 발송
+  const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
+  const payload = {
+    chat_id: CHAT_ID,
+    text: msg,
+    parse_mode: 'Markdown'
+  };
+
+  try {
+    const response = UrlFetchApp.fetch(url, {
+      method: 'post',
+      contentType: 'application/json',
+      payload: JSON.stringify(payload)
+    });
+    Logger.log('✅ 텔레그램 발송 완료');
+  } catch (e) {
+    Logger.log('❌ 텔레그램 발송 실패: ' + e.message);
+  }
+}
 
 // ════════════════════════════════════════════════════════
 // doGet: 연결 테스트 & 상태 확인 & 재고 전체 조회
@@ -1444,4 +1716,142 @@ function _deductItem(ss, code, color, size, qty) {
   }
 
   return result;
+}
+
+// ── 전사지 코드별 출력목록 자동 생성 ──
+function generateTransferPrintList() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const orderSh = ss.getSheetByName(SHEET_NAMES.ORDER);
+  const transSh = ss.getSheetByName(SHEET_NAMES.TRANSFER);
+
+  if(!orderSh || !transSh) {
+    SpreadsheetApp.getUi().alert('❌ 주문확인 또는 전사지재고 시트가 없습니다');
+    return;
+  }
+
+  const orderData = orderSh.getLastRow() > 1
+    ? orderSh.getRange(2, 1, orderSh.getLastRow()-1, 14).getValues()
+    : [];
+
+  const transData = transSh.getLastRow() > 1
+    ? transSh.getRange(2, 1, transSh.getLastRow()-1, 5).getValues()
+    : [];
+
+  // Dark color (흰색 잉크가 필요한 색상)
+  const DARK_COLORS = ['레드','검은색','바이올렛','블루','차콜','다홍','보라'];
+
+  // 전사지 코드별 수량 합계 (색상별)
+  let printList = {};
+
+  orderData.forEach(r => {
+    const transfer = String(r[13] || '').trim();
+    const color = String(r[8] || '').trim();
+    const qty = Number(r[10]) || 1;
+    const status = String(r[11] || '').trim();
+
+    if(!transfer || !color || !status.includes('✅')) return;
+
+    const inkColor = DARK_COLORS.includes(color) ? '흰색' : '검은색';
+    const key = `${transfer}|${inkColor}`;
+
+    if(!printList[key]) {
+      printList[key] = {code: transfer, inkColor: inkColor, totalQty: 0};
+    }
+    printList[key].totalQty += qty;
+  });
+
+  // 시트 생성
+  const PRINT_SHEET = '전사지출력목록';
+  let printSh = ss.getSheetByName(PRINT_SHEET);
+  if(printSh) ss.deleteSheet(printSh);
+  printSh = ss.insertSheet(PRINT_SHEET);
+
+  // 헤더
+  const headers = ['전사지코드', '필요잉크', '주문수량', '현재재고', '부족수량', '상태'];
+  printSh.getRange(1, 1, 1, 6).setValues([headers])
+    .setBackground('#4285f4')
+    .setFontColor('#ffffff')
+    .setFontWeight('bold');
+
+  // 데이터 입력 (코드순 정렬)
+  let row = 2;
+  let totalNeeds = 0;
+
+  Object.values(printList)
+    .sort((a, b) => a.code.localeCompare(b.code))
+    .forEach(item => {
+      const transfer = item.code;
+      const inkColor = item.inkColor;
+      const orderQty = item.totalQty;
+
+      // 재고에서 찾기
+      const transRow = transData.find(t =>
+        String(t[0]).trim() === transfer &&
+        String(t[1]).trim() === inkColor
+      );
+
+      const currentStock = transRow ? Number(transRow[2]) || 0 : 0;
+      const needsQty = Math.max(0, orderQty - currentStock);
+      const status = needsQty === 0 ? '✅ 완매' : '🔴 인쇄필요';
+
+      printSh.getRange(row, 1).setValue(transfer);
+      printSh.getRange(row, 2).setValue(inkColor);
+      printSh.getRange(row, 3).setValue(orderQty);
+      printSh.getRange(row, 4).setValue(currentStock);
+      printSh.getRange(row, 5).setValue(needsQty);
+      printSh.getRange(row, 6).setValue(status);
+
+      if(needsQty > 0) {
+        printSh.getRange(row, 1, 1, 6).setBackground('#ffebee');
+        totalNeeds += needsQty;
+      } else {
+        printSh.getRange(row, 1, 1, 6).setBackground('#f1f8e9');
+      }
+
+      row++;
+    });
+
+  // 컬럼 너비 조정
+  printSh.setColumnWidths(1, 6, 100);
+
+  SpreadsheetApp.getUi().alert(
+    `✅ 전사지 출력목록 생성 완료!\n\n🔴 인쇄 필요: ${totalNeeds}개`
+  );
+}
+
+// ── 완제품 시트 날짜/상태 자동 채우기 ──
+function fillMissingFinishedDates() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const finSh = ss.getSheetByName(SHEET_NAMES.FINISHED);
+
+  if(!finSh || finSh.getLastRow() < 2) {
+    SpreadsheetApp.getUi().alert('❌ 완제품재고 탭에 데이터가 없습니다');
+    return;
+  }
+
+  const today = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd');
+  const lastRow = finSh.getLastRow();
+
+  // E칼럼(업데이트날짜), F칼럼(발견/미발견) 데이터 읽기
+  const eData = finSh.getRange(2, 5, lastRow - 1, 1).getValues();
+  const fData = finSh.getRange(2, 6, lastRow - 1, 1).getValues();
+
+  let filledCount = 0;
+
+  // E칼럼이 비어있는 행에 날짜 입력, F칼럼이 비어있으면 상태 입력
+  for(let i = 0; i < eData.length; i++) {
+    const eValue = String(eData[i][0]).trim();
+    const fValue = String(fData[i][0]).trim();
+
+    if(!eValue) {
+      finSh.getRange(i + 2, 5).setValue(today);
+      filledCount++;
+    }
+
+    if(!fValue) {
+      finSh.getRange(i + 2, 6).setValue('✅ 완매');
+    }
+  }
+
+  SpreadsheetApp.getUi().alert(`✅ 완료!\n${filledCount}행의 업데이트날짜를 오늘(${today})로 채웠습니다.`);
 }

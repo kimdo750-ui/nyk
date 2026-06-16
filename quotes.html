@@ -395,6 +395,7 @@
   <button class="nav-tab" onclick="showTab('success')">🏆 성공</button>
   <button class="nav-tab" onclick="showTab('challenge')">🔥 도전</button>
   <button class="nav-tab" onclick="showTab('happy')">🌟 행복</button>
+  <button class="nav-tab" onclick="showTab('memory')">👴 추억</button>
   <button class="nav-tab" onclick="showTab('motto')">🏢 사훈</button>
 </div>
 
@@ -404,15 +405,15 @@
   <!-- 통계 바 -->
   <div class="stats-bar">
     <div class="stat-item">
-      <span class="stat-num">62</span>
+      <span class="stat-num">82</span>
       <div class="stat-label">총 명언 수</div>
     </div>
     <div class="stat-item">
-      <span class="stat-num">5</span>
+      <span class="stat-num">6</span>
       <div class="stat-label">카테고리</div>
     </div>
     <div class="stat-item">
-      <span class="stat-num">30+</span>
+      <span class="stat-num">45+</span>
       <div class="stat-label">★ 추천 문구</div>
     </div>
     <div class="stat-item">
@@ -491,6 +492,18 @@
       </div>
     </div>
     <div class="quotes-grid" id="grid-happy"></div>
+  </div>
+
+  <!-- ─── 추억 탭 (노인용) ─── -->
+  <div class="section" id="tab-memory">
+    <div class="section-title">
+      <div class="section-icon">👴</div>
+      <div>
+        <h2>추억 & 감성 (Memory)</h2>
+        <p>인생의 소중한 순간들을 담은 노인복 문구</p>
+      </div>
+    </div>
+    <div class="quotes-grid" id="grid-memory"></div>
   </div>
 
   <!-- ─── 사훈 탭 ─── -->
@@ -613,6 +626,28 @@ const DATA = {
     { text:"사랑은 모든 것을 이긴다", source:"베르길리우스", chars:"12자", featured:false },
     { text:"친구는 제2의 자신이다", source:"아리스토텔레스", chars:"11자", featured:false },
   ],
+  memory: [
+    { text:"함께한 시간이 가장 큰 행복이었습니다", source:"노인 맞춤복용", chars:"20자", featured:true },
+    { text:"그 시절 우리는 참 아름다웠다", source:"추억의 시간", chars:"18자", featured:true },
+    { text:"인생 최고의 순간들이 옆에 있었습니다", source:"가족의 의미", chars:"20자", featured:true },
+    { text:"세월이 흘렀어도 변하지 않는 사랑", source:"시간을 초월", chars:"20자", featured:true },
+    { text:"아이들 웃음이 내 인생입니다", source:"삶의 중심", chars:"17자", featured:true },
+    { text:"우리 집이 세상의 전부였습니다", source:"가정의 소중함", chars:"19자", featured:false },
+    { text:"지나간 날들, 모두 아름다웠습니다", source:"인생 회상", chars:"18자", featured:true },
+    { text:"당신이 있어 행복했습니다", source:"감사의 인사", chars:"17자", featured:false },
+    { text:"작은 것들이 전부였던 그 시간들", source:"소박한 행복", chars:"19자", featured:true },
+    { text:"함께 늙어가는 것도 행복입니다", source:"부부의 사랑", chars:"19자", featured:true },
+    { text:"저는 충분히 행복한 인생을 살았습니다", source:"인생 만족", chars:"21자", featured:true },
+    { text:"사랑하는 사람과 함께라서 모든 게 가능했습니다", source:"함께의 힘", chars:"26자", featured:false },
+    { text:"돌이켜보면 우리는 잘했습니다", source:"인생 자부심", chars:"17자", featured:true },
+    { text:"이 세상 최고의 선물은 당신들입니다", source:"가족의 가치", chars:"20자", featured:true },
+    { text:"우리 가족의 역사를 자랑합니다", source:"세대의 자존심", chars:"17자", featured:false },
+    { text:"지나간 날들이 모두 보석입니다", source:"인생의 빛남", chars:"17자", featured:true },
+    { text:"이제 천천히 걸어도 괜찮습니다", source:"노년의 여유", chars:"17자", featured:true },
+    { text:"할 만큼 하고, 사랑할 만큼 사랑했습니다", source:"삶의 완성", chars:"23자", featured:true },
+    { text:"우리의 이야기는 계속됩니다", source:"세대 잇기", chars:"16자", featured:false },
+    { text:"기억하고 있겠습니다, 당신을", source:"영원한 사랑", chars:"16자", featured:true },
+  ],
 };
 
 const MOTTO_KR = [
@@ -665,7 +700,7 @@ const MOTTO_GLOBAL = [
 
 // ─── 카테고리 레이블 ───
 const CAT_LABEL = {
-  love:"❤️ 사랑", friend:"🤝 우정", success:"🏆 성공", challenge:"🔥 도전", happy:"🌟 행복"
+  love:"❤️ 사랑", friend:"🤝 우정", success:"🏆 성공", challenge:"🔥 도전", happy:"🌟 행복", memory:"👴 추억"
 };
 
 // ─── 카드 생성 ───
@@ -686,7 +721,7 @@ function makeCard(item, cat) {
 // ─── 그리드 채우기 ───
 function fillGrids() {
   const allGrid = document.getElementById('grid-all');
-  ['love','friend','success','challenge','happy'].forEach(cat => {
+  ['love','friend','success','challenge','happy','memory'].forEach(cat => {
     const grid = document.getElementById('grid-' + cat);
     DATA[cat].forEach(item => {
       const card = makeCard(item, cat);
