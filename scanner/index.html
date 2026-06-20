@@ -482,6 +482,41 @@ function showPrint() {
   document.getElementById('printScreen').style.display = 'block';
 }
 
+function shareKakao() {
+  var boxes = Array.from(new Set(scanned.map(function(s){return s.box;}))).sort(function(a,b){return a-b;});
+  var text = '[뉴욕꼬맹이 출고목록]
+';
+  var now = new Date();
+  text += now.getFullYear()+'.'+String(now.getMonth()+1).padStart(2,'0')+'.'+String(now.getDate()).padStart(2,'0')+'
+
+';
+  boxes.forEach(function(b) {
+    var items = scanned.filter(function(s){return s.box===b;});
+    var total = items.reduce(function(a,s){return a+s.qty;},0);
+    text += '📦 Box '+b+' (총 '+total+'개)
+';
+    items.forEach(function(s) {
+      text += '  · '+s.raw+(s.size?' / '+s.size:'') +' x'+s.qty+'
+';
+    });
+    text += '
+';
+  });
+
+  if (navigator.share) {
+    navigator.share({ title: '뉴욕꼬맹이 출고목록', text: text })
+      .catch(function(){});
+  } else {
+    // Web Share 미지원 시 클립보드 복사
+    navigator.clipboard.writeText(text).then(function() {
+      alert('클립보드에 복사됐어요!
+카카오톡에 붙여넣기 하세요.');
+    }).catch(function() {
+      alert(text);
+    });
+  }
+}
+
 function goBack() {
   document.getElementById('scanScreen').style.display = 'block';
   document.getElementById('printScreen').style.display = 'none';
