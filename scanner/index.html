@@ -523,12 +523,12 @@ function goBack() {
 }
 
 loadState();
+// boxCount가 최소 4는 되도록
+if (boxCount < 4) boxCount = 4;
 initBoxGrid();
 updateNowCnt();
-if (scanned.length > 0) {
-  document.getElementById("nowLabel").textContent = "Box " + currentBox + " 스캔 중";
-  renderList();
-}
+document.getElementById("nowLabel").textContent = "Box " + currentBox + " 스캔 중";
+renderList();
 </script>
 </body>
 </html>
