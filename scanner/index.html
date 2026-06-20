@@ -172,6 +172,22 @@ let lastScan = '';
 let lastScanTime = 0;
 let cameraStarted = false;
 
+function beep() {
+  try {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1200, ctx.currentTime);
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.15);
+  } catch(e) {}
+}
+
 function parseBarcode(raw) {
   raw = raw.trim();
   const parts = raw.split('/');
@@ -272,6 +288,7 @@ function startCamera() {
     lastScanTime = now;
 
     if (navigator.vibrate) navigator.vibrate(100);
+    beep();
     var parsed = parseBarcode(code);
     addItem(parsed);
     sendToSheet(parsed);
