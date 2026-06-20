@@ -246,8 +246,10 @@ function parseBarcode(raw) {
 }
 
 function isValid(code, result) {
-  // 정확히 13자리만 허용 (숫자든 영문이든 상관없이)
-  if (code.length !== BARCODE_LENGTH) return false;
+  // 영문자 포함된 값만 허용 (순수 숫자 노이즈 차단)
+  if (/^\d+$/.test(code)) return false;
+  // 너무 짧은 값 제거
+  if (code.length < 6) return false;
   return true;
 }
 
@@ -265,7 +267,7 @@ function startCamera() {
     },
     locator: { patchSize: 'large', halfSample: true },
     numOfWorkers: 2, frequency: 15,
-    decoder: { readers: ['ean_reader', 'ean_8_reader', 'code_128_reader', 'code_39_reader', 'upc_reader'], multiple: false },
+    decoder: { readers: ['code_128_reader', 'code_39_reader'], multiple: false },
     locate: true
   }, function(err) {
     if (err) {
