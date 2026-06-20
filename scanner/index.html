@@ -153,7 +153,7 @@
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+<script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
 <script>
 var SHEET_URL = 'https://script.google.com/macros/s/AKfycbzKY4X3IBuFm7WoyV30_mdgQPnH-got_8gcrciTCFAvTspt1LEzRNsrBdxSjlI4q18p/exec';
 var BARCODE_LENGTH = 13;   // 정확히 13자리만 허용
@@ -245,55 +245,58 @@ function parseBarcode(raw) {
   return { sku: raw, name: raw, size: '', raw: raw };
 }
 
-function isValid(code, result) {
-  // 영문자 포함된 값만 허용 (순수 숫자 노이즈 차단)
-  if (/^\d+$/.test(code)) return false;
-  // 너무 짧은 값 제거
-  if (code.length < 6) return false;
+function isValid(code) {
+  if (!code) return false;
+  code = code.trim();
+  // R로 시작하는 13자리만 허용
+  if (!/^R.{12}$/.test(code)) return false;
   return true;
 }
 
-// ── 카메라 ──
+// ── 카메라 (ZXing) ──
+var codeReader = null;
+
 function startCamera() {
   if (cameraStarted) return;
   document.getElementById('camPlaceholder').style.display = 'none';
   document.getElementById('interactive').style.display = 'block';
 
-  Quagga.init({
-    inputStream: {
-      name: 'Live', type: 'LiveStream',
-      target: document.getElementById('interactive'),
-      constraints: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
-    },
-    locator: { patchSize: 'large', halfSample: true },
-    numOfWorkers: 2, frequency: 15,
-    decoder: { readers: ['code_128_reader', 'code_39_reader'], multiple: false },
-    locate: true
-  }, function(err) {
-    if (err) {
-      document.getElementById('camPlaceholder').style.display = 'flex';
-      document.getElementById('interactive').style.display = 'none';
-      alert('카메라 권한을 허용해주세요.\n' + err);
-      return;
-    }
-    Quagga.start();
+  try {
+    codeReader = new ZXing.BrowserMultiFormatReader();
+    codeReader.decodeFromConstraints(
+      { video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } },
+      document.querySelector('#interactive video') || createVideo(),
+      function(result, err) {
+        if (!result) return;
+        var code = result.getText();
+        var now = Date.now();
+        if (code === lastScan && now - lastScanTime < DEBOUNCE_MS) return;
+        if (!isValid(code)) return;
+        lastScan = code;
+        lastScanTime = now;
+        beep();
+        if (navigator.vibrate) navigator.vibrate(100);
+        var parsed = parseBarcode(code);
+        addItem(parsed);
+        sendToSheet(parsed);
+      }
+    );
     cameraStarted = true;
     document.getElementById('camControls').style.display = 'block';
-  });
+  } catch(e) {
+    document.getElementById('camPlaceholder').style.display = 'flex';
+    document.getElementById('interactive').style.display = 'none';
+    alert('카메라 권한을 허용해주세요.\n' + e);
+  }
+}
 
-  Quagga.onDetected(function(result) {
-    var code = result.codeResult.code;
-    var now = Date.now();
-    if (code === lastScan && now - lastScanTime < DEBOUNCE_MS) return;
-    if (!isValid(code, result)) return;
-    lastScan = code;
-    lastScanTime = now;
-    beep();
-    if (navigator.vibrate) navigator.vibrate(100);
-    var parsed = parseBarcode(code);
-    addItem(parsed);
-    sendToSheet(parsed);
-  });
+function createVideo() {
+  var v = document.createElement('video');
+  v.style.width = '100%';
+  v.style.height = '100%';
+  v.style.objectFit = 'cover';
+  document.getElementById('interactive').appendChild(v);
+  return v;
 }
 
 // ── 비프음 (저→고 두 음) ──
