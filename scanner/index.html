@@ -125,6 +125,9 @@
       <p>카메라로 바코드를 스캔하세요</p>
       <button onclick="startCamera()">📷 카메라 시작</button>
     </div>
+    <div id="camControls" style="display:none;text-align:center;padding:8px;background:#0f172a;">
+      <button onclick="toggleCamera()" id="camToggleBtn" style="background:#ef4444;color:#fff;border:none;border-radius:8px;padding:7px 20px;font-size:13px;font-weight:600;cursor:pointer;">⏸ 일시정지</button>
+    </div>
     <div class="scan-status" id="scanStatus"></div>
   </div>
 
@@ -171,6 +174,7 @@ let scanned = [];
 let lastScan = '';
 let lastScanTime = 0;
 let cameraStarted = false;
+let cameraPaused = false;
 
 function beep() {
   try {
@@ -272,6 +276,7 @@ function startCamera() {
     }
     Quagga.start();
     cameraStarted = true;
+    document.getElementById("camControls").style.display = "block";
   });
 
   Quagga.onDetected(function(result) {
@@ -303,6 +308,7 @@ function addItem(parsed) {
   } else {
     scanned.push(Object.assign({}, parsed, { box: currentBox, qty: 1, synced: false }));
   }
+  saveState();
   renderList();
   updateNowCnt();
   setStatus('ok', '✓ ' + parsed.raw + ' — Box ' + currentBox + ' 등록');
@@ -354,6 +360,7 @@ function addBox() { boxCount++; initBoxGrid(); }
 
 function setBox(n) {
   currentBox = n;
+  saveState();
   initBoxGrid();
   updateNowCnt();
   document.getElementById('nowLabel').textContent = 'Box ' + n + ' 스캔 중';
@@ -400,7 +407,7 @@ function delItem(idx) {
     deleteFromSheet(item.raw, item.box);
     scanned.splice(idx, 1);
   }
-  renderList(); updateNowCnt();
+  saveState(); renderList(); updateNowCnt();
 }
 
 function deleteFromSheet(raw, box) {
@@ -412,10 +419,45 @@ function deleteFromSheet(raw, box) {
   }).catch(function(){});
 }
 
+function toggleCamera() {
+  var btn = document.getElementById("camToggleBtn");
+  if (cameraPaused) {
+    Quagga.start();
+    cameraPaused = false;
+    btn.textContent = "⏸ 일시정지";
+    btn.style.background = "#ef4444";
+  } else {
+    Quagga.stop();
+    cameraPaused = true;
+    btn.textContent = "▶ 재개";
+    btn.style.background = "#16a34a";
+  }
+}
+
+function saveState() {
+  try {
+    localStorage.setItem("scanner_scanned", JSON.stringify(scanned));
+    localStorage.setItem("scanner_box", currentBox);
+    localStorage.setItem("scanner_boxcount", boxCount);
+  } catch(e) {}
+}
+
+function loadState() {
+  try {
+    var s = localStorage.getItem("scanner_scanned");
+    var b = localStorage.getItem("scanner_box");
+    var bc = localStorage.getItem("scanner_boxcount");
+    if (s) scanned = JSON.parse(s);
+    if (b) currentBox = parseInt(b);
+    if (bc) boxCount = parseInt(bc);
+  } catch(e) {}
+}
+
 function resetAll() {
   if (scanned.length === 0) return;
   if (!confirm('모든 스캔 데이터를 초기화할까요?')) return;
   scanned = []; boxCount = 4; currentBox = 1;
+  saveState();
   renderList(); initBoxGrid(); updateNowCnt();
   document.getElementById('nowLabel').textContent = 'Box 1 스캔 중';
 }
@@ -444,7 +486,13 @@ function goBack() {
   document.getElementById('printScreen').style.display = 'none';
 }
 
+loadState();
 initBoxGrid();
+updateNowCnt();
+if (scanned.length > 0) {
+  document.getElementById("nowLabel").textContent = "Box " + currentBox + " 스캔 중";
+  renderList();
+}
 </script>
 </body>
 </html>
