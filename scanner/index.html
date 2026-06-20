@@ -421,13 +421,14 @@ function deleteFromSheet(raw, box) {
 
 function toggleCamera() {
   var btn = document.getElementById("camToggleBtn");
+  var video = document.querySelector("#interactive video");
   if (cameraPaused) {
-    Quagga.start();
+    if (video) video.play();
     cameraPaused = false;
     btn.textContent = "⏸ 일시정지";
     btn.style.background = "#ef4444";
   } else {
-    Quagga.stop();
+    if (video) video.pause();
     cameraPaused = true;
     btn.textContent = "▶ 재개";
     btn.style.background = "#16a34a";
