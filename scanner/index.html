@@ -246,16 +246,8 @@ function parseBarcode(raw) {
 }
 
 function isValid(code, result) {
-  // 정확히 13자리만 허용
+  // 정확히 13자리만 허용 (숫자든 영문이든 상관없이)
   if (code.length !== BARCODE_LENGTH) return false;
-
-  // 신뢰도 체크 (관대하게)
-  if (result && result.codeResult && result.codeResult.decodedCodes) {
-    var errs = result.codeResult.decodedCodes
-      .filter(function(x){ return x.error !== undefined; })
-      .map(function(x){ return x.error; });
-    if (errs.length > 0 && errs.reduce(function(a,b){return a+b;},0)/errs.length > MAX_ERROR) return false;
-  }
   return true;
 }
 
@@ -273,7 +265,7 @@ function startCamera() {
     },
     locator: { patchSize: 'large', halfSample: true },
     numOfWorkers: 2, frequency: 15,
-    decoder: { readers: ['code_128_reader', 'code_39_reader'], multiple: false },
+    decoder: { readers: ['ean_reader', 'ean_8_reader', 'code_128_reader', 'code_39_reader', 'upc_reader'], multiple: false },
     locate: true
   }, function(err) {
     if (err) {
@@ -302,32 +294,30 @@ function startCamera() {
   });
 }
 
-// ── 확인 음성 ──
+// ── 비프음 (저→고 두 음) ──
 function beep() {
   try {
-    // 1순위: TTS "확인"
-    if (window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-      var utter = new SpeechSynthesisUtterance('확인');
-      utter.lang = 'ko-KR';
-      utter.rate = 1.2;
-      utter.volume = 1.0;
-      window.speechSynthesis.speak(utter);
-      return;
-    }
-    // 2순위: 비프음 (TTS 미지원 시)
     var ctx = new (window.AudioContext || window.webkitAudioContext)();
-    var osc = ctx.createOscillator();
-    var gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(880, ctx.currentTime);
-    osc.frequency.setValueAtTime(1320, ctx.currentTime + 0.1);
-    gain.gain.setValueAtTime(0.5, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.3);
+    // 첫번째 음
+    var o1 = ctx.createOscillator();
+    var g1 = ctx.createGain();
+    o1.connect(g1); g1.connect(ctx.destination);
+    o1.type = 'square';
+    o1.frequency.value = 880;
+    g1.gain.setValueAtTime(0.6, ctx.currentTime);
+    g1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+    o1.start(ctx.currentTime);
+    o1.stop(ctx.currentTime + 0.15);
+    // 두번째 음
+    var o2 = ctx.createOscillator();
+    var g2 = ctx.createGain();
+    o2.connect(g2); g2.connect(ctx.destination);
+    o2.type = 'square';
+    o2.frequency.value = 1760;
+    g2.gain.setValueAtTime(0.6, ctx.currentTime + 0.18);
+    g2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.38);
+    o2.start(ctx.currentTime + 0.18);
+    o2.stop(ctx.currentTime + 0.38);
   } catch(e) {}
 }
 
