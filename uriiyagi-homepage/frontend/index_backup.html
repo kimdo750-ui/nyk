@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>우리이야기 - 당신의 이야기를 옷에 담다</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&family=Noto+Serif+KR:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #1a1a2e;
+      --ink-light: #2d2d44;
+      --paper: #faf8f3;
+      --cream: #f5f0e8;
+      --gold: #c9a84c;
+      --gold-light: #e8c97a;
+      --sepia: #a68575;
+      --sepia-light: #d9c7bb;
+      --pastel-blue: #b8dae8;
+      --warm-beige: #e8d5c4;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Noto Sans KR', sans-serif;
+      line-height: 1.6;
+    }
+
+    /* ═══ HEADER & NAVIGATION ═══ */
+    header {
+      background: var(--ink);
+      color: var(--paper);
+      padding: 16px 40px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .header-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 40px;
+    }
+
+    .logo {
+      font-family: 'Nanum Brush Script', cursive;
+      font-size: 28px;
+      color: var(--gold);
+      font-weight: 700;
+      letter-spacing: -1px;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .logo:hover {
+      color: var(--gold-light);
+    }
+
+    nav ul {
+      display: flex;
+      list-style: none;
+      gap: 0;
+      margin: 0;
+      padding: 0;
+    }
+
+    nav a {
+      display: block;
+      color: rgba(250,248,243,0.85);
+      text-decoration: none;
+      padding: 12px 20px;
+      font-size: 15px;
+      font-weight: 500;
+      transition: all 0.2s;
+      border-bottom: 2px solid transparent;
+    }
+
+    nav a:hover {
+      color: var(--gold-light);
+      border-bottom-color: var(--gold);
+    }
+
+    nav a.active {
+      color: var(--gold);
+      border-bottom-color: var(--gold);
+    }
+
+    /* ═══ HERO SECTION ═══ */
+    .hero {
+      background: linear-gradient(135deg, var(--ink) 0%, var(--ink-light) 100%);
+      color: var(--paper);
+      padding: 100px 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 50px,
+        rgba(201,168,76,0.03) 50px,
+        rgba(201,168,76,0.03) 51px
+      );
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .hero h1 {
+      font-family: 'Nanum Brush Script', cursive;
+      font-size: clamp(32px, 7vw, 56px);
+      margin-bottom: 12px;
+      letter-spacing: -1px;
+      line-height: 1.2;
+    }
+
+    .hero .tagline {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 18px;
+      color: var(--gold-light);
+      margin-bottom: 24px;
+      font-weight: 300;
+      letter-spacing: 1px;
+    }
+
+    .hero p {
+      font-size: 16px;
+      color: rgba(250,248,243,0.8);
+      margin-bottom: 40px;
+      line-height: 1.8;
+    }
+
+    .cta-button {
+      display: inline-block;
+      background: var(--gold);
+      color: var(--ink);
+      padding: 14px 36px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+      letter-spacing: 0.5px;
+    }
+
+    .cta-button:hover {
+      background: var(--gold-light);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(201,168,76,0.3);
+    }
+
+    /* ═══ CATEGORIES SECTION ═══ */
+    .categories {
+      padding: 80px 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-title {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .section-title h2 {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 36px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .section-title p {
+      font-size: 16px;
+      color: var(--sepia);
+      font-weight: 300;
+    }
+
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+
+    .category-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+    }
+
+    .category-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+    }
+
+    .category-image {
+      width: 100%;
+      aspect-ratio: 1;
+      background: linear-gradient(135deg, var(--pastel-blue), var(--cream));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 60px;
+    }
+
+    .category-content {
+      padding: 24px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .category-name {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+
+    .category-desc {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 12px;
+      flex: 1;
+    }
+
+    .category-link {
+      color: var(--gold);
+      font-weight: 600;
+      text-decoration: none;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .category-link:hover {
+      color: var(--gold-light);
+    }
+
+    /* ═══ FOOTER ═══ */
+    footer {
+      background: var(--ink);
+      color: rgba(250,248,243,0.7);
+      padding: 40px;
+      text-align: center;
+      margin-top: 60px;
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .footer-logo {
+      font-family: 'Nanum Brush Script', cursive;
+      font-size: 24px;
+      color: var(--gold);
+      margin-bottom: 16px;
+    }
+
+    .footer-info {
+      font-size: 14px;
+      line-height: 1.8;
+      margin-bottom: 20px;
+    }
+
+    .footer-contact {
+      font-size: 13px;
+      color: rgba(250,248,243,0.6);
+    }
+
+    /* ═══ RESPONSIVE ═══ */
+    @media (max-width: 768px) {
+      .header-container {
+        gap: 20px;
+      }
+
+      nav ul {
+        flex-direction: column;
+        gap: 0;
+      }
+
+      nav a {
+        padding: 10px 16px;
+        font-size: 14px;
+      }
+
+      .hero {
+        padding: 60px 20px;
+      }
+
+      .hero h1 {
+        font-size: 28px;
+      }
+
+      .categories {
+        padding: 60px 20px;
+      }
+
+      .category-grid {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 20px;
+      }
+
+      .category-image {
+        font-size: 40px;
+      }
+
+      .category-content {
+        padding: 16px;
+      }
+
+      .category-name {
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header>
+  <div class="header-container">
+    <a href="index.html" class="logo">우리이야기</a>
+    <nav>
+      <ul>
+        <li><a href="category.html?cat=kids" class="nav-link">아동복</a></li>
+        <li><a href="category.html?cat=adults" class="nav-link">성인복</a></li>
+        <li><a href="category.html?cat=senior" class="nav-link">시니어</a></li>
+        <li><a href="category.html?cat=pet" class="nav-link">반려동물복</a></li>
+        <li><a href="category.html?cat=group" class="nav-link">단체복</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<!-- ═══ HERO SECTION ═══ -->
+<section class="hero">
+  <div class="hero-content">
+    <h1>당신의 이야기를 입다</h1>
+    <p class="tagline">세상에 하나뿐인 옷</p>
+    <p>아이의 첫 기념일부터 노년의 소중한 추억까지,<br/>
+    우리는 당신의 모든 순간을 옷에 담아냅니다.<br/>
+    맞춤형 디자인으로 만들어진 특별한 이야기를 지금 시작하세요.</p>
+    <a href="#categories" class="cta-button">우리 이야기 시작하기</a>
+  </div>
+</section>
+
+<!-- ═══ CATEGORIES SECTION ═══ -->
+<section class="categories" id="categories">
+  <div class="section-title">
+    <h2>카테고리</h2>
+    <p>당신에게 맞는 옷을 찾으세요</p>
+  </div>
+
+  <div class="category-grid">
+    <!-- 아동복 -->
+    <a href="category.html?cat=kids" style="text-decoration: none; color: inherit;">
+      <div class="category-card">
+        <div class="category-image">👧</div>
+        <div class="category-content">
+          <div class="category-name">아동복</div>
+          <div class="category-desc">아이의 띠와 별자리를 담은 기념복</div>
+          <div class="category-link">보기 →</div>
+        </div>
+      </div>
+    </a>
+
+    <!-- 성인복 -->
+    <a href="category.html?cat=adults" style="text-decoration: none; color: inherit;">
+      <div class="category-card">
+        <div class="category-image">👔</div>
+        <div class="category-content">
+          <div class="category-name">성인복</div>
+          <div class="category-desc">당신의 감성 문구를 담은 옷</div>
+          <div class="category-link">보기 →</div>
+        </div>
+      </div>
+    </a>
+
+    <!-- 시니어 -->
+    <a href="category.html?cat=senior" style="text-decoration: none; color: inherit;">
+      <div class="category-card">
+        <div class="category-image">👴</div>
+        <div class="category-content">
+          <div class="category-name">시니어</div>
+          <div class="category-desc">소중한 추억을 담은 옷</div>
+          <div class="category-link">보기 →</div>
+        </div>
+      </div>
+    </a>
+
+    <!-- 반려동물복 -->
+    <a href="category.html?cat=pet" style="text-decoration: none; color: inherit;">
+      <div class="category-card">
+        <div class="category-image">🐾</div>
+        <div class="category-content">
+          <div class="category-name">반려동물복</div>
+          <div class="category-desc">반려동물의 이름과 생일을 담은 옷</div>
+          <div class="category-link">보기 →</div>
+        </div>
+      </div>
+    </a>
+
+    <!-- 단체복 -->
+    <a href="category.html?cat=group" style="text-decoration: none; color: inherit;">
+      <div class="category-card">
+        <div class="category-image">👥</div>
+        <div class="category-content">
+          <div class="category-name">단체복</div>
+          <div class="category-desc">팀의 이야기와 사훈을 담은 옷</div>
+          <div class="category-link">보기 →</div>
+        </div>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="footer-content">
+    <div class="footer-logo">우리이야기</div>
+    <div class="footer-info">
+      <p>당신의 이야기를 옷에 담다</p>
+      <p>세상에 하나뿐인 맞춤형 옷</p>
+    </div>
+    <div class="footer-contact">
+      <p>문의: <a href="https://open.kakao.com/o/gx5nTyAi" style="color: var(--gold); text-decoration: none;">카카오톡 오픈채팅</a></p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('.nav-link').forEach(link => {
+    const url = new URL(link.href);
+    if (url.pathname === window.location.pathname && url.search === window.location.search) {
+      link.classList.add('active');
+    }
+  });
+
+  if (window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/')) {
+    document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+  }
+</script>
+
+</body>
+</html>

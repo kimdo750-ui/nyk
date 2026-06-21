@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>상품 목록 - 우리이야기</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: #ffffff;
+      color: #1a1a1a;
+      font-family: 'Noto Sans KR', sans-serif;
+      line-height: 1.6;
+    }
+
+    /* ═══ HEADER ═══ */
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid #e8e8e8;
+      padding: 12px 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-top {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 30px;
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1a1a1a;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .search-bar {
+      flex: 1;
+      max-width: 400px;
+    }
+
+    .search-bar input {
+      width: 100%;
+      padding: 10px 15px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .header-icons {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .header-icons a {
+      color: #1a1a1a;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .header-icons a:hover {
+      color: #e74c3c;
+    }
+
+    /* ═══ CATEGORY NAV ═══ */
+    .category-nav {
+      background: #f9f9f9;
+      border-bottom: 1px solid #e8e8e8;
+      padding: 0;
+    }
+
+    .category-nav ul {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      list-style: none;
+      gap: 0;
+    }
+
+    .category-nav li {
+      flex: 1;
+    }
+
+    .category-nav a {
+      display: block;
+      padding: 15px 0;
+      text-align: center;
+      color: #1a1a1a;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 14px;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .category-nav a:hover {
+      color: #e74c3c;
+      border-bottom-color: #e74c3c;
+    }
+
+    .category-nav a.active {
+      color: #e74c3c;
+      border-bottom-color: #e74c3c;
+    }
+
+    /* ═══ CATEGORY HEADER ═══ */
+    .category-header {
+      background: #f5f5f5;
+      padding: 30px 20px;
+      border-bottom: 1px solid #e8e8e8;
+    }
+
+    .category-header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .category-header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .category-header p {
+      font-size: 14px;
+      color: #666;
+    }
+
+    /* ═══ FILTER & SORT ═══ */
+    .filter-bar {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      border-bottom: 1px solid #e8e8e8;
+    }
+
+    .filter-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .filter-group label {
+      font-size: 13px;
+      color: #666;
+      white-space: nowrap;
+    }
+
+    .filter-group select {
+      padding: 8px 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      font-size: 13px;
+      background: white;
+      cursor: pointer;
+    }
+
+    .product-count {
+      font-size: 13px;
+      color: #999;
+    }
+
+    .sort-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .sort-btn {
+      padding: 8px 16px;
+      border: 1px solid #e0e0e0;
+      background: white;
+      border-radius: 4px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .sort-btn:hover, .sort-btn.active {
+      background: #1a1a1a;
+      color: white;
+      border-color: #1a1a1a;
+    }
+
+    /* ═══ PRODUCTS SECTION ═══ */
+    .products-section {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .product-card {
+      background: white;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+
+    .product-image {
+      width: 100%;
+      aspect-ratio: 1;
+      background: #f5f5f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 60px;
+      margin-bottom: 12px;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .product-info {
+      padding: 0;
+    }
+
+    .product-category {
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 4px;
+    }
+
+    .product-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 8px;
+      line-height: 1.4;
+      height: 28px;
+      overflow: hidden;
+    }
+
+    .product-price {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .price-discount {
+      color: #1a1a1a;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .price-original {
+      color: #999;
+      font-size: 13px;
+      text-decoration: line-through;
+    }
+
+    .price-rate {
+      background: #e74c3c;
+      color: white;
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 2px;
+    }
+
+    .product-rating {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+
+    .rating-star {
+      color: #ffc107;
+      font-size: 12px;
+    }
+
+    .rating-count {
+      color: #999;
+      font-size: 12px;
+    }
+
+    .product-button {
+      width: 100%;
+      padding: 10px;
+      background: #1a1a1a;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .product-button:hover {
+      background: #e74c3c;
+    }
+
+    /* ═══ PAGINATION ═══ */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-top: 40px;
+    }
+
+    .pagination a, .pagination span {
+      padding: 8px 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      text-decoration: none;
+      color: #1a1a1a;
+      font-size: 13px;
+    }
+
+    .pagination a:hover {
+      border-color: #1a1a1a;
+      background: #f5f5f5;
+    }
+
+    .pagination .active {
+      background: #1a1a1a;
+      color: white;
+      border-color: #1a1a1a;
+    }
+
+    /* ═══ FOOTER ═══ */
+    footer {
+      background: #f9f9f9;
+      border-top: 1px solid #e8e8e8;
+      padding: 40px 20px;
+      margin-top: 60px;
+    }
+
+    .footer-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+
+    .footer-section h3 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .footer-section a {
+      display: block;
+      font-size: 13px;
+      color: #666;
+      text-decoration: none;
+      margin-bottom: 8px;
+    }
+
+    .footer-section a:hover {
+      color: #e74c3c;
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 20px;
+      border-top: 1px solid #e8e8e8;
+      font-size: 12px;
+      color: #999;
+    }
+
+    /* ═══ RESPONSIVE ═══ */
+    @media (max-width: 1024px) {
+      .products-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+
+      .filter-bar {
+        flex-wrap: wrap;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .filter-bar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .sort-buttons {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .footer-content {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .products-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .filter-bar {
+        padding: 15px;
+      }
+
+      .footer-content {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header>
+  <div class="header-top">
+    <a href="index.html" class="logo">우리이야기</a>
+    <div class="search-bar">
+      <input type="text" placeholder="검색어를 입력하세요">
+    </div>
+    <div class="header-icons">
+      <a href="#">로그인</a>
+      <a href="#">장바구니</a>
+      <a href="#">마이페이지</a>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ CATEGORY NAV ═══ -->
+<nav class="category-nav">
+  <ul>
+    <li><a href="category.html?cat=kids" class="nav-link">아동복</a></li>
+    <li><a href="category.html?cat=adults" class="nav-link">성인복</a></li>
+    <li><a href="category.html?cat=senior" class="nav-link">시니어</a></li>
+    <li><a href="category.html?cat=pet" class="nav-link">반려동물복</a></li>
+    <li><a href="category.html?cat=group" class="nav-link">단체복</a></li>
+  </ul>
+</nav>
+
+<!-- ═══ CATEGORY HEADER ═══ -->
+<section class="category-header">
+  <div class="category-header-content">
+    <h1 id="categoryTitle">카테고리</h1>
+    <p id="categoryDesc">상품 목록입니다.</p>
+  </div>
+</section>
+
+<!-- ═══ FILTER & SORT ═══ -->
+<section class="filter-bar">
+  <div class="filter-group">
+    <label>정렬:</label>
+    <div class="sort-buttons">
+      <button class="sort-btn active" onclick="sortProducts('latest')">최신순</button>
+      <button class="sort-btn" onclick="sortProducts('popular')">인기순</button>
+      <button class="sort-btn" onclick="sortProducts('lowprice')">낮은가격</button>
+      <button class="sort-btn" onclick="sortProducts('highprice')">높은가격</button>
+    </div>
+  </div>
+
+  <div style="margin-left: auto;">
+    <span class="product-count">전체 <strong id="totalCount">0</strong>개</span>
+  </div>
+</section>
+
+<!-- ═══ PRODUCTS SECTION ═══ -->
+<section class="products-section">
+  <div class="products-grid" id="productsGrid">
+    <!-- 상품이 JavaScript로 로드됨 -->
+  </div>
+
+  <!-- ═══ PAGINATION ═══ -->
+  <div class="pagination" id="pagination">
+    <!-- 페이지네이션이 JavaScript로 생성됨 -->
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="footer-content">
+    <div class="footer-section">
+      <h3>회사정보</h3>
+      <a href="#">회사소개</a>
+      <a href="#">채용정보</a>
+      <a href="#">보도자료</a>
+    </div>
+    <div class="footer-section">
+      <h3>고객센터</h3>
+      <a href="#">문의하기</a>
+      <a href="#">FAQ</a>
+      <a href="#">배송조회</a>
+    </div>
+    <div class="footer-section">
+      <h3>정책</h3>
+      <a href="#">이용약관</a>
+      <a href="#">개인정보처리방침</a>
+      <a href="#">환불정책</a>
+    </div>
+    <div class="footer-section">
+      <h3>소셜</h3>
+      <a href="https://open.kakao.com/o/gx5nTyAi">카카오톡</a>
+      <a href="#">Instagram</a>
+      <a href="#">Facebook</a>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>&copy; 2026 우리이야기. 모든 권리 보유.</p>
+  </div>
+</footer>
+
+<script>
+  // 상품 데이터
+  const products = {
+    kids: {
+      title: '아동복',
+      desc: '아이의 특별함을 담은 기념복입니다.',
+      items: [
+        { id: 'kids_001', name: '아동 기념복 - 반팔', price: 34900, discount: 10, rating: 4.8, reviews: 125, emoji: '👕' },
+        { id: 'kids_002', name: '아동 기념복 - 긴팔', price: 39900, discount: 5, rating: 4.8, reviews: 92, emoji: '👕' },
+        { id: 'kids_003', name: '아동 커플 티셔츠', price: 29900, discount: 0, rating: 4.9, reviews: 78, emoji: '👕' },
+        { id: 'kids_004', name: '아동 기념복 - 반팔 (개별)', price: 34900, discount: 15, rating: 4.7, reviews: 56, emoji: '👕' },
+        { id: 'kids_005', name: '아동 프리미엄 기념복', price: 49900, discount: 20, rating: 5.0, reviews: 34, emoji: '👕' },
+        { id: 'kids_006', name: '아동 반팔 세트', price: 59900, discount: 25, rating: 4.9, reviews: 89, emoji: '👕' },
+        { id: 'kids_007', name: '아동 기념복 페어', price: 64900, discount: 10, rating: 4.8, reviews: 67, emoji: '👕' },
+        { id: 'kids_008', name: '아동 명작 기념복', price: 39900, discount: 0, rating: 4.9, reviews: 112, emoji: '👕' }
+      ]
+    },
+    adults: {
+      title: '성인복',
+      desc: '당신의 감성을 표현하는 옷입니다.',
+      items: [
+        { id: 'adults_001', name: '감성 문구 반팔', price: 29900, discount: 0, rating: 4.9, reviews: 89, emoji: '👔' },
+        { id: 'adults_002', name: '감성 문구 긴팔', price: 34900, discount: 0, rating: 4.9, reviews: 78, emoji: '👔' },
+        { id: 'adults_003', name: '친구 커플 티셔츠', price: 32900, discount: 10, rating: 4.8, reviews: 156, emoji: '👔' },
+        { id: 'adults_004', name: '감성 프리미엄 반팔', price: 39900, discount: 15, rating: 5.0, reviews: 45, emoji: '👔' },
+        { id: 'adults_005', name: '감성 패턴 반팔', price: 34900, discount: 0, rating: 4.7, reviews: 67, emoji: '👔' },
+        { id: 'adults_006', name: '감성 레터링 반팔', price: 29900, discount: 20, rating: 4.9, reviews: 98, emoji: '👔' },
+        { id: 'adults_007', name: '감성 프린트 반팔', price: 32900, discount: 5, rating: 4.8, reviews: 123, emoji: '👔' },
+        { id: 'adults_008', name: '감성 컬렉션 세트', price: 54900, discount: 25, rating: 4.9, reviews: 87, emoji: '👔' }
+      ]
+    },
+    senior: {
+      title: '시니어',
+      desc: '소중한 추억을 담은 옷입니다.',
+      items: [
+        { id: 'senior_001', name: '추억 반팔 (여성)', price: 29900, discount: 15, rating: 5.0, reviews: 45, emoji: '👵' },
+        { id: 'senior_002', name: '추억 반팔 (남성)', price: 29900, discount: 15, rating: 5.0, reviews: 38, emoji: '👴' },
+        { id: 'senior_003', name: '추억 긴팔', price: 34900, discount: 10, rating: 4.9, reviews: 52, emoji: '👕' },
+        { id: 'senior_004', name: '추억 프리미엄 반팔', price: 39900, discount: 0, rating: 5.0, reviews: 28, emoji: '👕' },
+        { id: 'senior_005', name: '추억 페어 세트', price: 54900, discount: 20, rating: 4.9, reviews: 41, emoji: '👕' },
+        { id: 'senior_006', name: '추억 명언 반팔', price: 29900, discount: 0, rating: 4.8, reviews: 67, emoji: '👕' },
+        { id: 'senior_007', name: '추억 프린트 긴팔', price: 34900, discount: 15, rating: 4.9, reviews: 54, emoji: '👕' },
+        { id: 'senior_008', name: '추억 컬렉션 세트', price: 64900, discount: 25, rating: 5.0, reviews: 33, emoji: '👕' }
+      ]
+    },
+    pet: {
+      title: '반려동물복',
+      desc: '반려동물과의 특별한 순간을 담다.',
+      items: [
+        { id: 'pet_001', name: '펫 반팔 - 강아지', price: 29900, discount: 0, rating: 4.7, reviews: 67, emoji: '🐕' },
+        { id: 'pet_002', name: '펫 반팔 - 고양이', price: 29900, discount: 10, rating: 4.6, reviews: 54, emoji: '🐱' },
+        { id: 'pet_003', name: '펫 커플 티셔츠', price: 32900, discount: 0, rating: 4.8, reviews: 89, emoji: '🐾' },
+        { id: 'pet_004', name: '펫 프리미엄 반팔', price: 39900, discount: 15, rating: 4.9, reviews: 45, emoji: '🐾' },
+        { id: 'pet_005', name: '펫 페어 세트', price: 54900, discount: 20, rating: 4.8, reviews: 67, emoji: '🐾' },
+        { id: 'pet_006', name: '펫 프린트 반팔', price: 34900, discount: 0, rating: 4.7, reviews: 78, emoji: '🐾' },
+        { id: 'pet_007', name: '펫 긴팔 세트', price: 39900, discount: 10, rating: 4.8, reviews: 56, emoji: '🐾' },
+        { id: 'pet_008', name: '펫 컬렉션 패키지', price: 64900, discount: 25, rating: 4.9, reviews: 42, emoji: '🐾' }
+      ]
+    },
+    group: {
+      title: '단체복',
+      desc: '팀의 이야기를 담은 옷입니다.',
+      items: [
+        { id: 'group_001', name: '어린이집 단체복', price: 24900, discount: 20, rating: 4.9, reviews: 156, emoji: '👧' },
+        { id: 'group_002', name: '회사 단체복', price: 29900, discount: 0, rating: 4.8, reviews: 98, emoji: '🏢' },
+        { id: 'group_003', name: '스포츠팀 단체복', price: 26900, discount: 15, rating: 4.9, reviews: 134, emoji: '⚽' },
+        { id: 'group_004', name: '단체복 프리미엄', price: 34900, discount: 10, rating: 4.9, reviews: 67, emoji: '👥' },
+        { id: 'group_005', name: '단체복 풀패키지', price: 299900, discount: 20, rating: 4.8, reviews: 45, emoji: '👥' },
+        { id: 'group_006', name: '커스텀 단체복', price: 29900, discount: 0, rating: 4.9, reviews: 112, emoji: '👥' },
+        { id: 'group_007', name: '단체 인쇄 옵션', price: 3900, discount: 0, rating: 4.7, reviews: 89, emoji: '👥' },
+        { id: 'group_008', name: '단체 빠른배송', price: 29900, discount: 25, rating: 4.9, reviews: 76, emoji: '👥' }
+      ]
+    }
+  };
+
+  let currentCategory = 'kids';
+  let currentPage = 1;
+  const itemsPerPage = 8;
+  let filteredProducts = [];
+
+  function loadCategory() {
+    const params = new URLSearchParams(window.location.search);
+    currentCategory = params.get('cat') || 'kids';
+
+    console.log('✅ 현재 카테고리:', currentCategory);
+    console.log('🔗 URL 파라미터:', window.location.search);
+
+    const categoryData = products[currentCategory];
+    if (!categoryData) {
+      console.error('❌ 카테고리 데이터 없음:', currentCategory);
+      currentCategory = 'kids';
+    }
+
+    const categoryData2 = products[currentCategory];
+    document.getElementById('categoryTitle').textContent = categoryData2.title;
+    document.getElementById('categoryDesc').textContent = categoryData2.desc;
+    document.getElementById('totalCount').textContent = categoryData2.items.length;
+
+    filteredProducts = [...categoryData2.items];
+    currentPage = 1;
+    renderProducts();
+
+    // 네비 활성화 (간단히 수정)
+    document.querySelectorAll('.nav-link').forEach(link => {
+      const href = link.getAttribute('href');
+      if (href.includes('cat=' + currentCategory)) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+  }
+
+  function renderProducts() {
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const displayProducts = filteredProducts.slice(start, end);
+
+    const grid = document.getElementById('productsGrid');
+    grid.innerHTML = displayProducts.map((product, mapIdx) => {
+      const discountedPrice = Math.floor(product.price * (1 - product.discount / 100));
+      const globalIdx = start + mapIdx;
+      return `
+        <div class="product-card" onclick="goToDetail('${product.id}', ${globalIdx})">
+          <div class="product-image">${product.emoji}</div>
+          <div class="product-info">
+            <div class="product-category">${products[currentCategory].title}</div>
+            <div class="product-name">${product.name}</div>
+            <div class="product-price">
+              <span class="price-discount">${discountedPrice.toLocaleString()}원</span>
+              ${product.discount > 0 ? `<span class="price-rate">${product.discount}%</span>` : ''}
+              ${product.discount > 0 ? `<span class="price-original">${product.price.toLocaleString()}원</span>` : ''}
+            </div>
+            <div class="product-rating">
+              <span class="rating-star">⭐ ${product.rating}</span>
+              <span class="rating-count">(${product.reviews})</span>
+            </div>
+            <button class="product-button">보기</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    renderPagination();
+  }
+
+  function renderPagination() {
+    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+    const pagination = document.getElementById('pagination');
+    let html = '';
+
+    if (currentPage > 1) {
+      html += `<a href="#" onclick="goToPage(${currentPage - 1}); return false;">이전</a>`;
+    }
+
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === currentPage) {
+        html += `<span class="active">${i}</span>`;
+      } else {
+        html += `<a href="#" onclick="goToPage(${i}); return false;">${i}</a>`;
+      }
+    }
+
+    if (currentPage < totalPages) {
+      html += `<a href="#" onclick="goToPage(${currentPage + 1}); return false;">다음</a>`;
+    }
+
+    pagination.innerHTML = html;
+  }
+
+  function goToPage(page) {
+    currentPage = page;
+    renderProducts();
+    window.scrollTo(0, 0);
+  }
+
+  function sortProducts(type) {
+    const categoryData = products[currentCategory];
+    filteredProducts = [...categoryData.items];
+
+    if (type === 'latest') {
+      // 최신순 (기본)
+    } else if (type === 'popular') {
+      filteredProducts.sort((a, b) => b.reviews - a.reviews);
+    } else if (type === 'lowprice') {
+      filteredProducts.sort((a, b) => (a.price * (1 - a.discount/100)) - (b.price * (1 - b.discount/100)));
+    } else if (type === 'highprice') {
+      filteredProducts.sort((a, b) => (b.price * (1 - b.discount/100)) - (a.price * (1 - a.discount/100)));
+    }
+
+    // 버튼 활성화
+    document.querySelectorAll('.sort-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+
+    currentPage = 1;
+    renderProducts();
+  }
+
+  function goToDetail(id, idx) {
+    window.location.href = `shop.html?cat=${currentCategory}&idx=${idx}`;
+  }
+
+  // 초기 로드
+  loadCategory();
+</script>
+
+</body>
+</html>

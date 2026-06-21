@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>우리이야기 - 상품 목록</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&family=Noto+Serif+KR:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #1a1a2e;
+      --ink-light: #2d2d44;
+      --paper: #faf8f3;
+      --cream: #f5f0e8;
+      --gold: #c9a84c;
+      --gold-light: #e8c97a;
+      --sepia: #a68575;
+      --sepia-light: #d9c7bb;
+      --pastel-blue: #b8dae8;
+      --warm-beige: #e8d5c4;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Noto Sans KR', sans-serif;
+      line-height: 1.6;
+    }
+
+    /* ═══ HEADER & NAVIGATION ═══ */
+    header {
+      background: var(--ink);
+      color: var(--paper);
+      padding: 16px 40px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .header-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 40px;
+    }
+
+    .logo {
+      font-family: 'Nanum Brush Script', cursive;
+      font-size: 28px;
+      color: var(--gold);
+      font-weight: 700;
+      letter-spacing: -1px;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .logo:hover {
+      color: var(--gold-light);
+    }
+
+    nav ul {
+      display: flex;
+      list-style: none;
+      gap: 0;
+      margin: 0;
+      padding: 0;
+    }
+
+    nav a {
+      display: block;
+      color: rgba(250,248,243,0.85);
+      text-decoration: none;
+      padding: 12px 20px;
+      font-size: 15px;
+      font-weight: 500;
+      transition: all 0.2s;
+      border-bottom: 2px solid transparent;
+    }
+
+    nav a:hover {
+      color: var(--gold-light);
+      border-bottom-color: var(--gold);
+    }
+
+    nav a.active {
+      color: var(--gold);
+      border-bottom-color: var(--gold);
+    }
+
+    /* ═══ CATEGORY HEADER ═══ */
+    .category-header {
+      background: linear-gradient(135deg, var(--sepia-light), var(--cream));
+      padding: 60px 40px;
+      margin-bottom: 60px;
+    }
+
+    .category-header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .category-header h1 {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 36px;
+      margin-bottom: 12px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .category-header p {
+      font-size: 16px;
+      color: rgba(26,26,46,0.75);
+      line-height: 1.6;
+    }
+
+    /* ═══ PRODUCTS SECTION ═══ */
+    .products-section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 40px 80px;
+    }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 40px;
+    }
+
+    .product-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .product-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+    }
+
+    .product-image {
+      width: 100%;
+      aspect-ratio: 1;
+      background: linear-gradient(135deg, var(--pastel-blue), var(--cream));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .product-content {
+      padding: 24px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .product-name {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+
+    .product-desc {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 16px;
+      flex: 1;
+      line-height: 1.5;
+    }
+
+    .product-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .product-price {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .product-link {
+      background: var(--gold);
+      color: var(--ink);
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .product-link:hover {
+      background: var(--gold-light);
+      transform: translateY(-2px);
+    }
+
+    /* ═══ FOOTER ═══ */
+    footer {
+      background: var(--ink);
+      color: rgba(250,248,243,0.7);
+      padding: 40px;
+      text-align: center;
+      margin-top: 60px;
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .footer-logo {
+      font-family: 'Nanum Brush Script', cursive;
+      font-size: 24px;
+      color: var(--gold);
+      margin-bottom: 16px;
+    }
+
+    .footer-info {
+      font-size: 14px;
+      line-height: 1.8;
+      margin-bottom: 20px;
+    }
+
+    /* ═══ RESPONSIVE ═══ */
+    @media (max-width: 768px) {
+      .header-container {
+        gap: 20px;
+      }
+
+      nav ul {
+        flex-direction: column;
+      }
+
+      nav a {
+        padding: 10px 16px;
+        font-size: 14px;
+      }
+
+      .category-header {
+        padding: 40px 20px;
+        margin-bottom: 40px;
+      }
+
+      .category-header h1 {
+        font-size: 28px;
+      }
+
+      .products-section {
+        padding: 0 20px 60px;
+      }
+
+      .products-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 20px;
+      }
+
+      .product-image {
+        font-size: 50px;
+      }
+
+      .product-content {
+        padding: 16px;
+      }
+
+      .product-name {
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header>
+  <div class="header-container">
+    <a href="index.html" class="logo">우리이야기</a>
+    <nav>
+      <ul>
+        <li><a href="category.html?cat=kids" class="nav-link">아동복</a></li>
+        <li><a href="category.html?cat=adults" class="nav-link">성인복</a></li>
+        <li><a href="category.html?cat=senior" class="nav-link">시니어</a></li>
+        <li><a href="category.html?cat=pet" class="nav-link">반려동물복</a></li>
+        <li><a href="category.html?cat=group" class="nav-link">단체복</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<!-- ═══ CATEGORY HEADER ═══ -->
+<section class="category-header">
+  <div class="category-header-content">
+    <h1 id="categoryTitle">카테고리</h1>
+    <p id="categoryDesc">상품 목록입니다.</p>
+  </div>
+</section>
+
+<!-- ═══ PRODUCTS SECTION ═══ -->
+<section class="products-section">
+  <div class="products-grid" id="productsGrid">
+    <!-- 상품들이 여기에 동적으로 추가됩니다 -->
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="footer-content">
+    <div class="footer-logo">우리이야기</div>
+    <div class="footer-info">
+      <p>당신의 이야기를 옷에 담다</p>
+      <p>세상에 하나뿐인 맞춤형 옷</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // 상품 데이터
+  const products = {
+    kids: {
+      title: '아동복',
+      desc: '아이의 띠와 별자리를 담은 특별한 기념복입니다.',
+      items: [
+        { id: 'kids_001', name: '아동 기념복 - 반팔', desc: '생년월일의 띠와 별자리가 자동 계산되어 표시됩니다', emoji: '👕', price: '34,900원' },
+        { id: 'kids_002', name: '아동 기념복 - 긴팔', desc: '겨울 패션의 중심이 될 아이만의 기념복', emoji: '👕', price: '39,900원' },
+        { id: 'kids_003', name: '아동 커플 티셔츠', desc: '형제자매와 함께하는 특별한 순간을 담다', emoji: '👕', price: '29,900원' }
+      ]
+    },
+    adults: {
+      title: '성인복',
+      desc: '당신의 감성 문구를 담은 맞춤형 옷입니다.',
+      items: [
+        { id: 'adults_001', name: '감성 문구 반팔', desc: '사랑, 도전, 성공 등 감정을 담은 문구 선택', emoji: '👔', price: '29,900원' },
+        { id: 'adults_002', name: '감성 문구 긴팔', desc: '계절을 무시하고 입고 싶은 문구 옷', emoji: '👔', price: '34,900원' },
+        { id: 'adults_003', name: '친구 커플 티셔츠', desc: '소중한 사람과 함께하는 특별한 옷', emoji: '👔', price: '32,900원' }
+      ]
+    },
+    senior: {
+      title: '시니어',
+      desc: '소중한 추억을 담은 따뜻한 옷입니다.',
+      items: [
+        { id: 'senior_001', name: '추억 반팔 (여성)', desc: '인생에서 가장 소중한 순간들을 담다', emoji: '👵', price: '29,900원' },
+        { id: 'senior_002', name: '추억 반팔 (남성)', desc: '지나간 날들이 모두 소중한 이야기가 되다', emoji: '👴', price: '29,900원' },
+        { id: 'senior_003', name: '추억 긴팔', desc: '함께한 시간이 가장 큰 자산임을 알다', emoji: '👕', price: '34,900원' }
+      ]
+    },
+    pet: {
+      title: '반려동물복',
+      desc: '반려동물의 이름과 생일을 담은 옷입니다.',
+      items: [
+        { id: 'pet_001', name: '펫 반팔 - 강아지', desc: '우리 강아지의 특별함을 담은 옷', emoji: '🐕', price: '29,900원' },
+        { id: 'pet_002', name: '펫 반팔 - 고양이', desc: '우리 고양이의 우아함을 담은 옷', emoji: '🐱', price: '29,900원' },
+        { id: 'pet_003', name: '펫 커플 티셔츠', desc: '반려동물과 함께하는 추억을 담다', emoji: '🐾', price: '32,900원' }
+      ]
+    },
+    group: {
+      title: '단체복',
+      desc: '팀의 이야기와 사훈을 담은 옷입니다.',
+      items: [
+        { id: 'group_001', name: '어린이집 단체복', desc: '아이들의 추억을 담은 특별한 유니폼', emoji: '👧', price: '24,900원' },
+        { id: 'group_002', name: '회사 단체복', desc: '팀의 결속력을 높이는 맞춤형 옷', emoji: '🏢', price: '29,900원' },
+        { id: 'group_003', name: '스포츠팀 단체복', desc: '승리를 향한 팀의 진심을 담다', emoji: '⚽', price: '26,900원' }
+      ]
+    }
+  };
+
+  // 카테고리 로드
+  function loadCategory() {
+    const params = new URLSearchParams(window.location.search);
+    const cat = params.get('cat') || 'kids';
+
+    const categoryData = products[cat];
+    if (!categoryData) {
+      document.getElementById('categoryTitle').textContent = '카테고리 없음';
+      return;
+    }
+
+    // 카테고리 제목/설명 업데이트
+    document.getElementById('categoryTitle').textContent = categoryData.title;
+    document.getElementById('categoryDesc').textContent = categoryData.desc;
+
+    // 네비게이션 활성화
+    document.querySelectorAll('.nav-link').forEach(link => {
+      const url = new URL(link.href);
+      if (url.search === window.location.search) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+
+    // 상품 그리드 렌더링
+    const sectionMap = {
+      kids: 'children',
+      adults: 'quotes',
+      senior: 'seniors',
+      pet: 'pets',
+      group: 'team'
+    };
+
+    const targetSection = sectionMap[cat];
+
+    const grid = document.getElementById('productsGrid');
+    grid.innerHTML = categoryData.items.map(product => `
+      <div class="product-card">
+        <div class="product-image">${product.emoji}</div>
+        <div class="product-content">
+          <div class="product-name">${product.name}</div>
+          <div class="product-desc">${product.desc}</div>
+          <div class="product-footer">
+            <div class="product-price">${product.price}</div>
+            <a href="shop.html#${targetSection}" class="product-link">주문하기</a>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  loadCategory();
+</script>
+
+</body>
+</html>
