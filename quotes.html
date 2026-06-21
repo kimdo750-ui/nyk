@@ -395,6 +395,7 @@
   <button class="nav-tab" onclick="showTab('success')">🏆 성공</button>
   <button class="nav-tab" onclick="showTab('challenge')">🔥 도전</button>
   <button class="nav-tab" onclick="showTab('happy')">🌟 행복</button>
+  <button class="nav-tab" onclick="showTab('zodiac')">♈ 별자리</button>
   <button class="nav-tab" onclick="showTab('memory')">👴 추억</button>
   <button class="nav-tab" onclick="showTab('motto')">🏢 사훈</button>
 </div>
@@ -405,20 +406,20 @@
   <!-- 통계 바 -->
   <div class="stats-bar">
     <div class="stat-item">
-      <span class="stat-num">82</span>
+      <span class="stat-num" id="stat-total">-</span>
       <div class="stat-label">총 명언 수</div>
     </div>
     <div class="stat-item">
-      <span class="stat-num">6</span>
+      <span class="stat-num" id="stat-categories">-</span>
       <div class="stat-label">카테고리</div>
     </div>
     <div class="stat-item">
-      <span class="stat-num">45+</span>
+      <span class="stat-num" id="stat-featured">-</span>
       <div class="stat-label">★ 추천 문구</div>
     </div>
     <div class="stat-item">
-      <span class="stat-num">41</span>
-      <div class="stat-label">사훈 후보</div>
+      <span class="stat-num" id="stat-motto">-</span>
+      <div class="stat-label">사훈 문구</div>
     </div>
   </div>
 
@@ -492,6 +493,23 @@
       </div>
     </div>
     <div class="quotes-grid" id="grid-happy"></div>
+  </div>
+
+  <!-- ─── 별자리 탭 ─── -->
+  <div class="section" id="tab-zodiac">
+    <div class="section-title">
+      <div class="section-icon">♈</div>
+      <div>
+        <h2>별자리 (Zodiac)</h2>
+        <p>선물 · 러그 · 인테리어용으로 고른 3가지 별자리 문구 컬렉션</p>
+      </div>
+    </div>
+    <div class="subsection-title">🌟 부모가 아이에게 선물하는 감동형 12별자리 문구</div>
+    <div class="quotes-grid" id="grid-zodiac-kids"></div>
+    <div class="subsection-title">🚀 성공·사업가 느낌 12별자리 문구</div>
+    <div class="quotes-grid" id="grid-zodiac-success"></div>
+    <div class="subsection-title">✨ 별빛 감성형 (러그·인테리어·선물용 추천)</div>
+    <div class="quotes-grid" id="grid-zodiac-light"></div>
   </div>
 
   <!-- ─── 추억 탭 (노인용) ─── -->
@@ -650,6 +668,51 @@ const DATA = {
   ],
 };
 
+const ZODIAC = {
+  kids: [
+    { sign: "양자리", text: "두려움보다 꿈이 더 크다면, 세상은 언제나 네 편이란다.", featured: true },
+    { sign: "황소자리", text: "천천히 가도 괜찮아. 너는 누구보다 단단하게 자라고 있으니까.", featured: true },
+    { sign: "쌍둥이자리", text: "너의 호기심은 세상을 밝히는 작은 별빛이란다.", featured: true },
+    { sign: "게자리", text: "따뜻한 마음을 가진 사람은 어디서든 사랑받는 별이 된단다.", featured: true },
+    { sign: "사자자리", text: "네 안의 빛을 숨기지 마. 세상은 네가 빛나길 기다리고 있어.", featured: true },
+    { sign: "처녀자리", text: "작은 노력 하나하나가 너만의 별자리를 만들어 간단다.", featured: true },
+    { sign: "천칭자리", text: "사람을 이해하는 마음은 가장 아름다운 재능이란다.", featured: true },
+    { sign: "전갈자리", text: "넘어져도 괜찮아. 너는 언제나 더 강한 모습으로 다시 빛날 거야.", featured: true },
+    { sign: "사수자리", text: "꿈꾸는 사람만이 보이지 않는 길을 발견할 수 있단다.", featured: true },
+    { sign: "염소자리", text: "포기하지 않는 마음은 결국 가장 높은 별에 닿는단다.", featured: true },
+    { sign: "물병자리", text: "남들과 달라도 괜찮아. 특별함은 언제나 새로운 별이 되니까.", featured: true },
+    { sign: "물고기자리", text: "네가 꾸는 꿈은 언젠가 누군가의 희망이 될 거야.", featured: true },
+  ],
+  success: [
+    { sign: "양자리", text: "기회는 기다리는 것이 아니라 만드는 것이다.", featured: true },
+    { sign: "황소자리", text: "성공은 재능이 아니라 꾸준함의 결과다.", featured: true },
+    { sign: "쌍둥이자리", text: "지식은 길을 찾고, 소통은 길을 연다.", featured: true },
+    { sign: "게자리", text: "사람의 마음을 얻는 자가 결국 세상을 얻는다.", featured: true },
+    { sign: "사자자리", text: "태양은 경쟁하지 않는다. 그저 빛날 뿐이다.", featured: true },
+    { sign: "처녀자리", text: "완벽함은 작은 디테일에서 시작된다.", featured: true },
+    { sign: "천칭자리", text: "균형을 아는 자가 오래 승리한다.", featured: true },
+    { sign: "전갈자리", text: "변화는 두려움이 아니라 성장의 시작이다.", featured: true },
+    { sign: "사수자리", text: "가장 먼 목적지는 가장 큰 꿈에서 시작된다.", featured: true },
+    { sign: "염소자리", text: "정상을 보는 사람은 포기라는 단어를 모른다.", featured: true },
+    { sign: "물병자리", text: "미래는 새로운 생각을 가진 사람의 것이다.", featured: true },
+    { sign: "물고기자리", text: "상상력은 현실보다 먼저 도착하는 성공이다.", featured: true },
+  ],
+  light: [
+    { sign: "양자리", text: "새로운 별은 언제나 용기 있는 사람에게 찾아온다.", featured: true },
+    { sign: "황소자리", text: "가장 오래 빛나는 별은 가장 흔들리지 않는 별이다.", featured: true },
+    { sign: "쌍둥이자리", text: "별들은 서로의 빛으로 밤하늘을 완성한다.", featured: true },
+    { sign: "게자리", text: "따뜻함은 보이지 않아도 가장 밝게 빛난다.", featured: true },
+    { sign: "사자자리", text: "당신은 태어나면서부터 빛날 운명이었다.", featured: true },
+    { sign: "처녀자리", text: "별빛은 작은 점들이 모여 만들어진 기적이다.", featured: true },
+    { sign: "천칭자리", text: "조화로운 별빛은 가장 아름다운 하늘을 만든다.", featured: true },
+    { sign: "전갈자리", text: "어둠이 깊을수록 별은 더욱 선명해진다.", featured: true },
+    { sign: "사수자리", text: "꿈을 향한 발걸음마다 새로운 별이 태어난다.", featured: true },
+    { sign: "염소자리", text: "높은 하늘의 별도 한 걸음에서 시작되었다.", featured: true },
+    { sign: "물병자리", text: "세상에 없던 별은 누군가의 상상에서 시작된다.", featured: true },
+    { sign: "물고기자리", text: "모든 별은 누군가의 소원을 품고 빛난다.", featured: true },
+  ],
+};
+
 const MOTTO_KR = [
   {text:"사람이 먼저다", sub:"현대 경영철학 · 7자", featured:true},
   {text:"최선을 다하면 길이 열린다", sub:"한국 속담 · 14자", featured:true},
@@ -700,8 +763,12 @@ const MOTTO_GLOBAL = [
 
 // ─── 카테고리 레이블 ───
 const CAT_LABEL = {
-  love:"❤️ 사랑", friend:"🤝 우정", success:"🏆 성공", challenge:"🔥 도전", happy:"🌟 행복", memory:"👴 추억"
+  love:"❤️ 사랑", friend:"🤝 우정", success:"🏆 성공", challenge:"🔥 도전", happy:"🌟 행복", memory:"👴 추억", zodiac:"♈ 별자리"
 };
+
+function getCharCount(text) {
+  return `${text.replace(/\s+/g, '').length}자`;
+}
 
 // ─── 카드 생성 ───
 function makeCard(item, cat) {
@@ -711,11 +778,16 @@ function makeCard(item, cat) {
     <div class="quote-text">${item.text}</div>
     <div class="quote-meta">
       <span class="quote-source">— ${item.source}</span>
-      <span class="quote-chars">${item.chars}</span>
+      <span class="quote-chars">${item.chars || getCharCount(item.text)}</span>
     </div>
   `;
   card.onclick = () => openPreview(item, cat);
   return card;
+}
+
+function appendCards(gridId, items, cat) {
+  const grid = document.getElementById(gridId);
+  items.forEach(item => grid.appendChild(makeCard(item.source ? item : { ...item, source: item.sign }, cat)));
 }
 
 // ─── 그리드 채우기 ───
@@ -727,6 +799,16 @@ function fillGrids() {
       const card = makeCard(item, cat);
       grid.appendChild(card);
       if (item.featured) allGrid.appendChild(makeCard(item, cat));
+    });
+  });
+
+  appendCards('grid-zodiac-kids', ZODIAC.kids, 'zodiac');
+  appendCards('grid-zodiac-success', ZODIAC.success, 'zodiac');
+  appendCards('grid-zodiac-light', ZODIAC.light, 'zodiac');
+
+  Object.values(ZODIAC).forEach(items => {
+    items.forEach(item => {
+      if (item.featured) allGrid.appendChild(makeCard({ ...item, source: item.sign }, 'zodiac'));
     });
   });
 
@@ -747,6 +829,22 @@ function fillGrids() {
     el.innerHTML = `<div class="motto-text">${m.text}</div><div class="motto-sub">${m.sub}</div>`;
     globalGrid.appendChild(el);
   });
+
+  updateStats();
+}
+
+function updateStats() {
+  const totalQuotes = Object.values(DATA).reduce((sum, items) => sum + items.length, 0)
+    + Object.values(ZODIAC).reduce((sum, items) => sum + items.length, 0);
+  const categoryCount = 7;
+  const featuredCount = Object.values(DATA).reduce((sum, items) => sum + items.filter(item => item.featured).length, 0)
+    + Object.values(ZODIAC).reduce((sum, items) => sum + items.filter(item => item.featured).length, 0);
+  const mottoCount = MOTTO_KR.length + MOTTO_GLOBAL.length;
+
+  document.getElementById('stat-total').textContent = totalQuotes;
+  document.getElementById('stat-categories').textContent = categoryCount;
+  document.getElementById('stat-featured').textContent = featuredCount;
+  document.getElementById('stat-motto').textContent = mottoCount;
 }
 
 // ─── 탭 전환 ───
@@ -763,7 +861,7 @@ function openPreview(item, cat) {
   document.getElementById('previewQuoteFull').textContent = item.text;
   document.getElementById('previewSourceLine').textContent = '— ' + item.source;
   document.getElementById('previewCat').textContent = CAT_LABEL[cat] || cat;
-  document.getElementById('previewChars').textContent = item.chars;
+  document.getElementById('previewChars').textContent = item.chars || getCharCount(item.text);
   document.getElementById('previewOverlay').classList.add('open');
 }
 function closePreview(e) {
