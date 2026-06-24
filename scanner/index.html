@@ -157,8 +157,9 @@
 <script>
 var SHEET_URL = 'https://script.google.com/macros/s/AKfycbzKY4X3IBuFm7WoyV30_mdgQPnH-got_8gcrciTCFAvTspt1LEzRNsrBdxSjlI4q18p/exec';
 var BARCODE_LENGTH = 13;   // 정확히 13자리만 허용
-var MAX_ERROR = 0.35;      // 민감도 높임 (숫자 클수록 관대)
-var DEBOUNCE_MS = 2000;    // 동일 바코드 재입력 방지
+var MAX_ERROR = 0.25;      // 민감도 높임 (숫자 클수록 관대)
+var DEBOUNCE_MS = 1500;    // 동일 바코드 재입력 방지
+var FRAME_SKIP = 2;        // 2프레임마다 스캔 (성능 향상)
 
 var currentBox = 1;
 var boxCount = 4;
@@ -167,6 +168,7 @@ var lastScan = '';
 var lastScanTime = 0;
 var cameraStarted = false;
 var cameraPaused = false;
+var frameCount = 0;
 
 // ── 이벤트 바인딩 (onclick 대신 addEventListener 사용) ──
 document.getElementById('addBoxBtn').addEventListener('click', function() {
@@ -262,11 +264,17 @@ function startCamera() {
   document.getElementById('interactive').style.display = 'block';
 
   try {
-    codeReader = new ZXing.BrowserMultiFormatReader();
+    var hints = new Map();
+    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [ZXing.BarcodeFormat.CODE_128]);
+    hints.set(ZXing.DecodeHintType.TRY_HARDER, false);
+
+    codeReader = new ZXing.BrowserMultiFormatReader(hints);
     codeReader.decodeFromConstraints(
-      { video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } },
+      { video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } } },
       document.querySelector('#interactive video') || createVideo(),
       function(result, err) {
+        frameCount++;
+        if (frameCount % FRAME_SKIP !== 0) return;
         if (!result) return;
         var code = result.getText();
         var now = Date.now();
