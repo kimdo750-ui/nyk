@@ -458,21 +458,20 @@ function setStatus(type, msg) {
 
 function initBoxGrid() {
   var grid = document.getElementById('boxGrid');
-  var html = '';
-  for (var i = 1; i <= boxCount; i++) {
-    var boxNum = 'Box ' + i;
-    var cls = (boxNum === currentBox) ? 'active' : '';
-    html += '<button class="box-btn ' + cls + '" data-box="' + boxNum + '">' + boxNum + '<span class="cnt">' + scanned.filter(function(s){return s.box===boxNum;}).reduce(function(a,s){return a+s.qty;},0) + '개</span></button>';
+  if (!currentBox) {
+    grid.innerHTML = '<div class="scan-empty" style="padding:12px;text-align:center;color:#64748b;">바코드를 스캔하세요</div>';
+    return;
   }
-  grid.innerHTML = html;
-  grid.querySelectorAll('.box-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      currentBox = this.getAttribute('data-box');
+  grid.innerHTML = '<button id="changeBoxBtn" class="add-box-btn">📦 ' + currentBox + ' 변경</button>';
+  document.getElementById('changeBoxBtn').addEventListener('click', function() {
+    var newBox = prompt('새 박스번호를 입력하세요', currentBox);
+    if (newBox && newBox.trim()) {
+      currentBox = newBox.trim();
       saveState();
-      initBoxGrid();
       renderList();
       updateNowCnt();
-    });
+      document.getElementById('nowLabel').textContent = currentBox + ' 스캔 중';
+    }
   });
 }
 
