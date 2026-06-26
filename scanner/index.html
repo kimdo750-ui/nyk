@@ -155,17 +155,15 @@
 
 <script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
 <script>
-var SHEET_URL = 'https://script.google.com/macros/s/AKfycbzKY4X3IBuFm7WoyV30_mdgQPnH-got_8gcrciTCFAvTspt1LEzRNsrBdxSjlI4q18p/exec';
-var BARCODE_LENGTH = 13;   // 정확히 13자리만 허용
-var MAX_ERROR = 0.25;      // 민감도 높임 (숫자 클수록 관대)
-var DEBOUNCE_MS = 1500;    // 동일 바코드 재입력 방지
-var FRAME_SKIP = 2;        // 2프레임마다 스캔 (성능 향상)
+var SHEET_URL = 'https://script.google.com/macros/s/AKfycbyq5OzwaJq4TmN8c8a2GnBKfx96oAxfJmWolLXautjGVwKEHhRYsyQzZWDZGN0TCDE/exec';
+var BARCODE_LENGTH = 13;
+var DEBOUNCE_MS = 600;
+var FRAME_SKIP = 1;
 
-var currentBox = 1;
-var boxCount = 4;
+var currentBox = '';
 var scanned = [];
 var lastScan = '';
-var lastScanTime = 0;
+var scanResetTimer = null;
 var cameraStarted = false;
 var cameraPaused = false;
 var frameCount = 0;
@@ -198,10 +196,12 @@ document.getElementById('camToggleBtn').addEventListener('click', function() {
 document.getElementById('resetBtn').addEventListener('click', function() {
   if (scanned.length === 0) return;
   if (!confirm('모든 스캔 데이터를 초기화할까요?')) return;
-  scanned = []; boxCount = 4; currentBox = 1;
+  scanned = [];
+  currentBox = '';
   saveState();
-  renderList(); initBoxGrid(); updateNowCnt();
-  document.getElementById('nowLabel').textContent = 'Box 1 스캔 중';
+  renderList();
+  initBoxGrid();
+  updateNowCnt();
 });
 
 document.getElementById('printBtn').addEventListener('click', showPrint);
@@ -250,9 +250,7 @@ function parseBarcode(raw) {
 function isValid(code) {
   if (!code) return false;
   code = code.trim();
-  // R로 시작하는 13자리만 허용
-  if (!/^R.{12}$/.test(code)) return false;
-  return true;
+  return /^R.{12}$/.test(code);
 }
 
 // ── 카메라 (ZXing) ──
@@ -265,28 +263,45 @@ function startCamera() {
 
   try {
     var hints = new Map();
-    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [ZXing.BarcodeFormat.CODE_128]);
-    hints.set(ZXing.DecodeHintType.TRY_HARDER, false);
+    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+      ZXing.BarcodeFormat.CODE_128,
+      ZXing.BarcodeFormat.EAN_13,
+      ZXing.BarcodeFormat.EAN_8,
+      ZXing.BarcodeFormat.UPC_A,
+      ZXing.BarcodeFormat.UPC_E,
+      ZXing.BarcodeFormat.CODE_39,
+      ZXing.BarcodeFormat.ITF,
+      ZXing.BarcodeFormat.CODABAR,
+      ZXing.BarcodeFormat.CODE_93
+    ]);
+    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+    hints.set(ZXing.DecodeHintType.PURE_BARCODE, false);
+    hints.set(ZXing.DecodeHintType.ASSUME_CODE_39, true);
+    hints.set(ZXing.DecodeHintType.ALLOW_EAN_EXTENSIONS, true);
 
     codeReader = new ZXing.BrowserMultiFormatReader(hints);
     codeReader.decodeFromConstraints(
-      { video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } } },
+      { video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 360 }, frameRate: { ideal: 30, max: 30 } } },
       document.querySelector('#interactive video') || createVideo(),
       function(result, err) {
         frameCount++;
-        if (frameCount % FRAME_SKIP !== 0) return;
+        if (FRAME_SKIP > 1 && frameCount % FRAME_SKIP !== 0) return;
         if (!result) return;
         var code = result.getText();
-        var now = Date.now();
-        if (code === lastScan && now - lastScanTime < DEBOUNCE_MS) return;
+        if (!code) return;
         if (!isValid(code)) return;
+        if (code === lastScan) return;
+
         lastScan = code;
-        lastScanTime = now;
         beep();
         if (navigator.vibrate) navigator.vibrate(100);
-        var parsed = parseBarcode(code);
-        addItem(parsed);
-        sendToSheet(parsed);
+
+        lookupAndScan(code);
+
+        clearTimeout(scanResetTimer);
+        scanResetTimer = setTimeout(function() {
+          lastScan = '';
+        }, DEBOUNCE_MS);
       }
     );
     cameraStarted = true;
@@ -334,30 +349,84 @@ function beep() {
   } catch(e) {}
 }
 
-// ── 스캔 추가 ──
-function addItem(parsed) {
-  var existing = scanned.find(function(s){ return s.box === currentBox && s.raw === parsed.raw; });
-  if (existing) { existing.qty++; existing.synced = false; }
-  else scanned.push({ sku: parsed.sku, name: parsed.name, size: parsed.size, raw: parsed.raw, box: currentBox, qty: 1, synced: false });
+// ── SKU마스터 조회 + 박스번호 입력 + 저장 ──
+function lookupAndScan(barcode) {
+  setStatus('sending', '조회 중...');
+  fetch(SHEET_URL + '?action=lookup&barcode=' + encodeURIComponent(barcode))
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      if (!data.ok) {
+        setStatus('err', '❌ 바코드 없음: ' + barcode);
+        return;
+      }
+
+      var warehouse = data.warehouse || '';
+      var name = data.name || '';
+      var orderQty = data.orderQty || 0;
+
+      // 첫 스캔일 때만 박스번호 입력
+      if (!currentBox) {
+        var box = prompt('📦 박스번호를 입력하세요\n예) Box 1', 'Box 1');
+        if (!box) return;
+        currentBox = box.trim();
+      }
+
+      // 로컬 기록
+      addItem({ barcode: barcode, warehouse: warehouse, name: name, orderQty: orderQty });
+
+      // 구글시트 저장
+      sendToSheet({ barcode: barcode, warehouse: warehouse, name: name, orderQty: orderQty });
+    })
+    .catch(function(err) {
+      setStatus('err', '⚠ 조회 실패 — 와이파이 확인');
+    });
+}
+
+// ── 로컬 스캔 목록에 추가 ──
+function addItem(data) {
+  var existing = scanned.find(function(s){
+    return s.box === currentBox && s.barcode === data.barcode;
+  });
+  if (existing) {
+    existing.qty++;
+  } else {
+    scanned.push({
+      barcode: data.barcode,
+      warehouse: data.warehouse,
+      name: data.name,
+      orderQty: data.orderQty,
+      box: currentBox,
+      qty: 1
+    });
+  }
   saveState();
   renderList();
   updateNowCnt();
-  setStatus('ok', '✓ ' + parsed.raw + ' — Box ' + currentBox + ' 등록');
+  setStatus('ok', '✓ ' + data.barcode + ' — ' + currentBox);
 }
 
-// ── 구글시트 전송 ──
-function sendToSheet(parsed) {
-  setStatus('sending', '구글시트 전송 중...');
+// ── 구글시트에 저장 ──
+function sendToSheet(data) {
   fetch(SHEET_URL, {
-    method: 'POST', mode: 'no-cors',
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ sku: parsed.sku, name: parsed.name, size: parsed.size, box: currentBox, qty: 1, raw: parsed.raw })
-  }).then(function() {
-    var item = scanned.find(function(s){ return s.raw === parsed.raw && s.box === currentBox; });
-    if (item) { item.synced = true; saveState(); renderList(); }
-    setStatus('ok', '✓ 구글시트 저장 완료');
-  }).catch(function() {
-    setStatus('err', '⚠ 전송 실패 — 와이파이 확인');
+    body: JSON.stringify({
+      barcode: data.barcode,
+      warehouse: data.warehouse,
+      name: data.name,
+      orderQty: data.orderQty,
+      box: currentBox
+    })
+  }).then(function(res) {
+    return res.json();
+  }).then(function(data) {
+    if (data.ok) {
+      setStatus('ok', '✓ 저장 완료');
+    } else {
+      setStatus('err', '❌ 저장 실패: ' + (data.error || '알 수 없는 오류'));
+    }
+  }).catch(function(err) {
+    setStatus('err', '⚠ 전송 실패: ' + err.message);
   });
 }
 
@@ -366,9 +435,9 @@ function delItem(idx) {
   var item = scanned[idx];
   if (!item) return;
   fetch(SHEET_URL, {
-    method: 'POST', mode: 'no-cors',
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'delete', raw: item.raw, box: item.box })
+    body: JSON.stringify({ action: 'delete', barcode: item.barcode, box: item.box })
   }).catch(function(){});
   if (item.qty > 1) item.qty--;
   else scanned.splice(idx, 1);
@@ -388,75 +457,72 @@ function setStatus(type, msg) {
 
 function initBoxGrid() {
   var grid = document.getElementById('boxGrid');
-  grid.innerHTML = '';
-  for (var i = 1; i <= boxCount; i++) {
-    var cnt = scanned.filter(function(s){ return s.box === i; }).reduce(function(a,s){ return a+s.qty; }, 0);
-    var btn = document.createElement('div');
-    btn.className = 'box-btn' + (i === currentBox ? ' active' : '');
-    btn.innerHTML = '📦 Box ' + i + '<span class="cnt">' + (cnt > 0 ? cnt+'개' : '비어있음') + '</span>';
-    (function(n){
-      btn.addEventListener('click', function(){ setBox(n); });
-    })(i);
-    grid.appendChild(btn);
+  if (!currentBox) {
+    grid.innerHTML = '<div class="scan-empty" style="padding:12px;text-align:center;color:#64748b;">바코드를 스캔하세요</div>';
+    return;
   }
-}
-
-function setBox(n) {
-  currentBox = n;
-  saveState();
-  initBoxGrid();
-  updateNowCnt();
-  document.getElementById('nowLabel').textContent = 'Box ' + n + ' 스캔 중';
+  grid.innerHTML = '<button id="changeBoxBtn" class="add-box-btn">📦 ' + currentBox + ' 변경</button>';
+  document.getElementById('changeBoxBtn').addEventListener('click', function() {
+    var newBox = prompt('새 박스번호를 입력하세요', currentBox);
+    if (newBox && newBox.trim()) {
+      currentBox = newBox.trim();
+      saveState();
+      renderList();
+      updateNowCnt();
+      document.getElementById('nowLabel').textContent = currentBox + ' 스캔 중';
+    }
+  });
 }
 
 function updateNowCnt() {
   var cnt = scanned.filter(function(s){ return s.box === currentBox; }).reduce(function(a,s){ return a+s.qty; }, 0);
   document.getElementById('nowCnt').textContent = cnt + '개';
+  document.getElementById('nowLabel').textContent = (currentBox || 'Box') + ' 스캔 중';
 }
 
 function renderList() {
   var list = document.getElementById('scanList');
+  var currentItems = scanned.filter(function(s){ return s.box === currentBox; });
   var total = scanned.reduce(function(a,s){ return a+s.qty; }, 0);
+
   document.getElementById('totalLabel').textContent = total > 0 ? '총 '+total+'개' : '';
   document.getElementById('printBtn').disabled = total === 0;
-  if (scanned.length === 0) {
+
+  if (currentItems.length === 0) {
     list.innerHTML = '<div class="scan-empty">스캔된 제품이 없습니다</div>';
     return;
   }
+
   var html = '';
-  scanned.slice().reverse().forEach(function(s, ri) {
-    var realIdx = scanned.length - 1 - ri;
+  currentItems.slice().reverse().forEach(function(s, ri) {
+    var realIdx = scanned.indexOf(s);
     html += '<div class="scan-row">' +
-      '<div class="sync-dot ' + (s.synced ? 'ok' : '') + '"></div>' +
-      '<span class="box-tag">Box ' + s.box + '</span>' +
-      '<div class="scan-info"><div class="scan-name">' + s.raw + '</div>' +
-      (s.size ? '<div class="scan-sub">사이즈: ' + s.size + '</div>' : '') + '</div>' +
+      '<span class="box-tag">' + s.warehouse + '</span>' +
+      '<div class="scan-info"><div class="scan-name">' + s.name + '</div>' +
+      '<div class="scan-sub">발주: ' + s.orderQty + '개</div></div>' +
       '<div class="scan-right"><span class="scan-qty">×' + s.qty + '</span>' +
       '<button class="del-btn" data-idx="' + realIdx + '">삭제</button></div></div>';
   });
   list.innerHTML = html;
 
-  // 삭제 버튼 이벤트
   list.querySelectorAll('.del-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
       delItem(parseInt(this.getAttribute('data-idx')));
     });
   });
-  initBoxGrid();
 }
 
 function showPrint() {
-  var boxes = Array.from(new Set(scanned.map(function(s){ return s.box; }))).sort(function(a,b){ return a-b; });
   var html = '';
-  boxes.forEach(function(b) {
-    var items = scanned.filter(function(s){ return s.box === b; });
-    var total = items.reduce(function(a,s){ return a+s.qty; }, 0);
-    html += '<div class="print-box-card"><div class="print-box-head"><span class="title">📦 Box ' + b + '</span><span class="total">총 ' + total + '개</span></div>';
-    items.forEach(function(s) {
-      html += '<div class="print-item"><div class="print-item-info"><div class="print-item-name">' + s.raw + '</div>' + (s.size ? '<div class="print-item-sub">사이즈: ' + s.size + '</div>' : '') + '</div><span class="print-item-qty">×' + s.qty + '</span></div>';
-    });
-    html += '</div>';
+  var items = scanned.filter(function(s){ return s.box === currentBox; });
+  var total = items.reduce(function(a,s){ return a+s.qty; }, 0);
+
+  html += '<div class="print-box-card"><div class="print-box-head"><span class="title">📦 ' + currentBox + '</span><span class="total">총 ' + total + '개</span></div>';
+  items.forEach(function(s) {
+    html += '<div class="print-item"><div class="print-item-info"><div class="print-item-name">' + s.name + '</div><div class="print-item-sub">' + s.warehouse + ' | 발주: ' + s.orderQty + '개</div></div><span class="print-item-qty">×' + s.qty + '</span></div>';
   });
+  html += '</div>';
+
   document.getElementById('printContent').innerHTML = html;
   var now = new Date();
   document.getElementById('printMeta').textContent = '출고일: ' + now.getFullYear() + '.' + String(now.getMonth()+1).padStart(2,'0') + '.' + String(now.getDate()).padStart(2,'0') + '  ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
@@ -465,17 +531,13 @@ function showPrint() {
 }
 
 function shareText() {
-  var boxes = Array.from(new Set(scanned.map(function(s){ return s.box; }))).sort(function(a,b){ return a-b; });
+  var items = scanned.filter(function(s){ return s.box === currentBox; });
+  var total = items.reduce(function(a,s){ return a+s.qty; }, 0);
   var now = new Date();
   var text = '[뉴욕꼬맹이 출고목록]\n' + now.getFullYear() + '.' + String(now.getMonth()+1).padStart(2,'0') + '.' + String(now.getDate()).padStart(2,'0') + '\n\n';
-  boxes.forEach(function(b) {
-    var items = scanned.filter(function(s){ return s.box === b; });
-    var total = items.reduce(function(a,s){ return a+s.qty; }, 0);
-    text += '📦 Box ' + b + ' (총 ' + total + '개)\n';
-    items.forEach(function(s) {
-      text += '  · ' + s.raw + (s.size ? ' / ' + s.size : '') + ' ×' + s.qty + '\n';
-    });
-    text += '\n';
+  text += '📦 ' + currentBox + ' (총 ' + total + '개)\n';
+  items.forEach(function(s) {
+    text += '  · ' + s.name + ' (' + s.warehouse + ') ×' + s.qty + '\n';
   });
   if (navigator.share) {
     navigator.share({ title: '뉴욕꼬맹이 출고목록', text: text }).catch(function(){});
@@ -495,7 +557,6 @@ function goBack() {
 loadState();
 initBoxGrid();
 updateNowCnt();
-document.getElementById('nowLabel').textContent = 'Box ' + currentBox + ' 스캔 중';
 renderList();
 </script>
 </body>
