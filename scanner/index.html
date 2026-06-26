@@ -384,7 +384,7 @@ function lookupAndScan(barcode) {
 // ── 로컬 스캔 목록에 추가 ──
 function addItem(data) {
   var existing = scanned.find(function(s){
-    return s.box === currentBox && s.barcode === data.barcode;
+    return s.box === data.box && s.barcode === data.barcode;
   });
   if (existing) {
     existing.qty++;
@@ -394,14 +394,14 @@ function addItem(data) {
       warehouse: data.warehouse,
       name: data.name,
       orderQty: data.orderQty,
-      box: currentBox,
+      box: data.box,
       qty: 1
     });
   }
   saveState();
   renderList();
   updateNowCnt();
-  setStatus('ok', '✓ ' + data.barcode + ' — ' + currentBox);
+  setStatus('ok', '✓ ' + data.barcode + ' — ' + data.box);
 }
 
 // ── 구글시트에 저장 ──
@@ -414,7 +414,7 @@ function sendToSheet(data) {
       warehouse: data.warehouse,
       name: data.name,
       orderQty: data.orderQty,
-      box: currentBox
+      box: data.box
     })
   }).then(function(res) {
     return res.json();
