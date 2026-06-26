@@ -350,7 +350,7 @@ function beep() {
   } catch(e) {}
 }
 
-// ── SKU마스터 조회 + 박스번호 입력 + 저장 ──
+// ── SKU마스터 조회 + 자동 박스 할당 + 저장 ──
 function lookupAndScan(barcode) {
   setStatus('sending', '조회 중...');
   fetch(SHEET_URL + '?action=lookup&barcode=' + encodeURIComponent(barcode))
@@ -365,18 +365,16 @@ function lookupAndScan(barcode) {
       var name = data.name || '';
       var orderQty = data.orderQty || 0;
 
-      // 첫 스캔일 때만 박스번호 입력
-      if (!currentBox) {
-        var box = prompt('📦 박스번호를 입력하세요\n예) Box 1', 'Box 1');
-        if (!box) return;
-        currentBox = box.trim();
-      }
+      // 자동 박스 할당 (라운드 로빈)
+      var totalScans = scanned.reduce(function(a, s) { return a + s.qty; }, 0);
+      var boxIndex = totalScans % boxCount;
+      var autoBox = 'Box ' + (boxIndex + 1);
 
       // 로컬 기록
-      addItem({ barcode: barcode, warehouse: warehouse, name: name, orderQty: orderQty });
+      addItem({ barcode: barcode, warehouse: warehouse, name: name, orderQty: orderQty, box: autoBox });
 
       // 구글시트 저장
-      sendToSheet({ barcode: barcode, warehouse: warehouse, name: name, orderQty: orderQty });
+      sendToSheet({ barcode: barcode, warehouse: warehouse, name: name, orderQty: orderQty, box: autoBox });
     })
     .catch(function(err) {
       setStatus('err', '⚠ 조회 실패 — 와이파이 확인');
