@@ -417,6 +417,14 @@ function addItem(data) {
 
 // ── 구글시트에 저장 ──
 function sendToSheet(data) {
+  // 현재 로컬 수량 계산
+  var qty = 0;
+  scanned.forEach(function(s) {
+    if (s.name === data.name && s.box === data.box) {
+      qty += s.qty;
+    }
+  });
+
   fetch(SHEET_URL, {
     method: 'POST',
     mode: 'no-cors',
@@ -426,7 +434,8 @@ function sendToSheet(data) {
       warehouse: data.warehouse,
       name: data.name,
       orderQty: data.orderQty,
-      box: data.box
+      box: data.box,
+      scannedQty: qty
     })
   }).then(function(res) {
     setStatus('ok', '✓ 저장 완료');
