@@ -108,6 +108,11 @@
     <span class="cnt-badge" id="nowCnt">0개</span>
   </div>
 
+  <div style="margin: 10px 12px; display: flex; gap: 8px;">
+    <input type="text" id="testBarcode" placeholder="테스트용 바코드 입력" style="flex: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+    <button id="testBtn" style="padding: 10px 16px; background: #16a34a; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">테스트</button>
+  </div>
+
   <div class="cam-section">
     <div id="interactive">
       <div class="scan-guide">
@@ -177,6 +182,16 @@ document.getElementById('addBoxBtn').addEventListener('click', function() {
 });
 
 document.getElementById('camStartBtn').addEventListener('click', startCamera);
+
+document.getElementById('testBtn').addEventListener('click', function() {
+  var barcode = document.getElementById('testBarcode').value.trim();
+  if (!barcode) {
+    alert('바코드를 입력해주세요');
+    return;
+  }
+  lookupAndScan(barcode);
+  document.getElementById('testBarcode').value = '';
+});
 
 document.getElementById('camToggleBtn').addEventListener('click', function() {
   var btn = document.getElementById('camToggleBtn');
