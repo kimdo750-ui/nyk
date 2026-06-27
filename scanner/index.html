@@ -225,9 +225,10 @@ function loadState() {
     var b = localStorage.getItem('nyk_box');
     var bc = localStorage.getItem('nyk_boxcount');
     if (s) scanned = JSON.parse(s);
-    if (b) currentBox = Math.max(1, parseInt(b));
+    if (b) currentBox = b;
     if (bc) boxCount = Math.max(4, parseInt(bc));
   } catch(e) {}
+  if (!currentBox) currentBox = 'Box 1';
 }
 
 // ── 바코드 파싱 ──
@@ -350,7 +351,7 @@ function beep() {
   } catch(e) {}
 }
 
-// ── SKU마스터 조회 + 자동 박스 할당 + 저장 ──
+// ── SKU마스터 조회 + 저장 ──
 function lookupAndScan(barcode) {
   setStatus('sending', '조회 중...');
   fetch(SHEET_URL + '?action=lookup&barcode=' + encodeURIComponent(barcode))
@@ -365,16 +366,11 @@ function lookupAndScan(barcode) {
       var name = data.name || '';
       var orderQty = data.orderQty || 0;
 
-      // 자동 박스 할당 (라운드 로빈)
-      var totalScans = scanned.reduce(function(a, s) { return a + s.qty; }, 0);
-      var boxIndex = totalScans % boxCount;
-      var autoBox = 'Box ' + (boxIndex + 1);
-
       // 로컬 기록
-      addItem({ barcode: barcode, warehouse: warehouse, name: name, orderQty: orderQty, box: autoBox });
+      addItem({ barcode: barcode, warehouse: warehouse, name: name, orderQty: orderQty, box: currentBox });
 
       // 구글시트 저장
-      sendToSheet({ barcode: barcode, warehouse: warehouse, name: name, orderQty: orderQty, box: autoBox });
+      sendToSheet({ barcode: barcode, warehouse: warehouse, name: name, orderQty: orderQty, box: currentBox });
     })
     .catch(function(err) {
       setStatus('err', '⚠ 조회 실패 — 와이파이 확인');
