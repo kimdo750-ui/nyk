@@ -241,7 +241,7 @@ function loadState() {
     var bc = localStorage.getItem('nyk_boxcount');
     if (s) scanned = JSON.parse(s);
     if (b) currentBox = b;
-    if (bc) boxCount = Math.max(4, parseInt(bc));
+    if (bc) boxCount = Math.min(5, Math.max(5, parseInt(bc)));
   } catch(e) {}
   if (!currentBox) currentBox = 'Box 1';
 }
