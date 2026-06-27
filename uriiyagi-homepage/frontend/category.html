@@ -5,24 +5,51 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>상품 목록 - 우리이야기</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      /* Primary Colors */
+      --color-gold: #c9a84c;
+      --color-ink: #1a1a2e;
+      --color-paper: #faf8f3;
+
+      /* Secondary Colors */
+      --color-warm-light: #f5ede5;
+      --color-warm-medium: #e8d5c4;
+      --color-soft-gray: #d4d4d0;
+      --color-dark-gray: #666666;
+
+      /* Fonts */
+      --font-title: 'Noto Serif KR', serif;
+      --font-body: 'Noto Sans KR', sans-serif;
+
+      /* Spacing */
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 12px;
+      --spacing-lg: 16px;
+      --spacing-xl: 20px;
+      --spacing-2xl: 24px;
+      --spacing-3xl: 40px;
+      --spacing-4xl: 60px;
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     html { scroll-behavior: smooth; }
 
     body {
-      background: #ffffff;
-      color: #1a1a1a;
-      font-family: 'Noto Sans KR', sans-serif;
+      background: var(--color-paper);
+      color: var(--color-ink);
+      font-family: var(--font-body);
       line-height: 1.6;
     }
 
     /* ═══ HEADER ═══ */
     header {
-      background: #ffffff;
-      border-bottom: 1px solid #e8e8e8;
-      padding: 12px 0;
+      background: var(--color-paper);
+      border-bottom: 1px solid var(--color-soft-gray);
+      padding: 16px 0;
       position: sticky;
       top: 0;
       z-index: 100;
@@ -41,9 +68,10 @@
     .logo {
       font-size: 20px;
       font-weight: 700;
-      color: #1a1a1a;
+      color: var(--color-ink);
       text-decoration: none;
       white-space: nowrap;
+      font-family: var(--font-title);
     }
 
     .search-bar {
@@ -54,9 +82,17 @@
     .search-bar input {
       width: 100%;
       padding: 10px 15px;
-      border: 1px solid #e0e0e0;
+      border: 1px solid var(--color-soft-gray);
       border-radius: 4px;
       font-size: 14px;
+      background: white;
+      transition: all 0.2s ease;
+    }
+
+    .search-bar input:focus {
+      outline: none;
+      border-color: var(--color-gold);
+      box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.1);
     }
 
     .header-icons {
@@ -66,20 +102,21 @@
     }
 
     .header-icons a {
-      color: #1a1a1a;
+      color: var(--color-ink);
       text-decoration: none;
       font-size: 14px;
       font-weight: 500;
+      transition: color 0.2s ease;
     }
 
     .header-icons a:hover {
-      color: #e74c3c;
+      color: var(--color-gold);
     }
 
     /* ═══ CATEGORY NAV ═══ */
     .category-nav {
-      background: #f9f9f9;
-      border-bottom: 1px solid #e8e8e8;
+      background: var(--color-warm-light);
+      border-bottom: 1px solid var(--color-soft-gray);
       padding: 0;
     }
 
@@ -100,29 +137,29 @@
       display: block;
       padding: 15px 0;
       text-align: center;
-      color: #1a1a1a;
+      color: var(--color-ink);
       text-decoration: none;
       font-weight: 500;
       font-size: 14px;
       border-bottom: 3px solid transparent;
-      transition: all 0.2s;
+      transition: all 0.2s ease;
     }
 
     .category-nav a:hover {
-      color: #e74c3c;
-      border-bottom-color: #e74c3c;
+      color: var(--color-gold);
+      border-bottom-color: var(--color-gold);
     }
 
     .category-nav a.active {
-      color: #e74c3c;
-      border-bottom-color: #e74c3c;
+      color: var(--color-gold);
+      border-bottom-color: var(--color-gold);
     }
 
     /* ═══ CATEGORY HEADER ═══ */
     .category-header {
-      background: #f5f5f5;
-      padding: 30px 20px;
-      border-bottom: 1px solid #e8e8e8;
+      background: linear-gradient(135deg, var(--color-warm-light) 0%, var(--color-paper) 100%);
+      padding: 40px 20px;
+      border-bottom: 1px solid var(--color-soft-gray);
     }
 
     .category-header-content {
@@ -131,14 +168,16 @@
     }
 
     .category-header h1 {
-      font-size: 24px;
+      font-size: 32px;
       font-weight: 700;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
+      font-family: var(--font-title);
+      color: var(--color-ink);
     }
 
     .category-header p {
-      font-size: 14px;
-      color: #666;
+      font-size: 16px;
+      color: var(--color-dark-gray);
     }
 
     /* ═══ FILTER & SORT ═══ */
@@ -150,7 +189,8 @@
       justify-content: space-between;
       align-items: center;
       gap: 20px;
-      border-bottom: 1px solid #e8e8e8;
+      border-bottom: 1px solid var(--color-soft-gray);
+      flex-wrap: wrap;
     }
 
     .filter-group {
@@ -161,50 +201,63 @@
 
     .filter-group label {
       font-size: 13px;
-      color: #666;
+      color: var(--color-dark-gray);
       white-space: nowrap;
     }
 
     .filter-group select {
       padding: 8px 12px;
-      border: 1px solid #e0e0e0;
+      border: 1px solid var(--color-soft-gray);
       border-radius: 4px;
       font-size: 13px;
       background: white;
       cursor: pointer;
+      transition: all 0.2s ease;
+      color: var(--color-ink);
+    }
+
+    .filter-group select:hover {
+      border-color: var(--color-gold);
     }
 
     .product-count {
       font-size: 13px;
-      color: #999;
+      color: var(--color-dark-gray);
     }
 
     .sort-buttons {
       display: flex;
       gap: 8px;
+      flex-wrap: wrap;
     }
 
     .sort-btn {
       padding: 8px 16px;
-      border: 1px solid #e0e0e0;
+      border: 1px solid var(--color-soft-gray);
       background: white;
       border-radius: 4px;
       font-size: 13px;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.2s ease;
+      color: var(--color-ink);
     }
 
-    .sort-btn:hover, .sort-btn.active {
-      background: #1a1a1a;
+    .sort-btn:hover {
+      border-color: var(--color-gold);
+      color: var(--color-gold);
+    }
+
+    .sort-btn.active {
+      background: var(--color-ink);
       color: white;
-      border-color: #1a1a1a;
+      border-color: var(--color-ink);
     }
 
     /* ═══ PRODUCTS SECTION ═══ */
     .products-section {
       max-width: 1400px;
       margin: 0 auto;
-      padding: 30px 20px;
+      padding: var(--spacing-3xl) 20px;
     }
 
     .products-grid {
@@ -215,26 +268,31 @@
     }
 
     .product-card {
-      background: white;
-      transition: all 0.2s;
+      background: var(--color-paper);
+      border: 1px solid var(--color-soft-gray);
+      border-radius: 6px;
+      overflow: hidden;
+      transition: all 0.2s ease;
       cursor: pointer;
+      padding: var(--spacing-lg);
     }
 
     .product-card:hover {
       transform: translateY(-4px);
-      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border-color: var(--color-gold);
     }
 
     .product-image {
       width: 100%;
       aspect-ratio: 1;
-      background: #f5f5f5;
+      background: var(--color-warm-light);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 60px;
-      margin-bottom: 12px;
-      border-radius: 4px;
+      margin-bottom: var(--spacing-lg);
+      border-radius: 6px;
       overflow: hidden;
     }
 
@@ -244,17 +302,18 @@
 
     .product-category {
       font-size: 12px;
-      color: #999;
+      color: var(--color-dark-gray);
       margin-bottom: 4px;
+      font-weight: 500;
     }
 
     .product-name {
-      font-size: 14px;
+      font-size: 16px;
       font-weight: 600;
-      color: #1a1a1a;
+      color: var(--color-ink);
       margin-bottom: 8px;
       line-height: 1.4;
-      height: 28px;
+      height: 32px;
       overflow: hidden;
     }
 
@@ -266,19 +325,19 @@
     }
 
     .price-discount {
-      color: #1a1a1a;
+      color: var(--color-gold);
       font-weight: 700;
-      font-size: 14px;
+      font-size: 16px;
     }
 
     .price-original {
-      color: #999;
+      color: var(--color-dark-gray);
       font-size: 13px;
       text-decoration: line-through;
     }
 
     .price-rate {
-      background: #e74c3c;
+      background: var(--color-gold);
       color: white;
       font-size: 11px;
       padding: 2px 6px;
@@ -298,62 +357,33 @@
     }
 
     .rating-count {
-      color: #999;
+      color: var(--color-dark-gray);
       font-size: 12px;
     }
 
     .product-button {
       width: 100%;
       padding: 10px;
-      background: #1a1a1a;
+      background: var(--color-ink);
       color: white;
       border: none;
       border-radius: 4px;
       font-weight: 600;
-      font-size: 13px;
+      font-size: 14px;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.2s ease;
     }
 
     .product-button:hover {
-      background: #e74c3c;
-    }
-
-    /* ═══ PAGINATION ═══ */
-    .pagination {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 8px;
-      margin-top: 40px;
-    }
-
-    .pagination a, .pagination span {
-      padding: 8px 12px;
-      border: 1px solid #e0e0e0;
-      border-radius: 4px;
-      text-decoration: none;
-      color: #1a1a1a;
-      font-size: 13px;
-    }
-
-    .pagination a:hover {
-      border-color: #1a1a1a;
-      background: #f5f5f5;
-    }
-
-    .pagination .active {
-      background: #1a1a1a;
-      color: white;
-      border-color: #1a1a1a;
+      background: var(--color-gold);
     }
 
     /* ═══ FOOTER ═══ */
     footer {
-      background: #f9f9f9;
-      border-top: 1px solid #e8e8e8;
+      background: var(--color-warm-light);
+      border-top: 1px solid var(--color-soft-gray);
       padding: 40px 20px;
-      margin-top: 60px;
+      margin-top: var(--spacing-4xl);
     }
 
     .footer-content {
@@ -368,27 +398,30 @@
     .footer-section h3 {
       font-size: 14px;
       font-weight: 700;
+      color: var(--color-ink);
       margin-bottom: 12px;
+      font-family: var(--font-title);
     }
 
     .footer-section a {
       display: block;
       font-size: 13px;
-      color: #666;
+      color: var(--color-dark-gray);
       text-decoration: none;
       margin-bottom: 8px;
+      transition: color 0.2s ease;
     }
 
     .footer-section a:hover {
-      color: #e74c3c;
+      color: var(--color-gold);
     }
 
     .footer-bottom {
       text-align: center;
       padding-top: 20px;
-      border-top: 1px solid #e8e8e8;
+      border-top: 1px solid var(--color-soft-gray);
       font-size: 12px;
-      color: #999;
+      color: var(--color-dark-gray);
     }
 
     /* ═══ RESPONSIVE ═══ */
@@ -398,8 +431,22 @@
         gap: 16px;
       }
 
-      .filter-bar {
-        flex-wrap: wrap;
+      .header-top {
+        gap: 20px;
+      }
+
+      .search-bar {
+        max-width: 250px;
+      }
+
+      .header-icons {
+        gap: 12px;
+        font-size: 12px;
+      }
+
+      .footer-content {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
       }
     }
 
@@ -409,19 +456,33 @@
         gap: 12px;
       }
 
+      .header-top {
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .search-bar {
+        max-width: 100%;
+        order: 3;
+        flex-basis: 100%;
+      }
+
+      .category-nav ul {
+        flex-wrap: wrap;
+      }
+
       .filter-bar {
         flex-direction: column;
         align-items: flex-start;
       }
 
-      .sort-buttons {
-        width: 100%;
-        justify-content: space-between;
-      }
-
       .footer-content {
         grid-template-columns: repeat(2, 1fr);
         gap: 20px;
+      }
+
+      .category-header h1 {
+        font-size: 24px;
       }
     }
 
@@ -430,12 +491,25 @@
         grid-template-columns: 1fr;
       }
 
-      .filter-bar {
-        padding: 15px;
+      .header-icons {
+        gap: 8px;
+      }
+
+      .category-nav a {
+        padding: 12px 0;
+        font-size: 12px;
       }
 
       .footer-content {
         grid-template-columns: 1fr;
+      }
+
+      .category-header h1 {
+        font-size: 20px;
+      }
+
+      .category-header p {
+        font-size: 14px;
       }
     }
   </style>
@@ -471,37 +545,52 @@
 <!-- ═══ CATEGORY HEADER ═══ -->
 <section class="category-header">
   <div class="category-header-content">
-    <h1 id="categoryTitle">카테고리</h1>
-    <p id="categoryDesc">상품 목록입니다.</p>
+    <h1 id="categoryTitle">아동복</h1>
+    <p id="categoryDescription">아이의 특별한 순간을 기념하다</p>
   </div>
 </section>
 
 <!-- ═══ FILTER & SORT ═══ -->
-<section class="filter-bar">
+<div class="filter-bar">
   <div class="filter-group">
-    <label>정렬:</label>
-    <div class="sort-buttons">
-      <button class="sort-btn active" onclick="sortProducts('latest')">최신순</button>
-      <button class="sort-btn" onclick="sortProducts('popular')">인기순</button>
-      <button class="sort-btn" onclick="sortProducts('lowprice')">낮은가격</button>
-      <button class="sort-btn" onclick="sortProducts('highprice')">높은가격</button>
-    </div>
+    <label for="sizeFilter">사이즈:</label>
+    <select id="sizeFilter">
+      <option value="">전체</option>
+      <option value="XS">XS</option>
+      <option value="S">S</option>
+      <option value="M">M</option>
+      <option value="L">L</option>
+      <option value="XL">XL</option>
+    </select>
   </div>
 
-  <div style="margin-left: auto;">
-    <span class="product-count">전체 <strong id="totalCount">0</strong>개</span>
+  <div class="filter-group">
+    <label for="colorFilter">색상:</label>
+    <select id="colorFilter">
+      <option value="">전체</option>
+      <option value="white">흰색</option>
+      <option value="black">검정색</option>
+      <option value="beige">베이지</option>
+      <option value="gold">골드</option>
+    </select>
   </div>
-</section>
+
+  <div class="product-count">
+    <span id="productCount">24</span>개 상품
+  </div>
+
+  <div class="sort-buttons">
+    <button class="sort-btn active" data-sort="popular">인기순</button>
+    <button class="sort-btn" data-sort="newest">신상품</button>
+    <button class="sort-btn" data-sort="price-low">가격낮음</button>
+    <button class="sort-btn" data-sort="price-high">가격높음</button>
+  </div>
+</div>
 
 <!-- ═══ PRODUCTS SECTION ═══ -->
 <section class="products-section">
   <div class="products-grid" id="productsGrid">
     <!-- 상품이 JavaScript로 로드됨 -->
-  </div>
-
-  <!-- ═══ PAGINATION ═══ -->
-  <div class="pagination" id="pagination">
-    <!-- 페이지네이션이 JavaScript로 생성됨 -->
   </div>
 </section>
 
@@ -540,132 +629,67 @@
 </footer>
 
 <script>
-  // 상품 데이터
-  const products = {
+  // 카테고리 데이터
+  const categories = {
     kids: {
-      title: '아동복',
-      desc: '아이의 특별함을 담은 기념복입니다.',
-      items: [
-        { id: 'kids_001', name: '아동 기념복 - 반팔', price: 34900, discount: 10, rating: 4.8, reviews: 125, emoji: '👕' },
-        { id: 'kids_002', name: '아동 기념복 - 긴팔', price: 39900, discount: 5, rating: 4.8, reviews: 92, emoji: '👕' },
-        { id: 'kids_003', name: '아동 커플 티셔츠', price: 29900, discount: 0, rating: 4.9, reviews: 78, emoji: '👕' },
-        { id: 'kids_004', name: '아동 기념복 - 반팔 (개별)', price: 34900, discount: 15, rating: 4.7, reviews: 56, emoji: '👕' },
-        { id: 'kids_005', name: '아동 프리미엄 기념복', price: 49900, discount: 20, rating: 5.0, reviews: 34, emoji: '👕' },
-        { id: 'kids_006', name: '아동 반팔 세트', price: 59900, discount: 25, rating: 4.9, reviews: 89, emoji: '👕' },
-        { id: 'kids_007', name: '아동 기념복 페어', price: 64900, discount: 10, rating: 4.8, reviews: 67, emoji: '👕' },
-        { id: 'kids_008', name: '아동 명작 기념복', price: 39900, discount: 0, rating: 4.9, reviews: 112, emoji: '👕' }
-      ]
+      name: '아동복',
+      description: '아이의 특별한 순간을 기념하다'
     },
     adults: {
-      title: '성인복',
-      desc: '당신의 감성을 표현하는 옷입니다.',
-      items: [
-        { id: 'adults_001', name: '감성 문구 반팔', price: 29900, discount: 0, rating: 4.9, reviews: 89, emoji: '👔' },
-        { id: 'adults_002', name: '감성 문구 긴팔', price: 34900, discount: 0, rating: 4.9, reviews: 78, emoji: '👔' },
-        { id: 'adults_003', name: '친구 커플 티셔츠', price: 32900, discount: 10, rating: 4.8, reviews: 156, emoji: '👔' },
-        { id: 'adults_004', name: '감성 프리미엄 반팔', price: 39900, discount: 15, rating: 5.0, reviews: 45, emoji: '👔' },
-        { id: 'adults_005', name: '감성 패턴 반팔', price: 34900, discount: 0, rating: 4.7, reviews: 67, emoji: '👔' },
-        { id: 'adults_006', name: '감성 레터링 반팔', price: 29900, discount: 20, rating: 4.9, reviews: 98, emoji: '👔' },
-        { id: 'adults_007', name: '감성 프린트 반팔', price: 32900, discount: 5, rating: 4.8, reviews: 123, emoji: '👔' },
-        { id: 'adults_008', name: '감성 컬렉션 세트', price: 54900, discount: 25, rating: 4.9, reviews: 87, emoji: '👔' }
-      ]
+      name: '성인복',
+      description: '당신의 개성을 표현하다'
     },
     senior: {
-      title: '시니어',
-      desc: '소중한 추억을 담은 옷입니다.',
-      items: [
-        { id: 'senior_001', name: '추억 반팔 (여성)', price: 29900, discount: 15, rating: 5.0, reviews: 45, emoji: '👵' },
-        { id: 'senior_002', name: '추억 반팔 (남성)', price: 29900, discount: 15, rating: 5.0, reviews: 38, emoji: '👴' },
-        { id: 'senior_003', name: '추억 긴팔', price: 34900, discount: 10, rating: 4.9, reviews: 52, emoji: '👕' },
-        { id: 'senior_004', name: '추억 프리미엄 반팔', price: 39900, discount: 0, rating: 5.0, reviews: 28, emoji: '👕' },
-        { id: 'senior_005', name: '추억 페어 세트', price: 54900, discount: 20, rating: 4.9, reviews: 41, emoji: '👕' },
-        { id: 'senior_006', name: '추억 명언 반팔', price: 29900, discount: 0, rating: 4.8, reviews: 67, emoji: '👕' },
-        { id: 'senior_007', name: '추억 프린트 긴팔', price: 34900, discount: 15, rating: 4.9, reviews: 54, emoji: '👕' },
-        { id: 'senior_008', name: '추억 컬렉션 세트', price: 64900, discount: 25, rating: 5.0, reviews: 33, emoji: '👕' }
-      ]
+      name: '시니어',
+      description: '추억을 간직하고, 명언을 나누다'
     },
     pet: {
-      title: '반려동물복',
-      desc: '반려동물과의 특별한 순간을 담다.',
-      items: [
-        { id: 'pet_001', name: '펫 반팔 - 강아지', price: 29900, discount: 0, rating: 4.7, reviews: 67, emoji: '🐕' },
-        { id: 'pet_002', name: '펫 반팔 - 고양이', price: 29900, discount: 10, rating: 4.6, reviews: 54, emoji: '🐱' },
-        { id: 'pet_003', name: '펫 커플 티셔츠', price: 32900, discount: 0, rating: 4.8, reviews: 89, emoji: '🐾' },
-        { id: 'pet_004', name: '펫 프리미엄 반팔', price: 39900, discount: 15, rating: 4.9, reviews: 45, emoji: '🐾' },
-        { id: 'pet_005', name: '펫 페어 세트', price: 54900, discount: 20, rating: 4.8, reviews: 67, emoji: '🐾' },
-        { id: 'pet_006', name: '펫 프린트 반팔', price: 34900, discount: 0, rating: 4.7, reviews: 78, emoji: '🐾' },
-        { id: 'pet_007', name: '펫 긴팔 세트', price: 39900, discount: 10, rating: 4.8, reviews: 56, emoji: '🐾' },
-        { id: 'pet_008', name: '펫 컬렉션 패키지', price: 64900, discount: 25, rating: 4.9, reviews: 42, emoji: '🐾' }
-      ]
+      name: '반려동물복',
+      description: '반려동물과의 특별한 순간을 기억하다'
     },
     group: {
-      title: '단체복',
-      desc: '팀의 이야기를 담은 옷입니다.',
-      items: [
-        { id: 'group_001', name: '어린이집 단체복', price: 24900, discount: 20, rating: 4.9, reviews: 156, emoji: '👧' },
-        { id: 'group_002', name: '회사 단체복', price: 29900, discount: 0, rating: 4.8, reviews: 98, emoji: '🏢' },
-        { id: 'group_003', name: '스포츠팀 단체복', price: 26900, discount: 15, rating: 4.9, reviews: 134, emoji: '⚽' },
-        { id: 'group_004', name: '단체복 프리미엄', price: 34900, discount: 10, rating: 4.9, reviews: 67, emoji: '👥' },
-        { id: 'group_005', name: '단체복 풀패키지', price: 299900, discount: 20, rating: 4.8, reviews: 45, emoji: '👥' },
-        { id: 'group_006', name: '커스텀 단체복', price: 29900, discount: 0, rating: 4.9, reviews: 112, emoji: '👥' },
-        { id: 'group_007', name: '단체 인쇄 옵션', price: 3900, discount: 0, rating: 4.7, reviews: 89, emoji: '👥' },
-        { id: 'group_008', name: '단체 빠른배송', price: 29900, discount: 25, rating: 4.9, reviews: 76, emoji: '👥' }
-      ]
+      name: '단체복',
+      description: '팀의 이야기, 단체의 가치를 담다'
     }
   };
 
-  let currentCategory = 'kids';
-  let currentPage = 1;
-  const itemsPerPage = 8;
-  let filteredProducts = [];
+  // 샘플 상품 데이터
+  const allProducts = [
+    { id: 1, category: 'kids', name: '아동 기념복 반팔', price: 34900, discount: 10, rating: 4.8, reviews: 125 },
+    { id: 2, category: 'kids', name: '생일 맞춤 반팔', price: 39900, discount: 15, rating: 4.9, reviews: 89 },
+    { id: 3, category: 'kids', name: '띠별 기념복', price: 44900, discount: 0, rating: 5.0, reviews: 45 },
+    { id: 4, category: 'kids', name: '졸업 추억복', price: 34900, discount: 20, rating: 4.7, reviews: 67 },
+    { id: 5, category: 'kids', name: '첫돌 기념복', price: 29900, discount: 10, rating: 4.8, reviews: 156 },
+    { id: 6, category: 'kids', name: '아동 기념복 긴팔', price: 39900, discount: 5, rating: 4.8, reviews: 92 },
+    { id: 7, category: 'adults', name: '감성 문구 반팔', price: 29900, discount: 0, rating: 4.9, reviews: 78 },
+    { id: 8, category: 'adults', name: '좌우명 반팔', price: 32900, discount: 10, rating: 4.6, reviews: 54 },
+    { id: 9, category: 'senior', name: '추억 반팔 (여성)', price: 29900, discount: 15, rating: 5.0, reviews: 43 },
+    { id: 10, category: 'senior', name: '명언 긴팔 (남성)', price: 34900, discount: 0, rating: 4.9, reviews: 38 },
+    { id: 11, category: 'pet', name: '펫 반팔 강아지', price: 29900, discount: 0, rating: 4.7, reviews: 67 },
+    { id: 12, category: 'pet', name: '펫 반팔 고양이', price: 29900, discount: 10, rating: 4.6, reviews: 54 },
+    { id: 13, category: 'group', name: '단체복 기본', price: 24900, discount: 20, rating: 4.9, reviews: 156 },
+    { id: 14, category: 'group', name: '팀복 프리미엄', price: 39900, discount: 10, rating: 4.8, reviews: 92 },
+    { id: 15, category: 'kids', name: '아동 여름 반팔', price: 24900, discount: 0, rating: 4.7, reviews: 73 },
+    { id: 16, category: 'adults', name: '감성 문구 긴팔', price: 34900, discount: 0, rating: 4.9, reviews: 78 },
+  ];
 
-  function loadCategory() {
-    const params = new URLSearchParams(window.location.search);
-    currentCategory = params.get('cat') || 'kids';
-
-    console.log('✅ 현재 카테고리:', currentCategory);
-    console.log('🔗 URL 파라미터:', window.location.search);
-
-    const categoryData = products[currentCategory];
-    if (!categoryData) {
-      console.error('❌ 카테고리 데이터 없음:', currentCategory);
-      currentCategory = 'kids';
-    }
-
-    const categoryData2 = products[currentCategory];
-    document.getElementById('categoryTitle').textContent = categoryData2.title;
-    document.getElementById('categoryDesc').textContent = categoryData2.desc;
-    document.getElementById('totalCount').textContent = categoryData2.items.length;
-
-    filteredProducts = [...categoryData2.items];
-    currentPage = 1;
-    renderProducts();
-
-    // 네비 활성화 (간단히 수정)
-    document.querySelectorAll('.nav-link').forEach(link => {
-      const href = link.getAttribute('href');
-      if (href.includes('cat=' + currentCategory)) {
-        link.classList.add('active');
-      } else {
-        link.classList.remove('active');
-      }
-    });
+  // 카테고리별로 상품 필터링
+  function filterProductsByCategory(category) {
+    return allProducts.filter(p => p.category === category);
   }
 
-  function renderProducts() {
-    const start = (currentPage - 1) * itemsPerPage;
-    const end = start + itemsPerPage;
-    const displayProducts = filteredProducts.slice(start, end);
-
+  // 상품 카드 렌더링
+  function loadProducts(category = 'kids') {
+    const products = filterProductsByCategory(category);
     const grid = document.getElementById('productsGrid');
-    grid.innerHTML = displayProducts.map((product, mapIdx) => {
+
+    grid.innerHTML = products.map(product => {
       const discountedPrice = Math.floor(product.price * (1 - product.discount / 100));
-      const globalIdx = start + mapIdx;
       return `
-        <div class="product-card" onclick="goToDetail('${product.id}', ${globalIdx})">
-          <div class="product-image">${product.emoji}</div>
+        <div class="product-card" onclick="goToDetail('${product.id}')">
+          <div class="product-image">📦</div>
           <div class="product-info">
-            <div class="product-category">${products[currentCategory].title}</div>
+            <div class="product-category">${categories[category].name}</div>
             <div class="product-name">${product.name}</div>
             <div class="product-price">
               <span class="price-discount">${discountedPrice.toLocaleString()}원</span>
@@ -682,67 +706,48 @@
       `;
     }).join('');
 
-    renderPagination();
+    // 상품 개수 업데이트
+    document.getElementById('productCount').textContent = products.length;
   }
 
-  function renderPagination() {
-    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-    const pagination = document.getElementById('pagination');
-    let html = '';
-
-    if (currentPage > 1) {
-      html += `<a href="#" onclick="goToPage(${currentPage - 1}); return false;">이전</a>`;
-    }
-
-    for (let i = 1; i <= totalPages; i++) {
-      if (i === currentPage) {
-        html += `<span class="active">${i}</span>`;
-      } else {
-        html += `<a href="#" onclick="goToPage(${i}); return false;">${i}</a>`;
-      }
-    }
-
-    if (currentPage < totalPages) {
-      html += `<a href="#" onclick="goToPage(${currentPage + 1}); return false;">다음</a>`;
-    }
-
-    pagination.innerHTML = html;
+  function goToDetail(id) {
+    window.location.href = `shop.html?id=${id}`;
   }
 
-  function goToPage(page) {
-    currentPage = page;
-    renderProducts();
-    window.scrollTo(0, 0);
+  // URL에서 카테고리 파라미터 읽기
+  function getCategoryFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    const category = params.get('cat') || 'kids';
+    return category;
   }
 
-  function sortProducts(type) {
-    const categoryData = products[currentCategory];
-    filteredProducts = [...categoryData.items];
-
-    if (type === 'latest') {
-      // 최신순 (기본)
-    } else if (type === 'popular') {
-      filteredProducts.sort((a, b) => b.reviews - a.reviews);
-    } else if (type === 'lowprice') {
-      filteredProducts.sort((a, b) => (a.price * (1 - a.discount/100)) - (b.price * (1 - b.discount/100)));
-    } else if (type === 'highprice') {
-      filteredProducts.sort((a, b) => (b.price * (1 - b.discount/100)) - (a.price * (1 - a.discount/100)));
-    }
-
-    // 버튼 활성화
-    document.querySelectorAll('.sort-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-
-    currentPage = 1;
-    renderProducts();
-  }
-
-  function goToDetail(id, idx) {
-    window.location.href = `shop.html?cat=${currentCategory}&idx=${idx}`;
+  // 카테고리 헤더 업데이트
+  function updateCategoryHeader(category) {
+    const info = categories[category] || categories.kids;
+    document.getElementById('categoryTitle').textContent = info.name;
+    document.getElementById('categoryDescription').textContent = info.description;
   }
 
   // 초기 로드
-  loadCategory();
+  const currentCategory = getCategoryFromURL();
+  updateCategoryHeader(currentCategory);
+  loadProducts(currentCategory);
+
+  // 네비게이션 활성화
+  document.querySelectorAll('.nav-link').forEach(link => {
+    const url = new URL(link.href);
+    if (url.search === window.location.search) {
+      link.classList.add('active');
+    }
+  });
+
+  // 정렬 버튼
+  document.querySelectorAll('.sort-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
 </script>
 
 </body>

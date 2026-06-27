@@ -5,24 +5,51 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>우리이야기 - 맞춤형 티셔츠 전문점</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      /* Primary Colors */
+      --color-gold: #c9a84c;
+      --color-ink: #1a1a2e;
+      --color-paper: #faf8f3;
+
+      /* Secondary Colors */
+      --color-warm-light: #f5ede5;
+      --color-warm-medium: #e8d5c4;
+      --color-soft-gray: #d4d4d0;
+      --color-dark-gray: #666666;
+
+      /* Fonts */
+      --font-title: 'Noto Serif KR', serif;
+      --font-body: 'Noto Sans KR', sans-serif;
+
+      /* Spacing */
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 12px;
+      --spacing-lg: 16px;
+      --spacing-xl: 20px;
+      --spacing-2xl: 24px;
+      --spacing-3xl: 40px;
+      --spacing-4xl: 60px;
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     html { scroll-behavior: smooth; }
 
     body {
-      background: #ffffff;
-      color: #1a1a1a;
-      font-family: 'Noto Sans KR', sans-serif;
+      background: var(--color-paper);
+      color: var(--color-ink);
+      font-family: var(--font-body);
       line-height: 1.6;
     }
 
     /* ═══ HEADER ═══ */
     header {
-      background: #ffffff;
-      border-bottom: 1px solid #e8e8e8;
-      padding: 12px 0;
+      background: var(--color-paper);
+      border-bottom: 1px solid var(--color-soft-gray);
+      padding: 16px 0;
       position: sticky;
       top: 0;
       z-index: 100;
@@ -41,9 +68,10 @@
     .logo {
       font-size: 20px;
       font-weight: 700;
-      color: #1a1a1a;
+      color: var(--color-ink);
       text-decoration: none;
       white-space: nowrap;
+      font-family: var(--font-title);
     }
 
     .search-bar {
@@ -66,20 +94,21 @@
     }
 
     .header-icons a {
-      color: #1a1a1a;
+      color: var(--color-ink);
       text-decoration: none;
       font-size: 14px;
       font-weight: 500;
+      transition: color 0.2s ease;
     }
 
     .header-icons a:hover {
-      color: #e74c3c;
+      color: var(--color-gold);
     }
 
     /* ═══ CATEGORY NAV ═══ */
     .category-nav {
-      background: #f9f9f9;
-      border-bottom: 1px solid #e8e8e8;
+      background: var(--color-warm-light);
+      border-bottom: 1px solid var(--color-soft-gray);
       padding: 0;
     }
 
@@ -100,7 +129,7 @@
       display: block;
       padding: 15px 0;
       text-align: center;
-      color: #1a1a1a;
+      color: var(--color-ink);
       text-decoration: none;
       font-weight: 500;
       font-size: 14px;
@@ -109,55 +138,127 @@
     }
 
     .category-nav a:hover {
-      color: #e74c3c;
-      border-bottom-color: #e74c3c;
+      color: var(--color-gold);
+      border-bottom-color: var(--color-gold);
     }
 
     .category-nav a.active {
-      color: #e74c3c;
-      border-bottom-color: #e74c3c;
+      color: var(--color-gold);
+      border-bottom-color: var(--color-gold);
     }
 
     /* ═══ BANNER ═══ */
     .banner {
-      background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
-      padding: 60px 20px;
+      background: linear-gradient(135deg, var(--color-warm-light) 0%, var(--color-paper) 100%);
+      padding: 80px 20px;
       text-align: center;
     }
 
     .banner h1 {
-      font-size: 32px;
+      font-size: 48px;
       margin-bottom: 12px;
-      color: #1a1a1a;
+      color: var(--color-ink);
       font-weight: 700;
+      font-family: var(--font-title);
+      letter-spacing: 0.5px;
     }
 
     .banner p {
       font-size: 16px;
-      color: #666;
-      margin-bottom: 24px;
+      color: var(--color-dark-gray);
+      margin-bottom: 32px;
     }
 
     .banner-btn {
       display: inline-block;
-      background: #e74c3c;
+      background: var(--color-gold);
       color: white;
       padding: 14px 40px;
-      border-radius: 4px;
+      border-radius: 6px;
       text-decoration: none;
-      font-weight: 600;
-      transition: all 0.2s;
+      font-weight: 700;
+      font-size: 16px;
+      transition: all 0.2s ease;
+      cursor: pointer;
     }
 
     .banner-btn:hover {
-      background: #c0392b;
+      background: #b89840;
       transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* ═══ CATEGORIES SECTION ═══ */
+    .categories-section {
+      max-width: 1400px;
+      margin: var(--spacing-4xl) auto;
+      padding: 0 20px;
+    }
+
+    .categories-container {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: var(--spacing-xl);
+    }
+
+    .category-card {
+      background: white;
+      border: 2px solid var(--color-soft-gray);
+      border-radius: 8px;
+      padding: var(--spacing-2xl);
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .category-card:hover {
+      border-color: var(--color-gold);
+      background: var(--color-warm-light);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transform: translateY(-4px);
+    }
+
+    .card-emoji {
+      font-size: 80px;
+      margin-bottom: var(--spacing-lg);
+      line-height: 1;
+    }
+
+    .card-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--color-ink);
+      margin-bottom: var(--spacing-md);
+      font-family: var(--font-title);
+    }
+
+    .card-message {
+      font-size: 14px;
+      color: var(--color-dark-gray);
+      margin-bottom: var(--spacing-xl);
+      line-height: 1.5;
+    }
+
+    .card-button {
+      display: inline-block;
+      background: var(--color-ink);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 4px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    .card-button:hover {
+      background: var(--color-gold);
     }
 
     /* ═══ PRODUCTS SECTION ═══ */
     .products-section {
       max-width: 1400px;
-      margin: 60px auto;
+      margin: var(--spacing-4xl) auto;
       padding: 0 20px;
     }
 
@@ -169,16 +270,22 @@
     }
 
     .section-header h2 {
-      font-size: 20px;
+      font-size: 32px;
       font-weight: 700;
-      color: #1a1a1a;
+      color: var(--color-ink);
+      font-family: var(--font-title);
     }
 
     .view-all {
-      color: #e74c3c;
+      color: var(--color-gold);
       text-decoration: none;
       font-weight: 600;
       font-size: 14px;
+      transition: color 0.2s ease;
+    }
+
+    .view-all:hover {
+      color: #b89840;
     }
 
     .products-grid {
@@ -189,26 +296,31 @@
     }
 
     .product-card {
-      background: white;
-      transition: all 0.2s;
+      background: var(--color-paper);
+      border: 1px solid var(--color-soft-gray);
+      border-radius: 6px;
+      overflow: hidden;
+      transition: all 0.2s ease;
       cursor: pointer;
+      padding: var(--spacing-lg);
     }
 
     .product-card:hover {
       transform: translateY(-4px);
-      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border-color: var(--color-gold);
     }
 
     .product-image {
       width: 100%;
       aspect-ratio: 1;
-      background: #f5f5f5;
+      background: var(--color-warm-light);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 60px;
-      margin-bottom: 12px;
-      border-radius: 4px;
+      margin-bottom: var(--spacing-lg);
+      border-radius: 6px;
       overflow: hidden;
     }
 
@@ -218,17 +330,18 @@
 
     .product-category {
       font-size: 12px;
-      color: #999;
+      color: var(--color-dark-gray);
       margin-bottom: 4px;
+      font-weight: 500;
     }
 
     .product-name {
-      font-size: 14px;
+      font-size: 16px;
       font-weight: 600;
-      color: #1a1a1a;
+      color: var(--color-ink);
       margin-bottom: 8px;
       line-height: 1.4;
-      height: 28px;
+      height: 32px;
       overflow: hidden;
     }
 
@@ -240,13 +353,13 @@
     }
 
     .price-discount {
-      color: #e74c3c;
+      color: var(--color-gold);
       font-weight: 700;
-      font-size: 13px;
+      font-size: 16px;
     }
 
     .price-original {
-      color: #999;
+      color: var(--color-dark-gray);
       font-size: 13px;
       text-decoration: line-through;
     }
@@ -264,33 +377,34 @@
     }
 
     .rating-count {
-      color: #999;
+      color: var(--color-dark-gray);
       font-size: 12px;
     }
 
     .product-button {
       width: 100%;
       padding: 10px;
-      background: #1a1a1a;
+      background: var(--color-ink);
       color: white;
       border: none;
       border-radius: 4px;
       font-weight: 600;
-      font-size: 13px;
+      font-size: 14px;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.2s ease;
     }
 
     .product-button:hover {
-      background: #e74c3c;
+      background: var(--color-gold);
+      color: white;
     }
 
     /* ═══ FOOTER ═══ */
     footer {
-      background: #f9f9f9;
-      border-top: 1px solid #e8e8e8;
+      background: var(--color-warm-light);
+      border-top: 1px solid var(--color-soft-gray);
       padding: 40px 20px;
-      margin-top: 60px;
+      margin-top: var(--spacing-4xl);
     }
 
     .footer-content {
@@ -305,31 +419,39 @@
     .footer-section h3 {
       font-size: 14px;
       font-weight: 700;
+      color: var(--color-ink);
       margin-bottom: 12px;
+      font-family: var(--font-title);
     }
 
     .footer-section a {
       display: block;
       font-size: 13px;
-      color: #666;
+      color: var(--color-dark-gray);
       text-decoration: none;
       margin-bottom: 8px;
+      transition: color 0.2s ease;
     }
 
     .footer-section a:hover {
-      color: #e74c3c;
+      color: var(--color-gold);
     }
 
     .footer-bottom {
       text-align: center;
       padding-top: 20px;
-      border-top: 1px solid #e8e8e8;
+      border-top: 1px solid var(--color-soft-gray);
       font-size: 12px;
-      color: #999;
+      color: var(--color-dark-gray);
     }
 
     /* ═══ RESPONSIVE ═══ */
     @media (max-width: 1024px) {
+      .categories-container {
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--spacing-lg);
+      }
+
       .products-grid {
         grid-template-columns: repeat(3, 1fr);
         gap: 16px;
@@ -350,6 +472,19 @@
     }
 
     @media (max-width: 768px) {
+      .categories-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-lg);
+      }
+
+      .card-emoji {
+        font-size: 64px;
+      }
+
+      .card-title {
+        font-size: 20px;
+      }
+
       .products-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
@@ -376,11 +511,32 @@
       }
 
       .banner h1 {
-        font-size: 24px;
+        font-size: 36px;
       }
     }
 
     @media (max-width: 480px) {
+      .categories-container {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+      }
+
+      .category-card {
+        padding: var(--spacing-lg);
+      }
+
+      .card-emoji {
+        font-size: 48px;
+      }
+
+      .card-title {
+        font-size: 18px;
+      }
+
+      .card-message {
+        font-size: 12px;
+      }
+
       .products-grid {
         grid-template-columns: 1fr;
       }
@@ -396,6 +552,14 @@
 
       .footer-content {
         grid-template-columns: 1fr;
+      }
+
+      .banner h1 {
+        font-size: 28px;
+      }
+
+      .banner p {
+        font-size: 14px;
       }
     }
   </style>
@@ -433,6 +597,46 @@
   <h1>당신의 이야기를 옷에 담다</h1>
   <p>세상에 하나뿐인 맞춤형 티셔츠</p>
   <a href="category.html?cat=kids" class="banner-btn">지금 시작하기</a>
+</section>
+
+<!-- ═══ CATEGORY CARDS SECTION ═══ -->
+<section class="categories-section">
+  <div class="categories-container">
+    <div class="category-card" data-cat="kids">
+      <div class="card-emoji">👶</div>
+      <h3 class="card-title">아동복</h3>
+      <p class="card-message">아이의 특별한 순간을 기념하다</p>
+      <a href="category.html?cat=kids" class="card-button">둘러보기</a>
+    </div>
+
+    <div class="category-card" data-cat="adults">
+      <div class="card-emoji">👨‍🦱</div>
+      <h3 class="card-title">성인복</h3>
+      <p class="card-message">당신의 개성을 표현하다</p>
+      <a href="category.html?cat=adults" class="card-button">둘러보기</a>
+    </div>
+
+    <div class="category-card" data-cat="senior">
+      <div class="card-emoji">👴</div>
+      <h3 class="card-title">시니어</h3>
+      <p class="card-message">추억을 간직하고, 명언을 나누다</p>
+      <a href="category.html?cat=senior" class="card-button">둘러보기</a>
+    </div>
+
+    <div class="category-card" data-cat="pet">
+      <div class="card-emoji">🐕</div>
+      <h3 class="card-title">반려동물복</h3>
+      <p class="card-message">반려동물과의 특별한 순간을 기억하다</p>
+      <a href="category.html?cat=pet" class="card-button">둘러보기</a>
+    </div>
+
+    <div class="category-card" data-cat="group">
+      <div class="card-emoji">👥</div>
+      <h3 class="card-title">단체복</h3>
+      <p class="card-message">팀의 이야기, 단체의 가치를 담다</p>
+      <a href="category.html?cat=group" class="card-button">둘러보기</a>
+    </div>
+  </div>
 </section>
 
 <!-- ═══ BEST PRODUCTS ═══ -->
