@@ -382,10 +382,10 @@ function lookupAndScan(barcode) {
       var orderQty = data.orderQty || 0;
 
       // 로컬 기록
-      addItem({ barcode: barcode, warehouse: warehouse, name: name, orderQty: orderQty, box: currentBox });
+      var qty = addItem({ barcode: barcode, warehouse: warehouse, name: name, orderQty: orderQty, box: currentBox });
 
       // 구글시트 저장
-      sendToSheet({ barcode: barcode, warehouse: warehouse, name: name, orderQty: orderQty, box: currentBox });
+      sendToSheet({ barcode: barcode, warehouse: warehouse, name: name, orderQty: orderQty, box: currentBox, scannedQty: qty });
     })
     .catch(function(err) {
       setStatus('err', '⚠ 조회 실패 — 와이파이 확인');
@@ -413,18 +413,11 @@ function addItem(data) {
   renderList();
   updateNowCnt();
   setStatus('ok', '✓ ' + data.barcode + ' — ' + data.box);
+  return existing ? existing.qty : 1;
 }
 
 // ── 구글시트에 저장 ──
 function sendToSheet(data) {
-  // 현재 로컬 수량 계산
-  var qty = 0;
-  scanned.forEach(function(s) {
-    if (s.name === data.name && s.box === data.box) {
-      qty += s.qty;
-    }
-  });
-
   fetch(SHEET_URL, {
     method: 'POST',
     mode: 'no-cors',
@@ -435,7 +428,7 @@ function sendToSheet(data) {
       name: data.name,
       orderQty: data.orderQty,
       box: data.box,
-      scannedQty: qty
+      scannedQty: data.scannedQty
     })
   }).then(function(res) {
     setStatus('ok', '✓ 저장 완료');
