@@ -160,7 +160,7 @@
 
 <script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
 <script>
-var SHEET_URL = 'https://script.google.com/macros/s/AKfycbzkEF1cLjUpBUmy17kQoV_FetIgl80h67xh4ZWaFj_EtEIxrIVQitJE6M7LDYebeR-5/exec';
+var SHEET_URL = 'https://script.google.com/macros/s/AKfycbxkpHL9ewh1YbQhxhQkcc83GTraVirBRuvXwPWxgYDRP6wx-yJFAdixhK07ZFq08N42/exec';
 var BARCODE_LENGTH = 13;
 var DEBOUNCE_MS = 600;
 var FRAME_SKIP = 1;
@@ -395,7 +395,8 @@ function lookupAndScan(barcode) {
 // ── 로컬 스캔 목록에 추가 ──
 function addItem(data) {
   var existing = scanned.find(function(s){
-    return s.box === data.box && s.barcode === data.barcode;
+    return String(s.box).trim() === String(data.box).trim() &&
+           String(s.barcode).trim() === String(data.barcode).trim();
   });
   if (existing) {
     existing.qty++;
@@ -413,7 +414,11 @@ function addItem(data) {
   renderList();
   updateNowCnt();
   setStatus('ok', '✓ ' + data.barcode + ' — ' + data.box);
-  return existing ? existing.qty : 1;
+  var item = scanned.find(function(s){
+    return String(s.box).trim() === String(data.box).trim() &&
+           String(s.barcode).trim() === String(data.barcode).trim();
+  });
+  return item ? item.qty : 1;
 }
 
 // ── 구글시트에 저장 ──
@@ -567,6 +572,7 @@ function goBack() {
 
 // ── 초기 실행 ──
 loadState();
+if (!currentBox) currentBox = 'Box 1';
 initBoxGrid();
 updateNowCnt();
 renderList();
