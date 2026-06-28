@@ -48,18 +48,19 @@
   .scan-status.err { display: block; background: #fef2f2; color: var(--red); }
   .scan-status.sending { display: block; background: #fafafa; color: var(--text-muted); }
 
-  .list-section { background: #fff; margin: 0 12px; border-radius: 0 0 var(--radius) var(--radius); border: 1px solid var(--border); border-top: none; margin-bottom: 80px; }
+  .list-section { background: #fff; margin: 0 12px; border-radius: 0 0 var(--radius) var(--radius); border: 1px solid var(--border); border-top: none; margin-bottom: 80px; max-height: 400px; overflow-y: auto; }
+  #scanList { max-height: 350px; overflow-y: auto; }
   .scan-empty { padding: 24px 14px; text-align: center; font-size: 13px; color: var(--text-muted); }
-  .scan-row { display: flex; align-items: flex-start; padding: 10px 14px; border-bottom: 1px solid var(--border); gap: 8px; animation: fi 0.2s ease; }
+  .scan-row { display: flex; align-items: flex-start; padding: 12px 14px; border-bottom: 1px solid var(--border); gap: 8px; animation: fi 0.2s ease; }
   @keyframes fi { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:none} }
   .scan-row:last-child { border-bottom: none; }
   .box-tag { font-size: 10px; font-weight: 600; background: var(--blue-light); color: var(--blue); border-radius: 6px; padding: 2px 7px; white-space: nowrap; margin-top: 1px; }
   .scan-info { flex: 1; min-width: 0; }
   .scan-name { font-size: 13px; color: var(--text); line-height: 1.4; word-break: break-all; }
   .scan-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-  .scan-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .scan-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
   .scan-qty { font-size: 13px; font-weight: 600; color: var(--text); }
-  .del-btn { color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; background: #ef4444; border-radius: 6px; padding: 5px 10px; white-space: nowrap; border: none; }
+  .del-btn { color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; background: #ef4444; border-radius: 6px; padding: 8px 12px; white-space: nowrap; border: none; }
   .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #cbd5e1; flex-shrink: 0; margin-top: 5px; }
   .sync-dot.ok { background: var(--green); }
 
@@ -109,8 +110,8 @@
   </div>
 
   <div style="margin: 10px 12px; display: flex; gap: 8px;">
-    <input type="text" id="testBarcode" placeholder="테스트용 바코드 입력" style="flex: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
-    <button id="testBtn" style="padding: 10px 16px; background: #16a34a; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">테스트</button>
+    <input type="text" id="testBarcode" placeholder="바코드 직접 입력" style="flex: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+    <button id="testBtn" style="padding: 10px 16px; background: #16a34a; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">스캔</button>
   </div>
 
   <div class="cam-section">
@@ -211,9 +212,20 @@ document.getElementById('camToggleBtn').addEventListener('click', function() {
 
 document.getElementById('resetBtn').addEventListener('click', function() {
   if (scanned.length === 0) return;
-  if (!confirm('모든 스캔 데이터를 초기화할까요?')) return;
+  if (!confirm('모든 스캔 데이터를 초기화하고 구글시트도 삭제할까요?')) return;
+
+  // 구글시트에서 전체 삭제
+  scanned.forEach(function(item) {
+    fetch(SHEET_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'delete', barcode: item.barcode, box: item.box })
+    }).catch(function(){});
+  });
+
   scanned = [];
   currentBox = '';
+  boxCount = 5;
   saveState();
   renderList();
   initBoxGrid();
