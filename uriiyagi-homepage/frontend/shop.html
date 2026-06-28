@@ -118,6 +118,17 @@
       gap: 40px;
     }
 
+    /* ═══ PRODUCT GALLERY ═══ */
+    .product-gallery {
+      display: flex;
+      flex-direction: row;
+      gap: 15px;
+    }
+
+    .gallery-main {
+      flex: 1;
+    }
+
     .product-image {
       width: 100%;
       aspect-ratio: 1;
@@ -128,6 +139,7 @@
       justify-content: center;
       font-size: 120px;
       overflow: hidden;
+      position: relative;
     }
 
     .product-image img {
@@ -135,6 +147,70 @@
       height: 100%;
       object-fit: contain;
       background: white;
+    }
+
+    .product-image video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: black;
+    }
+
+    .gallery-thumbnails {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100px;
+    }
+
+    .thumbnail {
+      width: 100px;
+      height: 100px;
+      min-width: 100px;
+      border: 2px solid #e0e0e0;
+      cursor: pointer;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+      background: #f5f5f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .thumbnail:hover {
+      border-color: #999;
+    }
+
+    .thumbnail.selected {
+      border-color: #1a1a1a;
+      border-width: 3px;
+    }
+
+    .thumbnail img,
+    .thumbnail video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .thumbnail-video::after {
+      content: '▶';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 24px;
+      color: white;
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
     }
 
     .product-info {
@@ -455,6 +531,22 @@
         gap: 20px;
       }
 
+      .product-gallery {
+        flex-direction: column;
+      }
+
+      .gallery-thumbnails {
+        flex-direction: row;
+        width: 100%;
+        overflow-x: auto;
+      }
+
+      .thumbnail {
+        width: 80px;
+        height: 80px;
+        min-width: 80px;
+      }
+
       .product-title {
         font-size: 20px;
       }
@@ -503,9 +595,12 @@
 
 <!-- ═══ PRODUCT DETAIL ═══ -->
 <section class="product-detail">
-  <!-- 좌측: 상품 이미지 -->
-  <div>
-    <div class="product-image" id="productImage">📦</div>
+  <!-- 좌측: 썸네일, 우측: 메인 이미지 -->
+  <div class="product-gallery">
+    <div class="gallery-thumbnails" id="galleryThumbnails"></div>
+    <div class="gallery-main">
+      <div class="product-image" id="productImage">📦</div>
+    </div>
   </div>
 
   <!-- 우측: 상품 정보 -->
@@ -617,7 +712,7 @@
       title: '아동복',
       desc: '아이의 특별한 순간을 기념하다',
       items: [
-        { id: 'kids_001', name: '아동 기념복 - 반팔', price: 15900, discount: 0, rating: 4.8, reviews: 125, image: './imege/아동복/이_이미지를_어린이가_입은_티셔츠_202606242122_(1).jpeg_202606242156.jpeg' },
+        { id: 'kids_001', name: '아동 기념복 - 반팔', price: 15900, discount: 0, rating: 4.8, reviews: 125, image: './imege/아동복/이_이미지를_어린이가_입은_티셔츠_202606242122_(1).jpeg_202606242156.jpeg', video: './imege/아동복/agent_generate_video - A young child wearing a black t-shirt with a glowing golden….mp4' },
         { id: 'kids_002', name: '아동 기념복 - 긴팔', price: 15900, discount: 0, rating: 4.8, reviews: 92, image: './imege/아동복/이_이미지를_어린이가_입은_티셔츠_202606242122 (1).jpeg' },
         { id: 'kids_003', name: '아동 커플 티셔츠', price: 15900, discount: 0, rating: 4.9, reviews: 78, image: './imege/아동복/High-resolution_DTP_t-shirt_back_design._202606211218 (3).jpeg' },
         { id: 'kids_004', name: '아동 기념복 - 반팔 (개별)', price: 15900, discount: 0, rating: 4.7, reviews: 56, image: './imege/아동복/High-resolution_DTP_t-shirt_back_design._202606211218 (2).jpeg' },
@@ -1010,6 +1105,44 @@
 
     // 미리보기 생성 (아동복은 앞/뒤, 나머지는 앞만)
     createPreviewTshirts();
+
+    // 갤러리 생성
+    createGallery(product);
+  }
+
+  function createGallery(product) {
+    const container = document.getElementById('galleryThumbnails');
+    container.innerHTML = '';
+
+    // 이미지 썸네일 (항상 있음)
+    const imageThumbnail = document.createElement('div');
+    imageThumbnail.className = 'thumbnail selected';
+    imageThumbnail.innerHTML = `<img src="${product.image}" alt="상품 이미지">`;
+    imageThumbnail.onclick = () => switchMedia(imageThumbnail, 'image', product.image);
+    container.appendChild(imageThumbnail);
+
+    // 동영상 썸네일 (있을 때만)
+    if (product.video) {
+      const videoThumbnail = document.createElement('div');
+      videoThumbnail.className = 'thumbnail thumbnail-video';
+      videoThumbnail.innerHTML = `<video src="${product.video}" autoplay muted loop playsinline></video>`;
+      videoThumbnail.onclick = () => switchMedia(videoThumbnail, 'video', product.video);
+      container.appendChild(videoThumbnail);
+    }
+  }
+
+  function switchMedia(element, type, src) {
+    // 썸네일 선택 표시 변경
+    document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('selected'));
+    element.classList.add('selected');
+
+    // 메인 콘텐츠 변경
+    const mainEl = document.getElementById('productImage');
+    if (type === 'image') {
+      mainEl.innerHTML = `<img src="${src}" alt="상품 이미지">`;
+    } else if (type === 'video') {
+      mainEl.innerHTML = `<video autoplay muted loop playsinline style="width: 100%; height: 100%; object-fit: contain; background: black;"><source src="${src}" type="video/mp4">브라우저가 동영상을 지원하지 않습니다.</video>`;
+    }
   }
 
   function createPreviewTshirts() {
