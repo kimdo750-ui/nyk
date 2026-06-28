@@ -72,8 +72,8 @@ function doPost(e) {
   if (body.action === 'delete') {
     var rows = log.getDataRange().getValues();
     for (var i = rows.length - 1; i >= 1; i--) {
-      if (String(rows[i][1]).trim() === String(body.barcode).trim() &&
-          String(rows[i][4]).trim() === String(body.box).trim()) {
+      if (String(rows[i][6]).trim() === String(body.barcode).trim() &&
+          String(rows[i][5]).trim() === String(body.box).trim()) {
         log.deleteRow(i + 1);
         return ok({ deleted: true });
       }
@@ -86,15 +86,16 @@ function doPost(e) {
   var warehouse = body.warehouse || '';
   var name = body.name || '';
   var orderQty = body.orderQty || 0;
-  var box = body.box || '';
+  var box = (body.box || '').trim();
+  if (!box) box = 'Box 1';  // 비어있으면 Box 1로 설정
   var barcode = body.barcode || '';
   var scannedQty = body.scannedQty || 0;
 
-  // 같은 상품+박스 행이 이미 있으면 스킵 (중복 방지)
+  // 같은 바코드+박스 행이 이미 있으면 스킵 (중복 방지)
   var rows = log.getDataRange().getValues();
   var found = false;
   for (var i = 1; i < rows.length; i++) {
-    if (String(rows[i][1]).trim() === String(name).trim() &&
+    if (String(rows[i][6]).trim() === String(barcode).trim() &&
         String(rows[i][5]).trim() === String(box).trim()) {
       found = true;
       break;
@@ -106,11 +107,24 @@ function doPost(e) {
     var newRow = [warehouse, name, orderQty, scannedQty, '', box, barcode];
     log.appendRow(newRow);
 
-    // 확인 공식 추가 (E열)
+    // E열: 확인 공식
     var lastRow = log.getLastRow();
     log.getRange(lastRow, 5).setFormula(
       '=IF(C' + lastRow + '=D' + lastRow + ',"✅","❌")'
     );
+  } else {
+    // 같은 바코드+박스가 있으면 D열 업데이트
+    var rows = log.getDataRange().getValues();
+    for (var i = 1; i < rows.length; i++) {
+      if (String(rows[i][6]).trim() === String(barcode).trim() &&
+          String(rows[i][5]).trim() === String(box).trim()) {
+        log.getRange(i + 1, 4).setValue(scannedQty);
+        log.getRange(i + 1, 5).setFormula(
+          '=IF(C' + (i + 1) + '=D' + (i + 1) + ',"✅","❌")'
+        );
+        break;
+      }
+    }
   }
 
   return ok({ saved: true });

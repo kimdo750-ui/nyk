@@ -5,51 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>우리이야기 - 맞춤형 티셔츠 전문점</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      /* Primary Colors */
-      --color-gold: #c9a84c;
-      --color-ink: #1a1a2e;
-      --color-paper: #faf8f3;
-
-      /* Secondary Colors */
-      --color-warm-light: #f5ede5;
-      --color-warm-medium: #e8d5c4;
-      --color-soft-gray: #d4d4d0;
-      --color-dark-gray: #666666;
-
-      /* Fonts */
-      --font-title: 'Noto Serif KR', serif;
-      --font-body: 'Noto Sans KR', sans-serif;
-
-      /* Spacing */
-      --spacing-xs: 4px;
-      --spacing-sm: 8px;
-      --spacing-md: 12px;
-      --spacing-lg: 16px;
-      --spacing-xl: 20px;
-      --spacing-2xl: 24px;
-      --spacing-3xl: 40px;
-      --spacing-4xl: 60px;
-    }
-
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     html { scroll-behavior: smooth; }
 
     body {
-      background: var(--color-paper);
-      color: var(--color-ink);
-      font-family: var(--font-body);
+      background: #ffffff;
+      color: #1a1a1a;
+      font-family: 'Noto Sans KR', sans-serif;
       line-height: 1.6;
     }
 
     /* ═══ HEADER ═══ */
     header {
-      background: var(--color-paper);
-      border-bottom: 1px solid var(--color-soft-gray);
-      padding: 16px 0;
+      background: #ffffff;
+      border-bottom: 1px solid #e8e8e8;
+      padding: 12px 0;
       position: sticky;
       top: 0;
       z-index: 100;
@@ -68,10 +41,9 @@
     .logo {
       font-size: 20px;
       font-weight: 700;
-      color: var(--color-ink);
+      color: #1a1a1a;
       text-decoration: none;
       white-space: nowrap;
-      font-family: var(--font-title);
     }
 
     .search-bar {
@@ -94,21 +66,20 @@
     }
 
     .header-icons a {
-      color: var(--color-ink);
+      color: #1a1a1a;
       text-decoration: none;
       font-size: 14px;
       font-weight: 500;
-      transition: color 0.2s ease;
     }
 
     .header-icons a:hover {
-      color: var(--color-gold);
+      color: #e74c3c;
     }
 
     /* ═══ CATEGORY NAV ═══ */
     .category-nav {
-      background: var(--color-warm-light);
-      border-bottom: 1px solid var(--color-soft-gray);
+      background: #f9f9f9;
+      border-bottom: 1px solid #e8e8e8;
       padding: 0;
     }
 
@@ -129,7 +100,7 @@
       display: block;
       padding: 15px 0;
       text-align: center;
-      color: var(--color-ink);
+      color: #1a1a1a;
       text-decoration: none;
       font-weight: 500;
       font-size: 14px;
@@ -138,127 +109,55 @@
     }
 
     .category-nav a:hover {
-      color: var(--color-gold);
-      border-bottom-color: var(--color-gold);
+      color: #e74c3c;
+      border-bottom-color: #e74c3c;
     }
 
     .category-nav a.active {
-      color: var(--color-gold);
-      border-bottom-color: var(--color-gold);
+      color: #e74c3c;
+      border-bottom-color: #e74c3c;
     }
 
     /* ═══ BANNER ═══ */
     .banner {
-      background: linear-gradient(135deg, var(--color-warm-light) 0%, var(--color-paper) 100%);
-      padding: 80px 20px;
+      background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
+      padding: 60px 20px;
       text-align: center;
     }
 
     .banner h1 {
-      font-size: 48px;
+      font-size: 32px;
       margin-bottom: 12px;
-      color: var(--color-ink);
+      color: #1a1a1a;
       font-weight: 700;
-      font-family: var(--font-title);
-      letter-spacing: 0.5px;
     }
 
     .banner p {
       font-size: 16px;
-      color: var(--color-dark-gray);
-      margin-bottom: 32px;
+      color: #666;
+      margin-bottom: 24px;
     }
 
     .banner-btn {
       display: inline-block;
-      background: var(--color-gold);
+      background: #e74c3c;
       color: white;
       padding: 14px 40px;
-      border-radius: 6px;
-      text-decoration: none;
-      font-weight: 700;
-      font-size: 16px;
-      transition: all 0.2s ease;
-      cursor: pointer;
-    }
-
-    .banner-btn:hover {
-      background: #b89840;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-
-    /* ═══ CATEGORIES SECTION ═══ */
-    .categories-section {
-      max-width: 1400px;
-      margin: var(--spacing-4xl) auto;
-      padding: 0 20px;
-    }
-
-    .categories-container {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: var(--spacing-xl);
-    }
-
-    .category-card {
-      background: white;
-      border: 2px solid var(--color-soft-gray);
-      border-radius: 8px;
-      padding: var(--spacing-2xl);
-      text-align: center;
-      transition: all 0.3s ease;
-      cursor: pointer;
-    }
-
-    .category-card:hover {
-      border-color: var(--color-gold);
-      background: var(--color-warm-light);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      transform: translateY(-4px);
-    }
-
-    .card-emoji {
-      font-size: 80px;
-      margin-bottom: var(--spacing-lg);
-      line-height: 1;
-    }
-
-    .card-title {
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--color-ink);
-      margin-bottom: var(--spacing-md);
-      font-family: var(--font-title);
-    }
-
-    .card-message {
-      font-size: 14px;
-      color: var(--color-dark-gray);
-      margin-bottom: var(--spacing-xl);
-      line-height: 1.5;
-    }
-
-    .card-button {
-      display: inline-block;
-      background: var(--color-ink);
-      color: white;
-      padding: 10px 20px;
       border-radius: 4px;
       text-decoration: none;
       font-weight: 600;
-      font-size: 14px;
-      transition: all 0.2s ease;
+      transition: all 0.2s;
     }
 
-    .card-button:hover {
-      background: var(--color-gold);
+    .banner-btn:hover {
+      background: #c0392b;
+      transform: translateY(-2px);
     }
 
     /* ═══ PRODUCTS SECTION ═══ */
     .products-section {
       max-width: 1400px;
-      margin: var(--spacing-4xl) auto;
+      margin: 60px auto;
       padding: 0 20px;
     }
 
@@ -270,22 +169,16 @@
     }
 
     .section-header h2 {
-      font-size: 32px;
+      font-size: 20px;
       font-weight: 700;
-      color: var(--color-ink);
-      font-family: var(--font-title);
+      color: #1a1a1a;
     }
 
     .view-all {
-      color: var(--color-gold);
+      color: #e74c3c;
       text-decoration: none;
       font-weight: 600;
       font-size: 14px;
-      transition: color 0.2s ease;
-    }
-
-    .view-all:hover {
-      color: #b89840;
     }
 
     .products-grid {
@@ -296,31 +189,26 @@
     }
 
     .product-card {
-      background: var(--color-paper);
-      border: 1px solid var(--color-soft-gray);
-      border-radius: 6px;
-      overflow: hidden;
-      transition: all 0.2s ease;
+      background: white;
+      transition: all 0.2s;
       cursor: pointer;
-      padding: var(--spacing-lg);
     }
 
     .product-card:hover {
       transform: translateY(-4px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      border-color: var(--color-gold);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
     }
 
     .product-image {
       width: 100%;
       aspect-ratio: 1;
-      background: var(--color-warm-light);
+      background: #f5f5f5;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 60px;
-      margin-bottom: var(--spacing-lg);
-      border-radius: 6px;
+      margin-bottom: 12px;
+      border-radius: 4px;
       overflow: hidden;
     }
 
@@ -330,18 +218,17 @@
 
     .product-category {
       font-size: 12px;
-      color: var(--color-dark-gray);
+      color: #999;
       margin-bottom: 4px;
-      font-weight: 500;
     }
 
     .product-name {
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 600;
-      color: var(--color-ink);
+      color: #1a1a1a;
       margin-bottom: 8px;
       line-height: 1.4;
-      height: 32px;
+      height: 28px;
       overflow: hidden;
     }
 
@@ -353,13 +240,13 @@
     }
 
     .price-discount {
-      color: var(--color-gold);
+      color: #e74c3c;
       font-weight: 700;
-      font-size: 16px;
+      font-size: 13px;
     }
 
     .price-original {
-      color: var(--color-dark-gray);
+      color: #999;
       font-size: 13px;
       text-decoration: line-through;
     }
@@ -377,34 +264,33 @@
     }
 
     .rating-count {
-      color: var(--color-dark-gray);
+      color: #999;
       font-size: 12px;
     }
 
     .product-button {
       width: 100%;
       padding: 10px;
-      background: var(--color-ink);
+      background: #1a1a1a;
       color: white;
       border: none;
       border-radius: 4px;
       font-weight: 600;
-      font-size: 14px;
+      font-size: 13px;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.2s;
     }
 
     .product-button:hover {
-      background: var(--color-gold);
-      color: white;
+      background: #e74c3c;
     }
 
     /* ═══ FOOTER ═══ */
     footer {
-      background: var(--color-warm-light);
-      border-top: 1px solid var(--color-soft-gray);
+      background: #f9f9f9;
+      border-top: 1px solid #e8e8e8;
       padding: 40px 20px;
-      margin-top: var(--spacing-4xl);
+      margin-top: 60px;
     }
 
     .footer-content {
@@ -419,37 +305,105 @@
     .footer-section h3 {
       font-size: 14px;
       font-weight: 700;
-      color: var(--color-ink);
       margin-bottom: 12px;
-      font-family: var(--font-title);
     }
 
     .footer-section a {
       display: block;
       font-size: 13px;
-      color: var(--color-dark-gray);
+      color: #666;
       text-decoration: none;
       margin-bottom: 8px;
-      transition: color 0.2s ease;
     }
 
     .footer-section a:hover {
-      color: var(--color-gold);
+      color: #e74c3c;
     }
 
     .footer-bottom {
       text-align: center;
       padding-top: 20px;
-      border-top: 1px solid var(--color-soft-gray);
+      border-top: 1px solid #e8e8e8;
       font-size: 12px;
-      color: var(--color-dark-gray);
+      color: #999;
+    }
+
+    /* ═══ CATEGORY CARDS SECTION ═══ */
+    .categories-section {
+      max-width: 1400px;
+      margin: 60px auto;
+      padding: 0 20px;
+    }
+
+    .categories-section h2 {
+      font-size: 28px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 40px;
+      color: #1a1a1a;
+    }
+
+    .categories-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 20px;
+      margin-bottom: 60px;
+    }
+
+    .category-card {
+      background: #faf8f3;
+      border: 1px solid #e8e8e8;
+      border-radius: 8px;
+      padding: 30px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .category-card:hover {
+      background: #f5ede5;
+      border-color: #c9a84c;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transform: translateY(-4px);
+    }
+
+    .category-emoji {
+      font-size: 60px;
+      margin-bottom: 16px;
+    }
+
+    .category-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 12px;
+    }
+
+    .category-desc {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 20px;
+      line-height: 1.5;
+      min-height: 42px;
+    }
+
+    .category-cta {
+      display: inline-block;
+      color: #c9a84c;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .category-card:hover .category-cta {
+      color: #a83c10;
     }
 
     /* ═══ RESPONSIVE ═══ */
     @media (max-width: 1024px) {
-      .categories-container {
+      .categories-grid {
         grid-template-columns: repeat(3, 1fr);
-        gap: var(--spacing-lg);
       }
 
       .products-grid {
@@ -472,17 +426,8 @@
     }
 
     @media (max-width: 768px) {
-      .categories-container {
+      .categories-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: var(--spacing-lg);
-      }
-
-      .card-emoji {
-        font-size: 64px;
-      }
-
-      .card-title {
-        font-size: 20px;
       }
 
       .products-grid {
@@ -511,30 +456,13 @@
       }
 
       .banner h1 {
-        font-size: 36px;
+        font-size: 24px;
       }
     }
 
     @media (max-width: 480px) {
-      .categories-container {
+      .categories-grid {
         grid-template-columns: 1fr;
-        gap: var(--spacing-md);
-      }
-
-      .category-card {
-        padding: var(--spacing-lg);
-      }
-
-      .card-emoji {
-        font-size: 48px;
-      }
-
-      .card-title {
-        font-size: 18px;
-      }
-
-      .card-message {
-        font-size: 12px;
       }
 
       .products-grid {
@@ -552,14 +480,6 @@
 
       .footer-content {
         grid-template-columns: 1fr;
-      }
-
-      .banner h1 {
-        font-size: 28px;
-      }
-
-      .banner p {
-        font-size: 14px;
       }
     }
   </style>
@@ -599,43 +519,10 @@
   <a href="category.html?cat=kids" class="banner-btn">지금 시작하기</a>
 </section>
 
-<!-- ═══ CATEGORY CARDS SECTION ═══ -->
+<!-- ═══ CATEGORY CARDS ═══ -->
 <section class="categories-section">
-  <div class="categories-container">
-    <div class="category-card" data-cat="kids">
-      <div class="card-emoji">👶</div>
-      <h3 class="card-title">아동복</h3>
-      <p class="card-message">아이의 특별한 순간을 기념하다</p>
-      <a href="category.html?cat=kids" class="card-button">둘러보기</a>
-    </div>
-
-    <div class="category-card" data-cat="adults">
-      <div class="card-emoji">👨‍🦱</div>
-      <h3 class="card-title">성인복</h3>
-      <p class="card-message">당신의 개성을 표현하다</p>
-      <a href="category.html?cat=adults" class="card-button">둘러보기</a>
-    </div>
-
-    <div class="category-card" data-cat="senior">
-      <div class="card-emoji">👴</div>
-      <h3 class="card-title">시니어</h3>
-      <p class="card-message">추억을 간직하고, 명언을 나누다</p>
-      <a href="category.html?cat=senior" class="card-button">둘러보기</a>
-    </div>
-
-    <div class="category-card" data-cat="pet">
-      <div class="card-emoji">🐕</div>
-      <h3 class="card-title">반려동물복</h3>
-      <p class="card-message">반려동물과의 특별한 순간을 기억하다</p>
-      <a href="category.html?cat=pet" class="card-button">둘러보기</a>
-    </div>
-
-    <div class="category-card" data-cat="group">
-      <div class="card-emoji">👥</div>
-      <h3 class="card-title">단체복</h3>
-      <p class="card-message">팀의 이야기, 단체의 가치를 담다</p>
-      <a href="category.html?cat=group" class="card-button">둘러보기</a>
-    </div>
+  <div class="categories-grid" id="categoriesGrid">
+    <!-- JavaScript로 로드됨 -->
   </div>
 </section>
 
@@ -686,17 +573,67 @@
 </footer>
 
 <script>
+  // 카테고리 데이터
+  const categories = [
+    {
+      cat: 'kids',
+      image: './imege/아동복/이_이미지를_어린이가_입은_티셔츠_202606242122_(1).jpeg_202606242156.jpeg',
+      title: '아동복',
+      desc: '아이의 특별한 순간을 기념하다'
+    },
+    {
+      cat: 'adults',
+      image: './imege/성인복/KakaoTalk_20260624_222625045.jpg',
+      title: '성인복',
+      desc: '당신의 개성을 표현하다'
+    },
+    {
+      cat: 'senior',
+      image: './imege/시니어/KakaoTalk_20260620_163349818.png',
+      title: '시니어',
+      desc: '추억을 간직하고, 명언을 나누다'
+    },
+    {
+      cat: 'pet',
+      image: './imege/반려동물/KakaoTalk_20260620_164139143.png',
+      title: '반려동물복',
+      desc: '반려동물과의 특별한 순간을 기억하다'
+    },
+    {
+      cat: 'group',
+      image: './imege/단체복/KakaoTalk_20260620_161637047.png',
+      title: '단체복',
+      desc: '팀의 이야기, 단체의 가치를 담다'
+    }
+  ];
+
   // 샘플 상품 데이터
   const products = [
-    { id: 1, category: '아동복', name: '아동 기념복 반팔', price: 34900, discount: 10, rating: 4.8, reviews: 125 },
-    { id: 2, category: '성인복', name: '감성 문구 반팔', price: 29900, discount: 0, rating: 4.9, reviews: 89 },
-    { id: 3, category: '시니어', name: '추억 반팔 (여성)', price: 29900, discount: 15, rating: 5.0, reviews: 45 },
-    { id: 4, category: '반려동물복', name: '펫 반팔 강아지', price: 29900, discount: 0, rating: 4.7, reviews: 67 },
-    { id: 5, category: '단체복', name: '어린이집 단체복', price: 24900, discount: 20, rating: 4.9, reviews: 156 },
-    { id: 6, category: '아동복', name: '아동 기념복 긴팔', price: 39900, discount: 5, rating: 4.8, reviews: 92 },
-    { id: 7, category: '성인복', name: '감성 문구 긴팔', price: 34900, discount: 0, rating: 4.9, reviews: 78 },
-    { id: 8, category: '반려동물복', name: '펫 반팔 고양이', price: 29900, discount: 10, rating: 4.6, reviews: 54 },
+    { id: 1, category: '아동복', name: '아동 기념복 반팔', price: 15900, discount: 0, rating: 4.8, reviews: 125 },
+    { id: 2, category: '성인복', name: '감성 문구 반팔', price: 19900, discount: 0, rating: 4.9, reviews: 89 },
+    { id: 3, category: '시니어', name: '추억 반팔 (여성)', price: 19900, discount: 0, rating: 5.0, reviews: 45 },
+    { id: 4, category: '반려동물복', name: '펫 반팔 강아지', price: 12900, discount: 0, rating: 4.7, reviews: 67 },
+    { id: 5, category: '단체복', name: '어린이집 단체복', price: 15900, discount: 0, rating: 4.9, reviews: 156 },
+    { id: 6, category: '아동복', name: '아동 기념복 긴팔', price: 15900, discount: 0, rating: 4.8, reviews: 92 },
+    { id: 7, category: '성인복', name: '감성 문구 긴팔', price: 19900, discount: 0, rating: 4.9, reviews: 78 },
+    { id: 8, category: '반려동물복', name: '펫 반팔 고양이', price: 12900, discount: 0, rating: 4.6, reviews: 54 },
   ];
+
+  function loadCategories() {
+    const grid = document.getElementById('categoriesGrid');
+    grid.innerHTML = categories.map(cat => `
+      <div class="category-card" onclick="goToCategory('${cat.cat}')">
+        <img src="${cat.image}" alt="${cat.title}" class="category-image" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 16px;">
+        <h3 class="category-title">${cat.title}</h3>
+        <p class="category-desc">${cat.desc}</p>
+        <a href="category.html?cat=${cat.cat}" class="category-cta">둘러보기 →</a>
+      </div>
+    `).join('');
+  }
+
+  function goToCategory(cat) {
+    window.location.href = `category.html?cat=${cat}`;
+  }
 
   function loadProducts() {
     const grid = document.getElementById('productsGrid');
@@ -728,6 +665,7 @@
   }
 
   // 초기 로드
+  loadCategories();
   loadProducts();
 
   // 네비게이션 활성화

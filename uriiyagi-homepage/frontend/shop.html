@@ -5,51 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>상품 상세 - 우리이야기</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      /* Primary Colors */
-      --color-gold: #c9a84c;
-      --color-ink: #1a1a2e;
-      --color-paper: #faf8f3;
-
-      /* Secondary Colors */
-      --color-warm-light: #f5ede5;
-      --color-warm-medium: #e8d5c4;
-      --color-soft-gray: #d4d4d0;
-      --color-dark-gray: #666666;
-
-      /* Fonts */
-      --font-title: 'Noto Serif KR', serif;
-      --font-body: 'Noto Sans KR', sans-serif;
-
-      /* Spacing */
-      --spacing-xs: 4px;
-      --spacing-sm: 8px;
-      --spacing-md: 12px;
-      --spacing-lg: 16px;
-      --spacing-xl: 20px;
-      --spacing-2xl: 24px;
-      --spacing-3xl: 40px;
-      --spacing-4xl: 60px;
-    }
-
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     html { scroll-behavior: smooth; }
 
     body {
-      background: var(--color-paper);
-      color: var(--color-ink);
-      font-family: var(--font-body);
+      background: #ffffff;
+      color: #1a1a1a;
+      font-family: 'Noto Sans KR', sans-serif;
       line-height: 1.6;
     }
 
     /* ═══ HEADER ═══ */
     header {
-      background: var(--color-paper);
-      border-bottom: 1px solid var(--color-soft-gray);
-      padding: 16px 0;
+      background: #ffffff;
+      border-bottom: 1px solid #e8e8e8;
+      padding: 12px 0;
       position: sticky;
       top: 0;
       z-index: 100;
@@ -68,9 +41,8 @@
     .logo {
       font-size: 20px;
       font-weight: 700;
-      color: var(--color-ink);
+      color: #1a1a1a;
       text-decoration: none;
-      font-family: var(--font-title);
     }
 
     .search-bar {
@@ -81,41 +53,31 @@
     .search-bar input {
       width: 100%;
       padding: 10px 15px;
-      border: 1px solid var(--color-soft-gray);
+      border: 1px solid #e0e0e0;
       border-radius: 4px;
       font-size: 14px;
-      background: white;
-      transition: all 0.2s ease;
-    }
-
-    .search-bar input:focus {
-      outline: none;
-      border-color: var(--color-gold);
-      box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.1);
     }
 
     .header-icons {
       display: flex;
       gap: 20px;
-      align-items: center;
     }
 
     .header-icons a {
-      color: var(--color-ink);
+      color: #1a1a1a;
       text-decoration: none;
       font-size: 14px;
       font-weight: 500;
-      transition: color 0.2s ease;
     }
 
     .header-icons a:hover {
-      color: var(--color-gold);
+      color: #e74c3c;
     }
 
     /* ═══ CATEGORY NAV ═══ */
     .category-nav {
-      background: var(--color-warm-light);
-      border-bottom: 1px solid var(--color-soft-gray);
+      background: #f9f9f9;
+      border-bottom: 1px solid #e8e8e8;
     }
 
     .category-nav ul {
@@ -134,44 +96,37 @@
       display: block;
       padding: 15px 0;
       text-align: center;
-      color: var(--color-ink);
+      color: #1a1a1a;
       text-decoration: none;
       font-weight: 500;
       font-size: 14px;
       border-bottom: 3px solid transparent;
-      transition: all 0.2s ease;
     }
 
-    .category-nav a:hover {
-      color: var(--color-gold);
-      border-bottom-color: var(--color-gold);
-    }
-
-    .category-nav a.active {
-      color: var(--color-gold);
-      border-bottom-color: var(--color-gold);
+    .category-nav a:hover, .category-nav a.active {
+      color: #e74c3c;
+      border-bottom-color: #e74c3c;
     }
 
     /* ═══ PRODUCT DETAIL ═══ */
     .product-detail {
       max-width: 1400px;
       margin: 0 auto;
-      padding: var(--spacing-4xl) 20px;
+      padding: 40px 20px;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 60px;
+      gap: 40px;
     }
 
     .product-image {
       width: 100%;
       aspect-ratio: 1;
-      background: var(--color-warm-light);
-      border-radius: 8px;
+      background: #f5f5f5;
+      border-radius: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 120px;
-      border: 1px solid var(--color-soft-gray);
     }
 
     .product-info {
@@ -179,335 +134,283 @@
     }
 
     .product-category {
-      font-size: 12px;
-      color: var(--color-dark-gray);
+      font-size: 13px;
+      color: #999;
       margin-bottom: 8px;
-      font-weight: 500;
     }
 
     .product-title {
-      font-size: 32px;
+      font-size: 28px;
       font-weight: 700;
-      color: var(--color-ink);
-      margin-bottom: 16px;
+      color: #1a1a1a;
+      margin-bottom: 12px;
       line-height: 1.3;
-      font-family: var(--font-title);
     }
 
     .product-rating {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #e8e8e8;
     }
 
-    .rating-stars {
+    .rating-star {
       color: #ffc107;
       font-size: 14px;
     }
 
     .rating-count {
-      color: var(--color-dark-gray);
+      color: #999;
       font-size: 13px;
     }
 
     .product-price {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--color-gold);
+      margin-bottom: 20px;
+    }
+
+    .price-label {
+      font-size: 13px;
+      color: #999;
       margin-bottom: 8px;
     }
 
-    .product-original-price {
-      font-size: 14px;
-      color: var(--color-dark-gray);
-      text-decoration: line-through;
-      margin-bottom: 24px;
+    .price-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #e74c3c;
+      display: flex;
+      gap: 8px;
+      align-items: center;
     }
 
-    .product-description {
-      color: var(--color-dark-gray);
-      line-height: 1.8;
-      margin-bottom: 32px;
-      padding-bottom: 32px;
-      border-bottom: 1px solid var(--color-soft-gray);
+    .price-original {
+      font-size: 18px;
+      color: #999;
+      text-decoration: line-through;
+      font-weight: 400;
     }
 
     /* ═══ OPTIONS ═══ */
-    .options-section {
-      margin-bottom: 32px;
+    .options {
+      margin-bottom: 30px;
+      padding-bottom: 30px;
+      border-bottom: 1px solid #e8e8e8;
     }
 
     .option-group {
-      margin-bottom: 24px;
+      margin-bottom: 16px;
     }
 
     .option-label {
-      display: block;
+      font-size: 13px;
       font-weight: 600;
-      margin-bottom: 12px;
-      color: var(--color-ink);
+      color: #1a1a1a;
+      margin-bottom: 8px;
+      display: block;
     }
 
-    .option-values {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .option-value {
-      padding: 10px 16px;
-      border: 1px solid var(--color-soft-gray);
-      border-radius: 4px;
-      background: white;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-size: 14px;
-      color: var(--color-ink);
-    }
-
-    .option-value:hover {
-      border-color: var(--color-gold);
-      background: var(--color-warm-light);
-    }
-
-    .option-value.selected {
-      background: var(--color-ink);
-      color: white;
-      border-color: var(--color-ink);
-    }
-
-    select {
+    .option-select {
       width: 100%;
-      padding: 12px 16px;
-      border: 1px solid var(--color-soft-gray);
+      padding: 12px;
+      border: 1px solid #e0e0e0;
       border-radius: 4px;
       font-size: 14px;
       background: white;
+      color: #1a1a1a;
       cursor: pointer;
-      transition: all 0.2s ease;
-      color: var(--color-ink);
-      font-family: var(--font-body);
     }
 
-    select:hover {
-      border-color: var(--color-gold);
+    .option-buttons {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
     }
 
-    select:focus {
-      outline: none;
-      border-color: var(--color-gold);
-      box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.1);
+    .option-btn {
+      padding: 10px;
+      border: 1px solid #e0e0e0;
+      background: white;
+      border-radius: 4px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .option-btn:hover {
+      border-color: #1a1a1a;
+    }
+
+    .option-btn.selected {
+      background: #1a1a1a;
+      color: white;
+      border-color: #1a1a1a;
     }
 
     /* ═══ CUSTOMIZATION ═══ */
-    .customization-section {
-      margin-bottom: 32px;
-      padding: 24px;
-      background: var(--color-warm-light);
-      border-radius: 8px;
-      border: 1px solid var(--color-soft-gray);
+    .customization {
+      margin-bottom: 30px;
+      padding-bottom: 30px;
+      border-bottom: 1px solid #e8e8e8;
     }
 
-    .customization-title {
-      font-weight: 600;
-      margin-bottom: 12px;
-      color: var(--color-ink);
-    }
-
-    .customization-input {
-      width: 100%;
-      padding: 12px 16px;
-      border: 1px solid var(--color-soft-gray);
-      border-radius: 4px;
-      font-size: 14px;
-      font-family: var(--font-body);
-      resize: vertical;
-      min-height: 80px;
-      margin-bottom: 12px;
-    }
-
-    .char-count {
-      font-size: 12px;
-      color: var(--color-dark-gray);
-    }
-
-    /* ═══ QUANTITY & ACTION ═══ */
-    .quantity-section {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 32px;
-    }
-
-    .quantity-label {
-      font-weight: 600;
-      color: var(--color-ink);
-    }
-
-    .quantity-control {
-      display: flex;
-      border: 1px solid var(--color-soft-gray);
-      border-radius: 4px;
-      overflow: hidden;
-    }
-
-    .quantity-btn {
-      width: 40px;
-      height: 40px;
-      border: none;
-      background: white;
-      cursor: pointer;
-      font-weight: 600;
-      color: var(--color-ink);
-      transition: all 0.2s ease;
-    }
-
-    .quantity-btn:hover {
-      background: var(--color-warm-light);
-    }
-
-    .quantity-input {
-      width: 60px;
-      border: none;
-      text-align: center;
-      font-size: 14px;
-      color: var(--color-ink);
-    }
-
-    .total-price {
-      font-size: 18px;
+    .customization h3 {
+      font-size: 16px;
       font-weight: 700;
-      color: var(--color-gold);
-      margin-left: auto;
+      margin-bottom: 16px;
+      color: #1a1a1a;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    .form-group label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a1a1a;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: 'Noto Sans KR', sans-serif;
+      color: #1a1a1a;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 60px;
     }
 
     /* ═══ BUTTONS ═══ */
-    .action-buttons {
+    .actions {
       display: flex;
       gap: 12px;
-      margin-bottom: 32px;
     }
 
     .btn {
       flex: 1;
-      padding: 16px 24px;
+      padding: 16px;
       border: none;
-      border-radius: 6px;
+      border-radius: 4px;
+      font-size: 14px;
       font-weight: 700;
-      font-size: 16px;
       cursor: pointer;
-      transition: all 0.2s ease;
-      font-family: var(--font-body);
+      transition: all 0.2s;
     }
 
     .btn-primary {
-      background: var(--color-gold);
+      background: #e74c3c;
       color: white;
     }
 
     .btn-primary:hover {
-      background: #b89840;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      background: #c0392b;
     }
 
     .btn-secondary {
-      background: white;
-      color: var(--color-ink);
-      border: 2px solid var(--color-ink);
+      background: #f5f5f5;
+      color: #1a1a1a;
+      border: 1px solid #e0e0e0;
     }
 
     .btn-secondary:hover {
-      background: var(--color-warm-light);
-      border-color: var(--color-gold);
+      background: #e8e8e8;
     }
 
-    /* ═══ DETAILS SECTION ═══ */
-    .details-section {
+    /* ═══ PREVIEW ═══ */
+    .preview-section {
+      background: #f9f9f9;
+      padding: 40px 20px;
+      margin-top: 40px;
+    }
+
+    .preview-container {
       max-width: 1400px;
       margin: 0 auto;
-      padding: 0 20px var(--spacing-4xl) 20px;
-      border-top: 1px solid var(--color-soft-gray);
-      padding-top: var(--spacing-3xl);
     }
 
-    .details-tabs {
-      display: flex;
-      gap: 24px;
-      margin-bottom: 32px;
-      border-bottom: 2px solid var(--color-soft-gray);
+    .preview-container h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 30px;
     }
 
-    .tab-button {
-      padding: 16px 0;
-      border: none;
-      background: none;
-      cursor: pointer;
+    .preview-box {
+      background: white;
+      border: 1px solid #e8e8e8;
+      border-radius: 4px;
+      padding: 40px;
+      text-align: center;
+    }
+
+    .preview-tshirts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 20px;
+    }
+
+    .preview-tshirt-section {
+      text-align: center;
+    }
+
+    .preview-tshirt-section h4 {
       font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: #1a1a1a;
+    }
+
+    .preview-tshirt {
+      width: 150px;
+      height: 180px;
+      margin: 0 auto 16px;
+      position: relative;
+    }
+
+    .preview-tshirt svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .preview-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 70%;
+      text-align: center;
       font-weight: 600;
-      color: var(--color-dark-gray);
-      transition: all 0.2s ease;
-      border-bottom: 3px solid transparent;
-      margin-bottom: -2px;
-      font-family: var(--font-body);
-    }
-
-    .tab-button:hover {
-      color: var(--color-ink);
-    }
-
-    .tab-button.active {
-      color: var(--color-ink);
-      border-bottom-color: var(--color-gold);
-    }
-
-    .tab-content {
-      display: none;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    .review-item {
-      padding: 20px 0;
-      border-bottom: 1px solid var(--color-soft-gray);
-    }
-
-    .review-header {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
-
-    .review-name {
-      font-weight: 600;
-      color: var(--color-ink);
-    }
-
-    .review-date {
-      font-size: 12px;
-      color: var(--color-dark-gray);
-    }
-
-    .review-rating {
-      color: #ffc107;
+      color: white;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      word-break: keep-all;
+      white-space: pre-line;
       font-size: 14px;
-      margin-bottom: 8px;
+      line-height: 1.6;
     }
 
-    .review-text {
-      color: var(--color-dark-gray);
-      line-height: 1.6;
+    .preview-info {
+      font-size: 13px;
+      color: #666;
+      margin-top: 16px;
     }
 
     /* ═══ FOOTER ═══ */
     footer {
-      background: var(--color-warm-light);
-      border-top: 1px solid var(--color-soft-gray);
+      background: #f9f9f9;
+      border-top: 1px solid #e8e8e8;
       padding: 40px 20px;
-      margin-top: var(--spacing-4xl);
+      margin-top: 60px;
     }
 
     .footer-content {
@@ -522,136 +425,42 @@
     .footer-section h3 {
       font-size: 14px;
       font-weight: 700;
-      color: var(--color-ink);
       margin-bottom: 12px;
-      font-family: var(--font-title);
     }
 
     .footer-section a {
       display: block;
       font-size: 13px;
-      color: var(--color-dark-gray);
+      color: #666;
       text-decoration: none;
       margin-bottom: 8px;
-      transition: color 0.2s ease;
     }
 
     .footer-section a:hover {
-      color: var(--color-gold);
-    }
-
-    .footer-bottom {
-      text-align: center;
-      padding-top: 20px;
-      border-top: 1px solid var(--color-soft-gray);
-      font-size: 12px;
-      color: var(--color-dark-gray);
+      color: #e74c3c;
     }
 
     /* ═══ RESPONSIVE ═══ */
-    @media (max-width: 1024px) {
-      .product-detail {
-        grid-template-columns: 1fr;
-        gap: 40px;
-      }
-
-      .product-title {
-        font-size: 24px;
-      }
-
-      .product-price {
-        font-size: 24px;
-      }
-
-      .footer-content {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
     @media (max-width: 768px) {
       .product-detail {
-        padding: 24px 20px;
-        gap: 24px;
-      }
-
-      .product-info {
-        padding-top: 0;
-      }
-
-      .action-buttons {
-        flex-direction: column;
-      }
-
-      .details-tabs {
-        flex-direction: column;
-        gap: 0;
-        border-bottom: none;
-      }
-
-      .tab-button {
-        padding: 16px;
-        border-bottom: 1px solid var(--color-soft-gray) !important;
-        margin-bottom: 0;
-      }
-
-      .header-top {
-        flex-wrap: wrap;
-        gap: 12px;
-      }
-
-      .search-bar {
-        max-width: 100%;
-        order: 3;
-        flex-basis: 100%;
-      }
-
-      .footer-content {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 480px) {
-      .product-detail {
-        padding: 16px;
-        gap: 16px;
+        grid-template-columns: 1fr;
+        gap: 20px;
       }
 
       .product-title {
         font-size: 20px;
       }
 
-      .product-price {
-        font-size: 20px;
+      .price-value {
+        font-size: 24px;
       }
 
-      .option-values {
-        flex-direction: column;
-      }
-
-      .option-value {
-        width: 100%;
-      }
-
-      .quantity-section {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .total-price {
-        margin-left: 0;
-        margin-top: 12px;
+      .option-buttons {
+        grid-template-columns: repeat(2, 1fr);
       }
 
       .footer-content {
-        grid-template-columns: 1fr;
-      }
-
-      .header-icons {
-        gap: 8px;
-      }
-
-      .category-nav a {
-        font-size: 12px;
+        grid-template-columns: repeat(2, 1fr);
       }
     }
   </style>
@@ -686,132 +495,76 @@
 
 <!-- ═══ PRODUCT DETAIL ═══ -->
 <section class="product-detail">
-  <div class="product-image" id="productImage">📦</div>
+  <!-- 좌측: 상품 이미지 -->
+  <div>
+    <div class="product-image" id="productImage">📦</div>
+  </div>
 
-  <div class="product-info">
-    <div class="product-category" id="productCategory">아동복</div>
-    <h1 class="product-title" id="productTitle">아동 기념복 반팔</h1>
+  <!-- 우측: 상품 정보 -->
+  <div>
+    <div class="product-category" id="productCategory">카테고리</div>
+    <h1 class="product-title" id="productTitle">상품명</h1>
 
     <div class="product-rating">
-      <span class="rating-stars">⭐⭐⭐⭐⭐ 4.8</span>
-      <span class="rating-count">(125 리뷰)</span>
+      <span class="rating-star">⭐ 4.8</span>
+      <span class="rating-count">(125개 리뷰)</span>
     </div>
 
-    <div class="product-price" id="productPrice">34,900원</div>
-    <div class="product-original-price" id="originalPrice">원가 38,900원</div>
+    <div class="product-price">
+      <div class="price-label">가격</div>
+      <div class="price-value">
+        <span id="priceDiscount">34,900</span>원
+        <span class="price-original" id="priceOriginal" style="display: none;">39,900원</span>
+      </div>
+    </div>
 
-    <p class="product-description">
-      아이의 특별한 순간을 더욱 의미 있게 만드세요.
-      우리이야기의 맞춤형 기념복으로 소중한 추억을 옷에 담아보세요.
-      고급 소재와 편한 착용감으로 제작되었습니다.
-    </p>
-
-    <!-- OPTIONS -->
-    <div class="options-section">
+    <!-- 옵션 선택 -->
+    <div class="options">
       <div class="option-group">
-        <label class="option-label">색상 선택</label>
-        <div class="option-values">
-          <div class="option-value selected" data-color="white">흰색</div>
-          <div class="option-value" data-color="black">검정색</div>
-          <div class="option-value" data-color="beige">베이지</div>
-          <div class="option-value" data-color="gold">골드</div>
+        <label class="option-label">색상</label>
+        <div class="option-buttons">
+          <button class="option-btn selected" data-color="#ffffff" data-textcolor="#000000" onclick="selectOption(this, 'color', '흰색')">흰색</button>
+          <button class="option-btn" data-color="#000000" data-textcolor="#ffffff" onclick="selectOption(this, 'color', '검은색')">검은색</button>
+          <button class="option-btn" data-color="#FFD700" data-textcolor="#000000" onclick="selectOption(this, 'color', '노랑')">노랑</button>
+          <button class="option-btn" data-color="#FF0000" data-textcolor="#ffffff" onclick="selectOption(this, 'color', '빨강')">빨강</button>
+          <button class="option-btn" data-color="#1a4d4d" data-textcolor="#ffffff" onclick="selectOption(this, 'color', '다크민트')">다크민트</button>
+          <button class="option-btn" data-color="#87CEEB" data-textcolor="#000000" onclick="selectOption(this, 'color', '스카이블루')">스카이블루</button>
+          <button class="option-btn" data-color="#F5F5DC" data-textcolor="#000000" onclick="selectOption(this, 'color', '베이지')">베이지</button>
         </div>
       </div>
 
       <div class="option-group">
-        <label class="option-label">사이즈 선택</label>
-        <select id="sizeSelect">
-          <option value="">선택하세요</option>
-          <option value="90">90 (만 2~3세)</option>
-          <option value="100">100 (만 3~4세)</option>
-          <option value="110">110 (만 4~5세)</option>
-          <option value="120">120 (만 5~6세)</option>
-          <option value="130">130 (만 6~7세)</option>
+        <label class="option-label">사이즈</label>
+        <select class="option-select" id="sizeSelect">
+          <option>사이즈 선택</option>
         </select>
       </div>
     </div>
 
-    <!-- CUSTOMIZATION -->
-    <div class="customization-section">
-      <div class="customization-title">✨ 맞춤 텍스트 입력</div>
-      <textarea class="customization-input" id="customText" placeholder="아이의 이름, 생일, 특별한 메시지 등을 입력하세요 (최대 50글자)"></textarea>
-      <div class="char-count"><span id="charCount">0</span>/50</div>
+    <!-- 커스터마이징 폼 -->
+    <div class="customization" id="customizationForm">
+      <h3>개인 정보 입력</h3>
+      <!-- 폼이 JavaScript로 동적으로 로드됨 -->
     </div>
 
-    <!-- QUANTITY -->
-    <div class="quantity-section">
-      <span class="quantity-label">수량</span>
-      <div class="quantity-control">
-        <button class="quantity-btn" id="decreaseBtn">−</button>
-        <input type="number" class="quantity-input" id="quantityInput" value="1" min="1">
-        <button class="quantity-btn" id="increaseBtn">+</button>
-      </div>
-      <div class="total-price" id="totalPrice">34,900원</div>
-    </div>
-
-    <!-- ACTION BUTTONS -->
-    <div class="action-buttons">
-      <button class="btn btn-primary" id="orderBtn">🛒 구매하기</button>
-      <button class="btn btn-secondary" id="cartBtn">❤️ 찜하기</button>
+    <!-- 구매 버튼 -->
+    <div class="actions">
+      <button class="btn btn-primary" onclick="orderProduct()">주문하기</button>
+      <button class="btn btn-secondary" onclick="addToCart()">장바구니</button>
     </div>
   </div>
 </section>
 
-<!-- ═══ DETAILS SECTION ═══ -->
-<section class="details-section">
-  <div class="details-tabs">
-    <button class="tab-button active" data-tab="description">상세정보</button>
-    <button class="tab-button" data-tab="reviews">리뷰</button>
-    <button class="tab-button" data-tab="shipping">배송정보</button>
-  </div>
-
-  <!-- Description Tab -->
-  <div id="description" class="tab-content active">
-    <h3 style="margin-bottom: 16px; color: var(--color-ink); font-family: var(--font-title);">상세정보</h3>
-    <p style="color: var(--color-dark-gray); line-height: 1.8; margin-bottom: 16px;">
-      <strong>우리이야기 기념복</strong><br>
-      아이의 특별한 순간을 더욱 의미 있게 만드는 맞춤형 티셔츠입니다.
-      고급 면 소재로 제작되어 피부가 민감한 아이도 안심하고 입을 수 있습니다.
-    </p>
-    <p style="color: var(--color-dark-gray); line-height: 1.8;">
-      <strong>사양:</strong><br>
-      • 소재: 100% 면<br>
-      • 무게: 160gsm<br>
-      • 사이즈: 90~160cm<br>
-      • 세탁: 찬물 30도 이하에서 세탁 권장
-    </p>
-  </div>
-
-  <!-- Reviews Tab -->
-  <div id="reviews" class="tab-content">
-    <h3 style="margin-bottom: 16px; color: var(--color-ink); font-family: var(--font-title);">고객 리뷰</h3>
-    <div class="review-item">
-      <div class="review-header">
-        <span class="review-name">이**</span>
-        <span class="review-date">2026.06.20</span>
+<!-- ═══ PREVIEW SECTION ═══ -->
+<section class="preview-section">
+  <div class="preview-container">
+    <h2>미리보기</h2>
+    <div class="preview-box">
+      <div class="preview-tshirts" id="previewTshirts">
+        <!-- 동적으로 채워짐 (아동복은 앞/뒤, 나머지는 앞만) -->
       </div>
-      <div class="review-rating">⭐⭐⭐⭐⭐</div>
-      <p class="review-text">정말 잘 만들어졌네요! 아이가 너무 좋아합니다. 빠른 배송도 감사합니다.</p>
+      <div class="preview-info" id="previewInfo">정보를 입력하면 여기에 표시됩니다</div>
     </div>
-    <div class="review-item">
-      <div class="review-header">
-        <span class="review-name">김**</span>
-        <span class="review-date">2026.06.18</span>
-      </div>
-      <div class="review-rating">⭐⭐⭐⭐</div>
-      <p class="review-text">색상도 예쁘고 생각보다 품질이 좋습니다. 추천합니다!</p>
-    </div>
-  </div>
-
-  <!-- Shipping Tab -->
-  <div id="shipping" class="tab-content">
-    <h3 style="margin-bottom: 16px; color: var(--color-ink); font-family: var(--font-title);">배송정보</h3>
-    <p style="color: var(--color-dark-gray); line-height: 1.8;">
-      <strong>배송기간:</strong> 주문 후 3~5 영업일<br>
-      <strong>배송료:</strong> 3,000원 (50,000원 이상 무료)<br>
-      <strong>배송사:</strong> CJ 택배<br>
-      <strong>반품기간:</strong> 상품 수령 후 7일 이내
-    </p>
   </div>
 </section>
 
@@ -844,97 +597,792 @@
     </div>
   </div>
 
-  <div class="footer-bottom">
+  <div style="text-align: center; padding-top: 20px; border-top: 1px solid #e8e8e8; font-size: 12px; color: #999;">
     <p>&copy; 2026 우리이야기. 모든 권리 보유.</p>
   </div>
 </footer>
 
 <script>
-  // 탭 전환
-  document.querySelectorAll('.tab-button').forEach(button => {
-    button.addEventListener('click', function() {
-      const tabName = this.getAttribute('data-tab');
-      document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.remove('active');
-      });
-      document.querySelectorAll('.tab-button').forEach(btn => {
-        btn.classList.remove('active');
-      });
-      document.getElementById(tabName).classList.add('active');
-      this.classList.add('active');
-    });
-  });
-
-  // 색상 선택
-  document.querySelectorAll('.option-value').forEach(option => {
-    option.addEventListener('click', function() {
-      document.querySelectorAll('.option-value').forEach(opt => {
-        opt.classList.remove('selected');
-      });
-      this.classList.add('selected');
-    });
-  });
-
-  // 맞춤 텍스트 글자 수
-  const customText = document.getElementById('customText');
-  customText.addEventListener('input', function() {
-    const count = this.value.length;
-    document.getElementById('charCount').textContent = Math.min(count, 50);
-    if (count > 50) {
-      this.value = this.value.substring(0, 50);
+  // category.html과 동일한 상품 데이터
+  const products = {
+    kids: {
+      title: '아동복',
+      desc: '아이의 특별한 순간을 기념하다',
+      items: [
+        { id: 'kids_001', name: '아동 기념복 - 반팔', price: 15900, discount: 0, rating: 4.8, reviews: 125, emoji: '👕' },
+        { id: 'kids_002', name: '아동 기념복 - 긴팔', price: 15900, discount: 0, rating: 4.8, reviews: 92, emoji: '👕' },
+        { id: 'kids_003', name: '아동 커플 티셔츠', price: 15900, discount: 0, rating: 4.9, reviews: 78, emoji: '👕' },
+        { id: 'kids_004', name: '아동 기념복 - 반팔 (개별)', price: 15900, discount: 0, rating: 4.7, reviews: 56, emoji: '👕' },
+        { id: 'kids_005', name: '아동 프리미엄 기념복', price: 17900, discount: 0, rating: 5.0, reviews: 34, emoji: '👕' },
+        { id: 'kids_006', name: '아동 반팔 세트', price: 31800, discount: 0, rating: 4.9, reviews: 89, emoji: '👕' },
+        { id: 'kids_007', name: '아동 기념복 페어', price: 31800, discount: 0, rating: 4.8, reviews: 67, emoji: '👕' },
+        { id: 'kids_008', name: '아동 명작 기념복', price: 17900, discount: 0, rating: 4.9, reviews: 112, emoji: '👕' }
+      ]
+    },
+    adults: {
+      title: '성인복',
+      desc: '당신의 감성을 표현하는 옷입니다.',
+      items: [
+        { id: 'adults_001', name: '감성 문구 반팔', price: 19900, discount: 0, rating: 4.9, reviews: 89, emoji: '👔' },
+        { id: 'adults_002', name: '감성 문구 긴팔', price: 19900, discount: 0, rating: 4.9, reviews: 78, emoji: '👔' },
+        { id: 'adults_003', name: '친구 커플 티셔츠', price: 19900, discount: 0, rating: 4.8, reviews: 156, emoji: '👔' },
+        { id: 'adults_004', name: '감성 프리미엄 반팔', price: 24900, discount: 0, rating: 5.0, reviews: 45, emoji: '👔' },
+        { id: 'adults_005', name: '감성 패턴 반팔', price: 19900, discount: 0, rating: 4.7, reviews: 67, emoji: '👔' },
+        { id: 'adults_006', name: '감성 레터링 반팔', price: 19900, discount: 0, rating: 4.9, reviews: 98, emoji: '👔' },
+        { id: 'adults_007', name: '감성 프린트 반팔', price: 19900, discount: 0, rating: 4.8, reviews: 123, emoji: '👔' },
+        { id: 'adults_008', name: '감성 컬렉션 세트', price: 39800, discount: 0, rating: 4.9, reviews: 87, emoji: '👔' }
+      ]
+    },
+    senior: {
+      title: '시니어',
+      desc: '소중한 추억을 담은 옷입니다.',
+      items: [
+        { id: 'senior_001', name: '추억 반팔 (여성)', price: 19900, discount: 0, rating: 5.0, reviews: 45, emoji: '👵' },
+        { id: 'senior_002', name: '추억 반팔 (남성)', price: 19900, discount: 0, rating: 5.0, reviews: 38, emoji: '👴' },
+        { id: 'senior_003', name: '추억 긴팔', price: 19900, discount: 0, rating: 4.9, reviews: 52, emoji: '👕' },
+        { id: 'senior_004', name: '추억 프리미엄 반팔', price: 24900, discount: 0, rating: 5.0, reviews: 28, emoji: '👕' },
+        { id: 'senior_005', name: '추억 페어 세트', price: 39800, discount: 0, rating: 4.9, reviews: 41, emoji: '👕' },
+        { id: 'senior_006', name: '추억 명언 반팔', price: 19900, discount: 0, rating: 4.8, reviews: 67, emoji: '👕' },
+        { id: 'senior_007', name: '추억 프린트 긴팔', price: 19900, discount: 0, rating: 4.9, reviews: 54, emoji: '👕' },
+        { id: 'senior_008', name: '추억 컬렉션 세트', price: 39800, discount: 0, rating: 5.0, reviews: 33, emoji: '👕' }
+      ]
+    },
+    pet: {
+      title: '반려동물복',
+      desc: '반려동물과의 특별한 순간을 담다.',
+      items: [
+        { id: 'pet_001', name: '펫 반팔 - 강아지', price: 12900, discount: 0, rating: 4.7, reviews: 67, emoji: '🐕' },
+        { id: 'pet_002', name: '펫 반팔 - 고양이', price: 12900, discount: 0, rating: 4.6, reviews: 54, emoji: '🐱' },
+        { id: 'pet_003', name: '펫 커플 티셔츠', price: 12900, discount: 0, rating: 4.8, reviews: 89, emoji: '🐾' },
+        { id: 'pet_004', name: '펫 프리미엄 반팔', price: 17900, discount: 0, rating: 4.9, reviews: 45, emoji: '🐾' },
+        { id: 'pet_005', name: '펫 페어 세트', price: 25800, discount: 0, rating: 4.8, reviews: 67, emoji: '🐾' },
+        { id: 'pet_006', name: '펫 프린트 반팔', price: 12900, discount: 0, rating: 4.7, reviews: 78, emoji: '🐾' },
+        { id: 'pet_007', name: '펫 긴팔 세트', price: 25800, discount: 0, rating: 4.8, reviews: 56, emoji: '🐾' },
+        { id: 'pet_008', name: '펫 컬렉션 패키지', price: 38700, discount: 0, rating: 4.9, reviews: 42, emoji: '🐾' }
+      ]
+    },
+    group: {
+      title: '단체복',
+      desc: '팀의 이야기를 담은 옷입니다.',
+      items: [
+        { id: 'group_001', name: '어린이집 단체복', price: 15900, discount: 0, rating: 4.9, reviews: 156, emoji: '👧' },
+        { id: 'group_002', name: '회사 단체복', price: 15900, discount: 0, rating: 4.8, reviews: 98, emoji: '🏢' },
+        { id: 'group_003', name: '스포츠팀 단체복', price: 15900, discount: 0, rating: 4.9, reviews: 134, emoji: '⚽' },
+        { id: 'group_004', name: '단체복 프리미엄', price: 19900, discount: 0, rating: 4.9, reviews: 67, emoji: '👥' },
+        { id: 'group_005', name: '단체복 풀패키지 (50장)', price: 795000, discount: 0, rating: 4.8, reviews: 45, emoji: '👥' },
+        { id: 'group_006', name: '커스텀 단체복', price: 15900, discount: 0, rating: 4.9, reviews: 112, emoji: '👥' },
+        { id: 'group_007', name: '단체 프리미엄 인쇄', price: 19900, discount: 0, rating: 4.7, reviews: 89, emoji: '👥' },
+        { id: 'group_008', name: '단체 빠른배송', price: 17900, discount: 0, rating: 4.9, reviews: 76, emoji: '👥' }
+      ]
     }
-  });
+  };
 
-  // 수량 조절
-  const quantityInput = document.getElementById('quantityInput');
-  const decreaseBtn = document.getElementById('decreaseBtn');
-  const increaseBtn = document.getElementById('increaseBtn');
-  const totalPriceEl = document.getElementById('totalPrice');
-  const basePrice = 34900;
+  // 샘플 상품 데이터 (사용 안 함)
+  const productData = {
+    kids_001: {
+      category: '아동복',
+      title: '아동 기념복 - 반팔',
+      emoji: '👕',
+      price: 34900,
+      discount: 10,
+      reviews: 125,
+      formType: 'kids'
+    },
+    adults_001: {
+      category: '성인복',
+      title: '감성 문구 반팔',
+      emoji: '👔',
+      price: 29900,
+      discount: 0,
+      reviews: 89,
+      formType: 'adults'
+    },
+    senior_001: {
+      category: '시니어',
+      title: '추억 반팔 (여성)',
+      emoji: '👵',
+      price: 29900,
+      discount: 15,
+      reviews: 45,
+      formType: 'senior'
+    },
+    pet_001: {
+      category: '반려동물복',
+      title: '펫 반팔 - 강아지',
+      emoji: '🐕',
+      price: 29900,
+      discount: 0,
+      reviews: 67,
+      formType: 'pet'
+    },
+    group_001: {
+      category: '단체복',
+      title: '어린이집 단체복',
+      emoji: '👧',
+      price: 24900,
+      discount: 20,
+      reviews: 156,
+      formType: 'group'
+    }
+  };
 
-  function updateTotalPrice() {
-    const quantity = parseInt(quantityInput.value) || 1;
-    const total = basePrice * quantity;
-    totalPriceEl.textContent = total.toLocaleString() + '원';
-  }
+  // 가격 설정
+  const prices = {
+    kids_basic: 15900,
+    kids_premium: 17900,
+    adults: 19900,
+    senior: 19900,
+    pet: 12900,
+    group: 15900
+  };
 
-  decreaseBtn.addEventListener('click', function() {
-    const value = Math.max(1, parseInt(quantityInput.value) - 1);
-    quantityInput.value = value;
-    updateTotalPrice();
-  });
+  const customizationForms = {
+    kids: `
+      <div class="form-group">
+        <label>아이 이름</label>
+        <input type="text" placeholder="예: 지훈" onchange="updatePreview()" class="kids-name">
+      </div>
+      <div class="form-group">
+        <label>생년월일</label>
+        <input type="date" onchange="updatePreview()" class="kids-birthdate">
+      </div>
+      <div class="form-group">
+        <label>문구 스타일</label>
+        <div class="option-buttons" style="grid-template-columns: repeat(3, 1fr);">
+          <button class="option-btn selected" onclick="selectConstellationStyle(this, 'touching')">감동형</button>
+          <button class="option-btn" onclick="selectConstellationStyle(this, 'success')">성공형</button>
+          <button class="option-btn" onclick="selectConstellationStyle(this, 'poetic')">감성형</button>
+        </div>
+      </div>
+    `,
+    adults: `
+      <div class="form-group">
+        <label>감성 문구</label>
+        <select onchange="updatePreview()">
+          <option value="">선택하세요</option>
+          <optgroup label="사랑">
+            <option value="사랑하라, 한 번도 상처받지 않은 것처럼">사랑하라, 한 번도 상처받지 않은 것처럼</option>
+            <option value="우리의 사랑은 영원하다">우리의 사랑은 영원하다</option>
+            <option value="사랑으로 인한 모든 것">사랑으로 인한 모든 것</option>
+            <option value="너와 함께라면 괜찮아">너와 함께라면 괜찮아</option>
+          </optgroup>
+          <optgroup label="도전">
+            <option value="도전하라, 두려움을 이기고">도전하라, 두려움을 이기고</option>
+            <option value="시작이 반이다">시작이 반이다</option>
+            <option value="불가능은 없다">불가능은 없다</option>
+            <option value="오늘이 최고의 날">오늘이 최고의 날</option>
+          </optgroup>
+          <optgroup label="성공">
+            <option value="성공은 여정이다">성공은 여정이다</option>
+            <option value="꿈꾸는 자가 이긴다">꿈꾸는 자가 이긴다</option>
+            <option value="작은 시작, 큰 성공">작은 시작, 큰 성공</option>
+            <option value="성공의 비결은 계속하기">성공의 비결은 계속하기</option>
+          </optgroup>
+          <optgroup label="우정">
+            <option value="우정은 영혼의 거울">우정은 영혼의 거울</option>
+            <option value="친구는 제2의 가족">친구는 제2의 가족</option>
+            <option value="함께라서 더 강하다">함께라서 더 강하다</option>
+            <option value="우정은 시간을 이긴다">우정은 시간을 이긴다</option>
+          </optgroup>
+          <optgroup label="행복">
+            <option value="행복은 선택이다">행복은 선택이다</option>
+            <option value="작은 것에 감사하라">작은 것에 감사하라</option>
+            <option value="오늘 하루를 즐겨라">오늘 하루를 즐겨라</option>
+            <option value="행복은 내 안에 있다">행복은 내 안에 있다</option>
+          </optgroup>
+          <optgroup label="일상">
+            <option value="나는 충분히 잘하고 있다">나는 충분히 잘하고 있다</option>
+            <option value="모든 것이 될 수 있다">모든 것이 될 수 있다</option>
+            <option value="내일은 더 나을 거야">내일은 더 나을 거야</option>
+            <option value="지금이 최고의 시간">지금이 최고의 시간</option>
+          </optgroup>
+        </select>
+      </div>
+    `,
+    senior: `
+      <div class="form-group">
+        <label>추억 명언</label>
+        <select onchange="updatePreview()">
+          <option value="">선택하세요</option>
+          <optgroup label="함께한 시간들">
+            <option value="함께한 시간이 가장 큰 행복이었습니다">함께한 시간이 가장 큰 행복이었습니다</option>
+            <option value="세월이 흘렀어도 변하지 않는 사랑">세월이 흘렀어도 변하지 않는 사랑</option>
+            <option value="당신이 있어 행복했습니다">당신이 있어 행복했습니다</option>
+            <option value="그 날의 웃음은 영원하다">그 날의 웃음은 영원하다</option>
+          </optgroup>
+          <optgroup label="아름다운 추억">
+            <option value="그 시절 우리는 참 아름다웠다">그 시절 우리는 참 아름다웠다</option>
+            <option value="인생 최고의 순간들이 옆에 있었습니다">인생 최고의 순간들이 옆에 있었습니다</option>
+            <option value="영원히 잊을 수 없는 추억">영원히 잊을 수 없는 추억</option>
+            <option value="함께한 모든 날이 소중했습니다">함께한 모든 날이 소중했습니다</option>
+          </optgroup>
+          <optgroup label="감사와 사랑">
+            <option value="감사함이 가장 큰 행복입니다">감사함이 가장 큰 행복입니다</option>
+            <option value="당신의 사랑은 내 인생입니다">당신의 사랑은 내 인생입니다</option>
+            <option value="함께라서 모든 것이 아름다웠다">함께라서 모든 것이 아름다웠다</option>
+            <option value="당신이 있어서 행운입니다">당신이 있어서 행운입니다</option>
+          </optgroup>
+          <optgroup label="추억 속의 그대">
+            <option value="기억 속에 당신은 영원하다">기억 속에 당신은 영원하다</option>
+            <option value="시간을 멈추고 싶은 순간들">시간을 멈추고 싶은 순간들</option>
+            <option value="당신과의 모든 순간이 선물입니다">당신과의 모든 순간이 선물입니다</option>
+            <option value="추억은 내 인생의 보석">추억은 내 인생의 보석</option>
+          </optgroup>
+          <optgroup label="시간과 세월">
+            <option value="시간이 변해도 마음은 변하지 않습니다">시간이 변해도 마음은 변하지 않습니다</option>
+            <option value="오랜 시간 함께해주셔서 감사합니다">오랜 시간 함께해주셔서 감사합니다</option>
+            <option value="나이가 들어도 그 날이 또렷이">나이가 들어도 그 날이 또렷이</option>
+            <option value="가장 행복했던 시절이 지금입니다">가장 행복했던 시절이 지금입니다</option>
+          </optgroup>
+        </select>
+      </div>
+    `,
+    pet: `
+      <div class="form-group">
+        <label>반려동물 이름</label>
+        <input type="text" placeholder="예: 뽀삐" onchange="updatePreview()">
+      </div>
+      <div class="form-group">
+        <label>품종</label>
+        <input type="text" placeholder="예: 골든 리트리버" onchange="updatePreview()">
+      </div>
+    `,
+    group: `
+      <div class="form-group">
+        <label>단체 타입</label>
+        <div class="option-buttons" style="grid-template-columns: repeat(3, 1fr);">
+          <button class="option-btn selected" onclick="selectGroupType(this, 'kindergarten')">어린이집</button>
+          <button class="option-btn" onclick="selectGroupType(this, 'company')">회사</button>
+          <button class="option-btn" onclick="selectGroupType(this, 'sports')">스포츠팀</button>
+        </div>
+      </div>
 
-  increaseBtn.addEventListener('click', function() {
-    quantityInput.value = parseInt(quantityInput.value) + 1;
-    updateTotalPrice();
-  });
+      <!-- 어린이집: 띠+이름+년도 / 어린이집명 -->
+      <div id="group-kindergarten" style="display: block;">
+        <div class="form-group">
+          <label>아이 이름</label>
+          <input type="text" placeholder="예: 지훈" onchange="updatePreview()" class="group-kid-name">
+        </div>
+        <div class="form-group">
+          <label>생년월일</label>
+          <input type="date" onchange="updatePreview()" class="group-kid-birthdate">
+        </div>
+        <div class="form-group">
+          <label>어린이집명</label>
+          <input type="text" placeholder="예: 드래곤 어린이집" onchange="updatePreview()" class="group-kid-org">
+        </div>
+      </div>
 
-  quantityInput.addEventListener('input', updateTotalPrice);
+      <!-- 회사: 팀명, 이름, 사훈 -->
+      <div id="group-company" style="display: none;">
+        <div class="form-group">
+          <label>팀/부서명</label>
+          <input type="text" placeholder="예: 개발팀" onchange="updatePreview()" class="group-company-team">
+        </div>
+        <div class="form-group">
+          <label>성명</label>
+          <input type="text" placeholder="예: 김도현" onchange="updatePreview()" class="group-company-name">
+        </div>
+        <div class="form-group">
+          <label>회사/팀 사훈</label>
+          <input type="text" list="motto-list" placeholder="사훈 선택 또는 직접 입력" onchange="updatePreview()" class="group-company-motto">
+          <datalist id="motto-list">
+            <option value="사람이 먼저다">
+            <option value="최선을 다하면 길이 열린다">
+            <option value="정직이 최선의 전략이다">
+            <option value="함께 성장한다">
+            <option value="신뢰로 세상을 잇는다">
+            <option value="작은 것도 소중히">
+            <option value="변화가 곧 기회다">
+            <option value="도전하는 자가 미래를 만든다">
+            <option value="고객의 신뢰가 우리의 자산이다">
+            <option value="품질이 곧 자존심이다">
+            <option value="오늘보다 나은 내일">
+            <option value="혁신은 습관이다">
+            <option value="고객의 미소가 목표다">
+            <option value="정성을 다하면 통한다">
+            <option value="책임지는 자가 리더다">
+            <option value="끝까지 해내는 것이 실력이다">
+            <option value="겸손하게, 치열하게">
+            <option value="기본에 충실하라">
+            <option value="진심은 반드시 통한다">
+            <option value="나눌수록 더 커진다">
+            <option value="세상에 없던 것을 만든다">
+            <option value="바른 길이 빠른 길이다">
+            <option value="함께라면 불가능은 없다">
+            <option value="배움을 멈추지 마라">
+            <option value="우리의 땀이 세상을 바꾼다">
+            <option value="열정이 탁월함을 만든다">
+            <option value="내일의 표준을 오늘 만든다">
+            <option value="작은 차이가 큰 결과를 만든다">
+            <option value="사람을 키우는 것이 경영이다">
+            <option value="한 걸음씩, 멈추지 않는다">
+          </datalist>
+        </div>
+      </div>
 
-  // 주문/찜 버튼
-  document.getElementById('orderBtn').addEventListener('click', function() {
-    const size = document.getElementById('sizeSelect').value;
-    if (!size) {
-      alert('사이즈를 선택해주세요!');
+      <!-- 스포츠팀: 팀명, 선수명, 팀 모토 -->
+      <div id="group-sports" style="display: none;">
+        <div class="form-group">
+          <label>팀명</label>
+          <input type="text" placeholder="예: 승리 FC" onchange="updatePreview()" class="group-sports-team">
+        </div>
+        <div class="form-group">
+          <label>선수명</label>
+          <input type="text" placeholder="예: 이순신" onchange="updatePreview()" class="group-sports-name">
+        </div>
+        <div class="form-group">
+          <label>팀 모토</label>
+          <textarea placeholder="예: 승리를 향해 나아가자!" onchange="updatePreview()" class="group-sports-motto" style="min-height: 60px;"></textarea>
+        </div>
+      </div>
+    `
+  };
+
+  function loadProduct() {
+    // URL 파라미터에서 카테고리와 인덱스 읽기
+    const params = new URLSearchParams(window.location.search);
+    const cat = params.get('cat') || 'kids';
+    const idx = parseInt(params.get('idx') || '0');
+
+    currentCategory = cat; // 전역변수 설정
+
+    console.log('✅ 카테고리:', cat, '인덱스:', idx);
+
+    // 상품 데이터 가져오기
+    const categoryData = products[cat];
+    if (!categoryData || !categoryData.items[idx]) {
+      console.error('❌ 상품을 찾을 수 없습니다');
       return;
     }
-    alert('오픈채팅(카카오톡)으로 연결됩니다.');
-    window.location.href = 'https://open.kakao.com/o/gx5nTyAi';
-  });
 
-  document.getElementById('cartBtn').addEventListener('click', function() {
-    alert('찜 목록에 추가되었습니다!');
-    this.style.background = 'var(--color-gold)';
-    this.style.color = 'white';
-  });
+    const product = categoryData.items[idx];
 
-  // 네비게이션 활성화
-  document.querySelectorAll('.nav-link').forEach(link => {
-    const url = new URL(link.href);
-    if (url.search === window.location.search) {
-      link.classList.add('active');
+    document.getElementById('productCategory').textContent = categoryData.title;
+    document.getElementById('productTitle').textContent = product.name;
+    document.getElementById('productImage').textContent = product.emoji;
+    document.getElementById('priceDiscount').textContent = Math.floor(product.price * (1 - product.discount / 100)).toLocaleString();
+
+    if (product.discount > 0) {
+      document.getElementById('priceOriginal').style.display = 'inline';
+      document.getElementById('priceOriginal').textContent = product.price.toLocaleString() + '원';
     }
-  });
+
+    // 커스터마이징 폼 로드 (카테고리별로 다름)
+    const formType = cat; // 카테고리를 그대로 폼 타입으로 사용
+    const formHtml = customizationForms[formType] || '';
+    document.getElementById('customizationForm').innerHTML = '<h3>개인 정보 입력</h3>' + formHtml;
+
+    // 네비 활성화
+    document.querySelectorAll('.nav-link').forEach(link => {
+      if (link.href.includes('cat=' + cat)) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+
+    // 사이즈 옵션 설정
+    setSizeOptions();
+
+    // 색상 초기화
+    document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
+    const firstColorBtn = document.querySelector('[data-color="#ffffff"]');
+    if (firstColorBtn) {
+      firstColorBtn.classList.add('selected');
+      selectedColor = '#ffffff';
+      selectedTextColor = '#000000';
+    }
+
+    // 미리보기 생성 (아동복은 앞/뒤, 나머지는 앞만)
+    createPreviewTshirts();
+  }
+
+  function createPreviewTshirts() {
+    const container = document.getElementById('previewTshirts');
+    const svgTemplate = `
+      <svg viewBox="0 0 220 240" xmlns="http://www.w3.org/2000/svg">
+        <path d="M60,20 L10,60 L35,70 L35,220 L185,220 L185,70 L210,60 L160,20 L140,36 Q110,50 80,36 Z"
+              fill="#ffffff" stroke="#000000" stroke-width="2"/>
+      </svg>
+    `;
+
+    if (currentCategory === 'kids' || currentCategory === 'group') {
+      // 아동복, 단체복: 앞/뒤 분리
+      container.innerHTML = `
+        <div class="preview-tshirt-section">
+          <h4>앞</h4>
+          <div class="preview-tshirt">
+            ${svgTemplate}
+            <div class="preview-text" id="previewTextFront">정보를 입력하세요</div>
+          </div>
+        </div>
+        <div class="preview-tshirt-section">
+          <h4>뒤</h4>
+          <div class="preview-tshirt">
+            ${svgTemplate}
+            <div class="preview-text" id="previewTextBack">뒷면</div>
+          </div>
+        </div>
+      `;
+      updateTshirtColor();
+    } else {
+      // 나머지 (성인복, 시니어, 반려동물): 앞만
+      container.innerHTML = `
+        <div class="preview-tshirt-section" style="grid-column: 1 / -1; width: 200px; margin: 0 auto;">
+          <h4>미리보기</h4>
+          <div class="preview-tshirt">
+            ${svgTemplate}
+            <div class="preview-text" id="previewText">정보를 입력하세요</div>
+          </div>
+        </div>
+      `;
+      updateTshirtColor();
+    }
+  }
+
+  let currentCategory = 'kids';
+  let selectedColor = '#ffffff';
+  let selectedTextColor = '#000000';
+
+  // 띠 계산 함수
+  const ZODIAC_ANIMALS = ['쥐', '소', '호랑이', '토끼', '용', '뱀', '말', '양', '원숭이', '닭', '개', '돼지'];
+
+  function getZodiacAnimal(year) {
+    if (!year || year < 1900) return '';
+    return ZODIAC_ANIMALS[year % 12];
+  }
+
+  // 별자리 문구 데이터 (3개 스타일)
+  const CONSTELLATION_QUOTES = {
+    touching: { // 부모가 아이에게 선물하는 감동형
+      'aries': '두려움보다 꿈이 더 크다면, 세상은 언제나 네 편이란다.',
+      'taurus': '천천히 가도 괜찮아. 너는 누구보다 단단하게 자라고 있으니까.',
+      'gemini': '너의 호기심은 세상을 밝히는 작은 별빛이란다.',
+      'cancer': '따뜻한 마음을 가진 사람은 어디서든 사랑받는 별이 된단다.',
+      'leo': '네 안의 빛을 숨기지 마. 세상은 네가 빛나길 기다리고 있어.',
+      'virgo': '작은 노력 하나하나가 너만의 별자리를 만들어 간단다.',
+      'libra': '사람을 이해하는 마음은 가장 아름다운 재능이란다.',
+      'scorpio': '넘어져도 괜찮아. 너는 언제나 더 강한 모습으로 다시 빛날 거야.',
+      'sagittarius': '꿈꾸는 사람만이 보이지 않는 길을 발견할 수 있단다.',
+      'capricorn': '포기하지 않는 마음은 결국 가장 높은 별에 닿는단다.',
+      'aquarius': '남들과 달라도 괜찮아. 특별함은 언제나 새로운 별이 되니까.',
+      'pisces': '네가 꾸는 꿈은 언젠가 누군가의 희망이 될 거야.'
+    },
+    success: { // 성공·사업가 느낌
+      'aries': '기회는 기다리는 것이 아니라 만드는 것이다.',
+      'taurus': '성공은 재능이 아니라 꾸준함의 결과다.',
+      'gemini': '지식은 길을 찾고, 소통은 길을 연다.',
+      'cancer': '사람의 마음을 얻는 자가 결국 세상을 얻는다.',
+      'leo': '태양은 경쟁하지 않는다. 그저 빛날 뿐이다.',
+      'virgo': '완벽함은 작은 디테일에서 시작된다.',
+      'libra': '균형을 아는 자가 오래 승리한다.',
+      'scorpio': '변화는 두려움이 아니라 성장의 시작이다.',
+      'sagittarius': '가장 먼 목적지는 가장 큰 꿈에서 시작된다.',
+      'capricorn': '정상을 보는 사람은 포기라는 단어를 모른다.',
+      'aquarius': '미래는 새로운 생각을 가진 사람의 것이다.',
+      'pisces': '상상력은 현실보다 먼저 도착하는 성공이다.'
+    },
+    poetic: { // 별빛 감성형
+      'aries': '새로운 별은 언제나 용기 있는 사람에게 찾아온다.',
+      'taurus': '가장 오래 빛나는 별은 가장 흔들리지 않는 별이다.',
+      'gemini': '별들은 서로의 빛으로 밤하늘을 완성한다.',
+      'cancer': '따뜻함은 보이지 않아도 가장 밝게 빛난다.',
+      'leo': '당신은 태어나면서부터 빛날 운명이었다.',
+      'virgo': '별빛은 작은 점들이 모여 만들어진 기적이다.',
+      'libra': '조화로운 별빛은 가장 아름다운 하늘을 만든다.',
+      'scorpio': '어둠이 깊을수록 별은 더욱 선명해진다.',
+      'sagittarius': '꿈을 향한 발걸음마다 새로운 별이 태어난다.',
+      'capricorn': '높은 하늘의 별도 한 걸음에서 시작되었다.',
+      'aquarius': '세상에 없던 별은 누군가의 상상에서 시작된다.',
+      'pisces': '모든 별은 누군가의 소원을 품고 빛난다.'
+    }
+  };
+
+  let selectedConstellationStyle = 'touching';
+  let selectedGroupType = 'kindergarten';
+  let selectedGroupConstellationStyle = 'touching';
+
+  // 별자리 계산 함수
+  const CONSTELLATIONS = [
+    { name: '염소자리', start: [12, 22], end: [1, 19] },
+    { name: '물병자리', start: [1, 20], end: [2, 18] },
+    { name: '물고기자리', start: [2, 19], end: [3, 20] },
+    { name: '양자리', start: [3, 21], end: [4, 19] },
+    { name: '황소자리', start: [4, 20], end: [5, 20] },
+    { name: '쌍둥이자리', start: [5, 21], end: [6, 20] },
+    { name: '게자리', start: [6, 21], end: [7, 22] },
+    { name: '사자자리', start: [7, 23], end: [8, 22] },
+    { name: '처녀자리', start: [8, 23], end: [9, 22] },
+    { name: '천칭자리', start: [9, 23], end: [10, 22] },
+    { name: '전갈자리', start: [10, 23], end: [11, 21] },
+    { name: '사수자리', start: [11, 22], end: [12, 21] }
+  ];
+
+  function getConstellation(month, day) {
+    if (!month || !day) return '';
+    month = parseInt(month);
+    day = parseInt(day);
+
+    for (let c of CONSTELLATIONS) {
+      const [sMonth, sDay] = c.start;
+      const [eMonth, eDay] = c.end;
+
+      if (sMonth === eMonth) {
+        if (month === sMonth && day >= sDay && day <= eDay) return c.name;
+      } else {
+        if ((month === sMonth && day >= sDay) || (month === eMonth && day <= eDay)) {
+          return c.name;
+        }
+      }
+    }
+    return '';
+  }
+
+  function selectOption(btn, type, value) {
+    btn.parentElement.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+
+    if (type === 'color') {
+      selectedColor = btn.dataset.color || '#ffffff';
+      selectedTextColor = btn.dataset.textcolor || '#000000';
+      updateTshirtColor();
+    }
+  }
+
+  function selectConstellationStyle(btn, style) {
+    btn.parentElement.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedConstellationStyle = style;
+    updatePreview();
+  }
+
+  function selectGroupType(btn, type) {
+    btn.parentElement.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedGroupType = type;
+
+    // 해당 타입의 폼만 보이게
+    document.getElementById('group-kindergarten').style.display = type === 'kindergarten' ? 'block' : 'none';
+    document.getElementById('group-company').style.display = type === 'company' ? 'block' : 'none';
+    document.getElementById('group-sports').style.display = type === 'sports' ? 'block' : 'none';
+
+    updatePreview();
+  }
+
+  function selectGroupConstellationStyle(btn, style) {
+    btn.parentElement.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedGroupConstellationStyle = style;
+    updatePreview();
+  }
+
+  function getConstellationFromDate(dateStr) {
+    if (!dateStr) return null;
+    const [year, month, day] = dateStr.split('-').map(Number);
+
+    const constellations = [
+      { name: 'aries', start: [3, 21], end: [4, 19] },
+      { name: 'taurus', start: [4, 20], end: [5, 20] },
+      { name: 'gemini', start: [5, 21], end: [6, 20] },
+      { name: 'cancer', start: [6, 21], end: [7, 22] },
+      { name: 'leo', start: [7, 23], end: [8, 22] },
+      { name: 'virgo', start: [8, 23], end: [9, 22] },
+      { name: 'libra', start: [9, 23], end: [10, 22] },
+      { name: 'scorpio', start: [10, 23], end: [11, 21] },
+      { name: 'sagittarius', start: [11, 22], end: [12, 21] },
+      { name: 'capricorn', start: [12, 22], end: [1, 19] },
+      { name: 'aquarius', start: [1, 20], end: [2, 18] },
+      { name: 'pisces', start: [2, 19], end: [3, 20] }
+    ];
+
+    for (let c of constellations) {
+      const [sMonth, sDay] = c.start;
+      const [eMonth, eDay] = c.end;
+
+      if (sMonth > eMonth) {
+        // 예: 염소자리 (12월 22일 ~ 1월 19일)
+        if ((month === sMonth && day >= sDay) || (month === eMonth && day <= eDay)) {
+          return c.name;
+        }
+      } else {
+        // 일반적인 경우
+        if (month === sMonth && day >= sDay) return c.name;
+        if (month === eMonth && day <= eDay) return c.name;
+      }
+    }
+    return null;
+  }
+
+  function updateTshirtColor() {
+    const svgs = document.querySelectorAll('.preview-tshirt svg path');
+    svgs.forEach(svg => {
+      svg.style.fill = selectedColor;
+      svg.style.stroke = '#000000';
+      svg.style.strokeWidth = '2';
+    });
+
+    const textEls = document.querySelectorAll('.preview-text');
+    textEls.forEach(el => {
+      el.style.color = selectedTextColor;
+    });
+  }
+
+  function setSizeOptions() {
+    const sizeSelect = document.getElementById('sizeSelect');
+    sizeSelect.innerHTML = '<option>사이즈 선택</option>';
+
+    const sizes = currentCategory === 'kids'
+      ? ['110cm', '120cm', '130cm', '140cm', '150cm', '160cm', '170cm']
+      : ['M', 'L', '2XL', '3XL', '4XL'];
+
+    sizes.forEach(size => {
+      const opt = document.createElement('option');
+      opt.value = size;
+      opt.textContent = size;
+      sizeSelect.appendChild(opt);
+    });
+  }
+
+  function updatePreview() {
+    const inputs = document.querySelectorAll('.customization input, .customization select');
+    let previewText = '';
+
+    if (currentCategory === 'pet') {
+      // 반려동물: "이름 (품종)" 형식
+      const petName = document.querySelector('.customization input[placeholder*="뽀삐"]')?.value || '';
+      const petBreed = document.querySelector('.customization input[placeholder*="골든"]')?.value || '';
+
+      if (petName && petBreed) {
+        previewText = `${petName} (${petBreed})`;
+      } else if (petName) {
+        previewText = petName;
+      }
+    } else if (currentCategory === 'group') {
+      // 단체복: 타입별로 다른 처리
+      if (selectedGroupType === 'kindergarten') {
+        // 어린이집: 앞에 띠+이름+년도, 뒤에 어린이집명
+        const name = document.querySelector('.group-kid-name')?.value || '';
+        const birthdate = document.querySelector('.group-kid-birthdate')?.value || '';
+        const org = document.querySelector('.group-kid-org')?.value || '';
+
+        let frontText = '정보를 입력하세요';
+        let backText = '어린이집명';
+
+        if (name && birthdate) {
+          const year = birthdate.split('-')[0];
+          const zodiac = getZodiacAnimal(parseInt(year));
+          frontText = `${zodiac} ${name} ${year}년생`;
+          backText = org || '어린이집명';
+        } else if (name) {
+          frontText = name;
+        }
+
+        const frontEl = document.getElementById('previewTextFront');
+        const backEl = document.getElementById('previewTextBack');
+        if (frontEl) frontEl.textContent = frontText;
+        if (backEl) backEl.textContent = backText;
+
+      } else if (selectedGroupType === 'company') {
+        // 회사: 앞에 팀명 + 이름, 뒤에 사훈
+        const team = document.querySelector('.group-company-team')?.value || '';
+        const name = document.querySelector('.group-company-name')?.value || '';
+        const motto = document.querySelector('.group-company-motto')?.value || '';
+
+        let frontText = '정보를 입력하세요';
+        let backText = '사훈';
+
+        if (team && name) {
+          frontText = `${team}\n${name}`;
+          backText = motto || '사훈';
+        } else if (team || name) {
+          frontText = team || name;
+        }
+
+        const frontEl = document.getElementById('previewTextFront');
+        const backEl = document.getElementById('previewTextBack');
+        if (frontEl) frontEl.textContent = frontText;
+        if (backEl) backEl.textContent = backText;
+
+      } else if (selectedGroupType === 'sports') {
+        // 스포츠팀: 앞에 팀명 + 선수명, 뒤에 팀 모토
+        const team = document.querySelector('.group-sports-team')?.value || '';
+        const name = document.querySelector('.group-sports-name')?.value || '';
+        const motto = document.querySelector('.group-sports-motto')?.value || '';
+
+        let frontText = '정보를 입력하세요';
+        let backText = '팀 모토';
+
+        if (team && name) {
+          frontText = `${team}\n${name}`;
+          backText = motto || '팀 모토';
+        } else if (team || name) {
+          frontText = team || name;
+        }
+
+        const frontEl = document.getElementById('previewTextFront');
+        const backEl = document.getElementById('previewTextBack');
+        if (frontEl) frontEl.textContent = frontText;
+        if (backEl) backEl.textContent = backText;
+      }
+      return; // group은 별도 처리
+    } else if (currentCategory === 'kids') {
+      // 아동복: 앞면에 "띠 이름 출생년도" / 뒷면에 "별자리 문구"
+      const name = document.querySelector('.kids-name')?.value || '';
+      const birthdate = document.querySelector('.kids-birthdate')?.value || '';
+
+      let frontText = '정보를 입력하세요';
+      let backText = '문구를 선택하세요';
+
+      if (name && birthdate) {
+        const year = birthdate.split('-')[0];
+        const zodiac = getZodiacAnimal(parseInt(year));
+        frontText = `${zodiac} ${name} ${year}년생`;
+
+        // 별자리 자동 계산 후 선택된 스타일의 문구 가져오기
+        const constellationKey = getConstellationFromDate(birthdate);
+        if (constellationKey) {
+          const quotes = CONSTELLATION_QUOTES[selectedConstellationStyle];
+          backText = quotes[constellationKey] || '별자리 문구';
+        }
+      } else if (name) {
+        frontText = name;
+      }
+
+      const frontEl = document.getElementById('previewTextFront');
+      const backEl = document.getElementById('previewTextBack');
+      if (frontEl) frontEl.textContent = frontText;
+      if (backEl) backEl.textContent = backText;
+      return; // 여기서 return (아동복은 별도 처리)
+    } else {
+      // adults, senior, pet, group: 선택한 문구 표시
+      const select = document.querySelector('.customization select');
+      const inputs = document.querySelectorAll('.customization input');
+
+      if (select && select.value) {
+        previewText = select.value;
+      } else if (inputs.length > 0) {
+        const inputArray = Array.from(inputs).map(inp => inp.value).filter(v => v);
+        previewText = inputArray[0] || '';
+      }
+    }
+
+    const textEl = document.getElementById('previewText');
+    if (textEl) {
+      textEl.textContent = previewText || '정보를 입력하세요';
+    }
+  }
+
+  function orderProduct() {
+    window.location.href = 'https://open.kakao.com/o/gx5nTyAi';
+  }
+
+  function addToCart() {
+    alert('장바구니에 추가되었습니다!');
+  }
+
+  // 초기 로드
+  loadProduct();
 </script>
 
 </body>
