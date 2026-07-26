@@ -124,21 +124,26 @@ body{
 
 /* ── PRODUCT CODE SELECTOR ── */
 .code-scroll{
-  display:flex;flex-wrap:wrap;gap:8px;padding-bottom:4px;
-  width:100%;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:7px;padding-bottom:4px;
   scrollbar-width:none;
 }
 .code-scroll::-webkit-scrollbar{display:none}
 .code-pill{
-  flex-shrink:0;
-  padding:8px 14px;
+  height:40px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   border-radius:8px;
   border:2px solid var(--border);
   font-family:var(--mono);
   font-size:13px;font-weight:700;
   color:var(--ink2);
   cursor:pointer;background:var(--card);
-  transition:all .15s;white-space:nowrap;
+  transition:all .15s;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  padding:0;
 }
 .code-pill.active{
   border-color:var(--accent);
@@ -197,8 +202,8 @@ body{
   color:var(--accent);
 }
 .color-dot{
-  width:10px;height:10px;border-radius:50%;
-  border:1px solid rgba(0,0,0,.12);flex-shrink:0;
+  width:14px;height:14px;border-radius:50%;
+  border:1px solid rgba(0,0,0,.15);flex-shrink:0;margin-right:4px;
 }
 .custom-color-row{margin-top:8px}
 .field-lbl{font-size:11px;color:var(--ink3);font-weight:700;margin-bottom:5px}
@@ -242,10 +247,10 @@ body{
   width:100%;
 }
 .qty-btn{
-  min-width:48px;width:48px;height:48px;
-  background:var(--card);
+  min-width:56px;width:56px;height:56px;
+  background:var(--accent);
   border:none;
-  font-size:20px;font-weight:300;color:var(--ink);
+  font-size:24px;font-weight:700;color:#fff;
   cursor:pointer;display:flex;align-items:center;justify-content:center;
   flex-shrink:0;transition:background .1s;
 }
@@ -512,6 +517,10 @@ body{
 .cdot-인디핑크{background:#d4809a}
 .cdot-바이올렛{background:#8040c0}
 .cdot-퍼플{background:#a855f7}
+.cdot-청록{background:#4db8c4}
+.cdot-연두{background:#7ed321}
+.cdot-파랑{background:#3b5bdb}
+.cdot-보라{background:#7c3aed}
 </style>
 </head>
 <body>
@@ -557,18 +566,36 @@ body{
     <div class="sec-head">① 의류 종류</div>
     <div class="sec-body">
       <div class="color-grid" style="grid-template-columns:repeat(3,1fr)">
-        <button class="color-btn" onclick="selectGarment(this,'NY반팔티셔츠')" data-v="NY반팔티셔츠">👕 NY반팔</button>
-        <button class="color-btn" onclick="selectGarment(this,'디즈니반팔')" data-v="디즈니반팔">👕 디즈니</button>
+        <button class="color-btn" onclick="selectGarment(this,'반팔')" data-v="반팔">👕 반팔</button>
+        <button class="color-btn" onclick="selectGarment(this,'오버핏맨투맨')" data-v="오버핏맨투맨">👕 오버핏</button>
+        <button class="color-btn" onclick="selectGarment(this,'기모맨투맨')" data-v="기모맨투맨">👕 기모맨투맨</button>
         <button class="color-btn" onclick="selectGarment(this,'맨투맨')" data-v="맨투맨">👕 맨투맨</button>
-        <button class="color-btn" onclick="selectGarment(this,'후드티')" data-v="후드티">🧥 후드티</button>
-        <button class="color-btn" onclick="selectGarment(this,'실내복')" data-v="실내복">🩲 실내복</button>
+        <button class="color-btn" onclick="selectGarment(this,'기모후두')" data-v="기모후두">🧥 기모후두</button>
+        <button class="color-btn" onclick="selectGarment(this,'베개')" data-v="베개">🛏️ 베개</button>
+        <button class="color-btn" onclick="selectGarment(this,'옆트임반바지')" data-v="옆트임반바지">👖 옆트임반바지</button>
+        <button class="color-btn" onclick="selectGarment(this,'데일리반바지')" data-v="데일리반바지">👖 데일리반바지</button>
+        <button class="color-btn" onclick="selectGarment(this,'기모팬츠')" data-v="기모팬츠">👖 기모팬츠</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 브랜드 -->
+  <div class="sec" id="blank-brand-section" style="display:none">
+    <div class="sec-head">② 브랜드</div>
+    <div class="sec-body">
+      <div class="color-grid" style="grid-template-columns:repeat(3,1fr)">
+        <button class="color-btn" onclick="selectBrand('blank','뉴욕',this)" data-v="뉴욕">뉴욕</button>
+        <button class="color-btn" onclick="selectBrand('blank','디즈니',this)" data-v="디즈니">디즈니</button>
+        <button class="color-btn" onclick="selectBrand('blank','마블',this)" data-v="마블">마블</button>
+        <button class="color-btn" onclick="selectBrand('blank','피그먼트',this)" data-v="피그먼트">피그먼트</button>
+        <button class="color-btn" onclick="selectBrand('blank','인견',this)" data-v="인견">인견</button>
       </div>
     </div>
   </div>
 
   <!-- 색상 -->
   <div class="sec">
-    <div class="sec-head">② 색상</div>
+    <div class="sec-head">③ 색상</div>
     <div class="sec-body">
       <div class="color-grid" id="blank-colors">
         <!-- JS로 렌더링 -->
@@ -580,9 +607,22 @@ body{
     </div>
   </div>
 
+  <!-- 베개 형태 (사이즈 대신) -->
+  <div class="sec" id="blank-shape-section" style="display:none">
+    <div class="sec-head">④ 형태</div>
+    <div class="sec-body">
+      <div class="color-grid" style="grid-template-columns:repeat(2,1fr)">
+        <button class="color-btn" onclick="selectSize('blank','원형',this)" data-v="원형">원형</button>
+        <button class="color-btn" onclick="selectSize('blank','사각',this)" data-v="사각">사각</button>
+        <button class="color-btn" onclick="selectSize('blank','아치형',this)" data-v="아치형">아치형</button>
+        <button class="color-btn" onclick="selectSize('blank','리본형',this)" data-v="리본형">리본형</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 사이즈 -->
-  <div class="sec">
-    <div class="sec-head">③ 사이즈</div>
+  <div class="sec" id="blank-size-section">
+    <div class="sec-head">④ 사이즈</div>
     <div class="sec-body">
       <div class="size-grid" id="blank-sizes">
         <!-- JS로 렌더링 -->
@@ -596,7 +636,7 @@ body{
 
   <!-- 수량 -->
   <div class="sec">
-    <div class="sec-head">④ 수량</div>
+    <div class="sec-head">⑤ 수량</div>
     <div class="sec-body">
       <div class="qty-wrap">
         <button class="qty-btn" onclick="adjQty('blank',-1)">−</button>
@@ -956,6 +996,22 @@ const COLORS = [
 ];
 const SIZES = ['100','110','120','130','140','150','160','170','M','L','2XL','3XL'];
 
+// 의류 종류별 색상 배열
+const garmentColors = {
+  "반팔": ['화이트','블랙','그레이','베이지','블루','레드','핑크','민트','다크민트','옐로우','스카이블루','인디핑크','퍼플'],
+  "오버핏맨투맨": ['화이트','백멜란지','그레이','블랙','베이지','스틸블루','레몬옐로우','다크민트','퍼플','인디핑크','레드'],
+  "기모맨투맨": ['블랙','화이트','그레이','인핑','다크민트','네이비','코랄핑크','레드','다홍','피치','인디핑크','퍼플','연브라운','블루'],
+  "맨투맨": ['블랙','화이트','그레이','그린','레드','네이비','옐로우','인핑','다크민트','퍼플','연브라운','블루','스카이'],
+  "기모후두": ['블랙','화이트','그레이','차콜','멜란지','베이지','코코아','마스터드','카키','다크민트','스틸블루','블루','레드','와인','인디핑크','체리핑크','핑크'],
+  "베개": ['청록','연두','파랑','보라','화이트','핑크','그레이'],
+  "옆트임반바지": COLORS,
+  "데일리반바지": COLORS,
+  "기모팬츠": COLORS,
+};
+
+// 베개의 형태 (사이즈 대신)
+const beageShapes = ['원형','사각','아치형','리본형'];
+
 // 코드 프리셋 (저장된 코드 목록)
 let savedCodes = {
   transfer: JSON.parse(localStorage.getItem('codes_transfer')||'["W281","IT024","W286","IT007","IT028","W114","W285","W319","IT011","IT002","W262","W152","IT027","W191","W320","W150","A144"]'),
@@ -971,8 +1027,8 @@ let invData = {
 
 // 현재 선택 상태
 const sel = {
-  blank:    { garment:'', color:'', size:'', qty:1 },
-  transfer: { code:'', qty:1 },
+  blank:    { garment:'', color:'', size:'', brand:'', qty:1 },
+  transfer: { code:'', color:'', qty:1 },
   finished: { code:'', color:'', size:'', qty:1 },
 };
 
@@ -993,9 +1049,10 @@ function init() {
 }
 
 // ══════════════════════════ COLOR BUTTONS ══════════════════
-function renderColorBtns(type) {
+function renderColorBtns(type, colors = null) {
   const el = document.getElementById(type+'-colors');
-  el.innerHTML = COLORS.map(c => {
+  const colorList = colors || (type === 'blank' && sel.blank.garment ? garmentColors[sel.blank.garment] || COLORS : COLORS);
+  el.innerHTML = colorList.map(c => {
     const cls = `cdot-${c}`.replace(/\s/g,'-');
     return `<button class="color-btn" onclick="selectColor('${type}','${c}',this)" data-v="${c}">
       <span class="color-dot ${cls}"></span>${c}
@@ -1076,12 +1133,43 @@ function addCode(type) {
 // ══════════════════════════ SELECTION ══════════════════════
 function selectGarment(btn, val) {
   sel.blank.garment = val;
+  sel.blank.brand = '';
+  sel.blank.color = '';
+  sel.blank.size = '';
   document.querySelectorAll('#panel-blank .color-btn[data-v]').forEach(b=>{
-    if(b.dataset.v && ['NY반팔티셔츠','디즈니반팔','맨투맨','후드티','실내복'].includes(b.dataset.v))
+    if(b.dataset.v && ['반팔','오버핏맨투맨','기모맨투맨','맨투맨','기모후두','베개','옆트임반바지','데일리반바지','기모팬츠'].includes(b.dataset.v))
       b.classList.remove('active');
   });
   btn.classList.add('active');
+  // 색상 다시 렌더링 (선택된 의류에 맞춰)
+  renderColorBtns('blank', garmentColors[val] || COLORS);
+  // 브랜드 섹션 표시/숨김
+  const brandSection = document.getElementById('blank-brand-section');
+  if(['반팔','오버핏맨투맨','기모맨투맨','맨투맨','베개'].includes(val)) {
+    brandSection.style.display = 'block';
+    document.querySelectorAll('#blank-brand-section .color-btn').forEach(b=>b.classList.remove('active'));
+  } else {
+    brandSection.style.display = 'none';
+  }
+  // 베개는 사이즈 대신 형태 표시
+  const shapeSection = document.getElementById('blank-shape-section');
+  const sizeSection = document.getElementById('blank-size-section');
+  if(val === '베개') {
+    shapeSection.style.display = 'block';
+    sizeSection.style.display = 'none';
+    document.querySelectorAll('#blank-shape-section .color-btn').forEach(b=>b.classList.remove('active'));
+  } else {
+    shapeSection.style.display = 'none';
+    sizeSection.style.display = 'block';
+  }
   updateSummary('blank');
+}
+
+function selectBrand(type, val, btn) {
+  sel[type].brand = val;
+  document.querySelectorAll(`#${type}-brand-section .color-btn`).forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  updateSummary(type);
 }
 
 function selectColor(type, val, btn) {
@@ -1150,19 +1238,15 @@ function updateSummary(type) {
 
   if (type === 'blank') {
     if (s.garment) tags += `<span class="sel-tag">${s.garment}</span>`;
+    if (s.brand)   tags += `<span class="sel-tag">${s.brand}</span>`;
     if (s.color)   tags += `<span class="sel-tag color">${s.color}</span>`;
     if (s.size)    tags += `<span class="sel-tag size">${s.size}사이즈</span>`;
     tags += `<span class="sel-tag qty">${qty}개</span>`;
-    ready = !!(s.garment && s.color && s.size);
+    const needsBrand = ['반팔','오버핏맨투맨','기모맨투맨','맨투맨','베개'].includes(s.garment);
+    ready = !!(s.garment && s.color && s.size && (!needsBrand || s.brand));
   } else if (type === 'transfer') {
-    if (s.code) tags += `<span class="sel-tag color">${s.code}</span>`;
-    if (s.color) {
-      if (s.color === '검은색') {
-        tags += `<span class="sel-tag color" style="background: #000; color: #fff;">${s.color}</span>`;
-      } else {
-        tags += `<span class="sel-tag color" style="background: #fff; color: #000; border: 1px solid #ddd;">${s.color}</span>`;
-      }
-    }
+    if (s.code)  tags += `<span class="sel-tag">${s.code}</span>`;
+    if (s.color) tags += `<span class="sel-tag color">${s.color}</span>`;
     tags += `<span class="sel-tag qty">${qty}매</span>`;
     ready = !!(s.code && s.color);
   } else {
@@ -1190,11 +1274,16 @@ function addItem() {
 
   let item = null;
   if (type === 'blank') {
-    if (!s.garment || !s.color || !s.size) { toast('⚠️ 의류종류·색상·사이즈를 모두 선택하세요'); return; }
-    item = { garment: s.garment, color: s.color, size: s.size, qty, id: Date.now() };
+    const needsBrand = ['반팔','오버핏맨투맨','기모맨투맨','맨투맨','베개'].includes(s.garment);
+    if (!s.garment || !s.color || !s.size || (needsBrand && !s.brand)) {
+      const msg = needsBrand ? '⚠️ 의류종류·색상·브랜드·사이즈를 모두 선택하세요' : '⚠️ 의류종류·색상·사이즈를 모두 선택하세요';
+      toast(msg);
+      return;
+    }
+    item = { garment: s.brand ? `${s.garment}-${s.brand}` : s.garment, color: s.color, size: s.size, qty, id: Date.now() };
   } else if (type === 'transfer') {
-    if (!s.code) { toast('⚠️ 전사지 코드를 선택하세요'); return; }
-    item = { code: s.code, qty, id: Date.now() };
+    if (!s.code || !s.color) { toast('⚠️ 전사지 코드와 색상을 모두 선택하세요'); return; }
+    item = { code: s.code, color: s.color, qty, id: Date.now() };
   } else {
     if (!s.code || !s.color || !s.size) { toast('⚠️ SKU·색상·사이즈를 모두 선택하세요'); return; }
     item = { code: s.code, color: s.color, size: s.size, qty, id: Date.now() };
@@ -1230,15 +1319,18 @@ function renderList(type) {
   }
 
   el.innerHTML = data.map(item => {
-    let code = '', detail = '', icon = '';
+    let code = '', detail = '', icon = '', unit = '개';
     if (type === 'blank') {
       const dotCls = `cdot-${item.color}`.replace(/\s/g,'-');
       icon = `<span class="color-dot ${dotCls}" style="width:12px;height:12px;border:1px solid rgba(0,0,0,.15)"></span>`;
       code = item.garment;
       detail = `${icon} ${item.color} · ${item.size}`;
     } else if (type === 'transfer') {
+      const dotCls = `cdot-${item.color}`.replace(/\s/g,'-');
+      icon = `<span class="color-dot ${dotCls}" style="width:12px;height:12px;border:1px solid rgba(0,0,0,.15)"></span>`;
       code = item.code;
-      detail = '전사지';
+      detail = `${icon} ${item.color}`;
+      unit = '매';
     } else {
       const dotCls = `cdot-${item.color}`.replace(/\s/g,'-');
       icon = `<span class="color-dot ${dotCls}" style="width:12px;height:12px;border:1px solid rgba(0,0,0,.15)"></span>`;
@@ -1248,7 +1340,7 @@ function renderList(type) {
     return `<div class="inv-item">
       <div class="inv-code">${code}</div>
       <div class="inv-detail">${detail}</div>
-      <div class="inv-qty">${item.qty}${type==='transfer'?'매':'개'}</div>
+      <div class="inv-qty">${item.qty}${unit}</div>
       <button class="inv-del" onclick="delItem('${type}',${item.id})">✕</button>
     </div>`;
   }).join('');
@@ -1293,10 +1385,10 @@ function parseBatch(type) {
     if (type === 'blank') {
       const colorM = line.match(new RegExp(COLORS_RE));
       const sizeM  = line.match(new RegExp(SIZES_RE));
-      const garmentM = line.match(/NY반팔티셔츠|디즈니반팔|맨투맨|후드티|실내복/);
+      const garmentM = line.match(/NY반팔|디즈니|오버핏맨투맨|기모맨투맨|맨투맨|기모후두|베개|옆트임반바지|데일리반바지|기모팬츠/);
       const color  = colorM ? colorM[0] : '';
       const size   = sizeM  ? sizeM[0] : '';
-      const garment = garmentM ? garmentM[0] : sel.blank.garment || 'NY반팔티셔츠';
+      const garment = garmentM ? garmentM[0] : sel.blank.garment || 'NY반팔';
       if (color && size) {
         const item = { garment, color, size, qty, id: Date.now()+Math.random() };
         merge('blank', item);
@@ -1304,16 +1396,15 @@ function parseBatch(type) {
       }
     } else if (type === 'transfer') {
       const codes = [...line.matchAll(CODE_RE)].map(m=>m[1]);
-      const code = codes[0] || '';
-      const nums = [...line.matchAll(/\d+/g)].map(m=>parseInt(m[0]));
-      const q = nums.length >= 2 ? nums[1] : (nums.length===1 ? nums[0] : 1);
-      if (code) {
+      const code  = codes[0] || sel.transfer.code || '';
+      const color = sel.transfer.color || '';
+      if (code && color) {
         if (!savedCodes.transfer.includes(code)) {
           savedCodes.transfer.push(code);
           localStorage.setItem('codes_transfer', JSON.stringify(savedCodes.transfer));
           renderCodes('transfer');
         }
-        merge('transfer', { code, qty: q, id: Date.now()+Math.random() });
+        merge('transfer', { code, color, qty, id: Date.now()+Math.random() });
         added++;
       }
     } else {
@@ -1346,9 +1437,14 @@ function parseBatch(type) {
 }
 
 function merge(type, item) {
-  const key = type==='transfer' ? r => r.code===item.code
-    : type==='blank' ? r => r.garment===item.garment && r.color===item.color && r.size===item.size
-    : r => r.code===item.code && r.color===item.color && r.size===item.size;
+  let key;
+  if (type === 'blank') {
+    key = r => r.garment===item.garment && r.color===item.color && r.size===item.size;
+  } else if (type === 'transfer') {
+    key = r => r.code===item.code && r.color===item.color;
+  } else {
+    key = r => r.code===item.code && r.color===item.color && r.size===item.size;
+  }
   const existing = invData[type].find(key);
   if (existing) { existing.qty += item.qty; }
   else { invData[type].push(item); }
@@ -1540,7 +1636,7 @@ function buildInventoryContext() {
 
   if (invData.transfer.length > 0) {
     ctx += '\n[전사지재고]\n';
-    invData.transfer.forEach(r => { ctx += `${r.code}: ${r.qty}매\n`; });
+    invData.transfer.forEach(r => { ctx += `${r.code} ${r.color}: ${r.qty}매\n`; });
   } else { ctx += '\n[전사지재고] 데이터 없음\n'; }
 
   if (invData.finished.length > 0) {
@@ -1548,7 +1644,7 @@ function buildInventoryContext() {
     invData.finished.forEach(r => { ctx += `${r.code} ${r.color} ${r.size}: ${r.qty}개\n`; });
   } else { ctx += '\n[완제품재고] 데이터 없음\n'; }
 
-  ctx += '\n분석 원칙: 생산가능수량 = MIN(무지재고, 전사지재고). 숫자 구체적으로. 한국어로 핵심만 간결하게 답해라.';
+  ctx += '\n분석 원칙: 숫자 구체적으로. 한국어로 핵심만 간결하게 답해라.';
   return ctx;
 }
 
@@ -1649,3 +1745,4 @@ init();
 </script>
 </body>
 </html>
+/* deployed: Sun Jul 26 22:47:27     2026 */
