@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>뉴욕꼬맹이 - 세상에 하나뿐인 이야기를 입다</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&family=Noto+Serif+KR:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #1a1a2e;
+      --ink-light: #2d2d44;
+      --paper: #faf8f3;
+      --cream: #f5f0e8;
+      --gold: #c9a84c;
+      --gold-light: #e8c97a;
+      --sepia: #a68575;
+      --sepia-light: #d9c7bb;
+      --pastel-blue: #b8dae8;
+      --warm-beige: #e8d5c4;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Noto Sans KR', sans-serif;
+      line-height: 1.6;
+    }
+
+    /* ═══ HERO SECTION ═══ */
+    .hero {
+      background: linear-gradient(135deg, var(--ink) 0%, var(--ink-light) 100%);
+      color: var(--paper);
+      padding: 120px 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 50px,
+        rgba(201,168,76,0.03) 50px,
+        rgba(201,168,76,0.03) 51px
+      );
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero h1 {
+      font-family: 'Nanum Brush Script', cursive;
+      font-size: clamp(36px, 8vw, 64px);
+      margin-bottom: 12px;
+      letter-spacing: -1px;
+      line-height: 1.2;
+    }
+
+    .hero .tagline {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 18px;
+      color: var(--gold-light);
+      margin-bottom: 32px;
+      font-weight: 300;
+      letter-spacing: 1px;
+    }
+
+    .hero p {
+      font-size: 16px;
+      color: rgba(250,248,243,0.7);
+      margin-bottom: 48px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.8;
+    }
+
+    .cta-primary {
+      display: inline-block;
+      background: var(--gold);
+      color: var(--ink);
+      padding: 16px 40px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+      letter-spacing: 1px;
+    }
+
+    .cta-primary:hover {
+      background: var(--gold-light);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(201,168,76,0.3);
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 24px;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(10px); }
+    }
+
+    /* ═══ SECTION STYLES ═══ */
+    section {
+      padding: 80px 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    section:nth-child(even) {
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    section:nth-child(even) h2 {
+      color: var(--gold-light);
+    }
+
+    section:nth-child(even) .story-text {
+      color: rgba(250,248,243,0.85);
+    }
+
+    .section-header {
+      margin-bottom: 50px;
+    }
+
+    .section-header .emoji {
+      font-size: 48px;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .section-header h2 {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 42px;
+      margin-bottom: 12px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .section-header .subtitle {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 18px;
+      color: var(--sepia);
+      font-weight: 300;
+    }
+
+    section:nth-child(even) .subtitle {
+      color: var(--gold-light);
+    }
+
+    .story-text {
+      font-size: 17px;
+      margin-bottom: 40px;
+      line-height: 1.8;
+      color: #555;
+      max-width: 700px;
+    }
+
+    /* ═══ CHILDREN SECTION ═══ */
+    .children-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 50px;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+
+    .preview-area {
+      background: var(--cream);
+      border-radius: 16px;
+      padding: 40px;
+      text-align: center;
+      border: 2px solid rgba(201,168,76,0.2);
+    }
+
+    .preview-area h3 {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 14px;
+      color: var(--sepia);
+      margin-bottom: 20px;
+      letter-spacing: 2px;
+    }
+
+    .preview-box {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .preview-text {
+      font-family: 'Nanum Brush Script', cursive;
+      font-size: 24px;
+      color: var(--ink);
+      line-height: 1.6;
+      margin: 16px 0;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .input-group label {
+      font-size: 13px;
+      color: var(--sepia);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .input-group input {
+      padding: 12px 16px;
+      border: 1px solid rgba(201,168,76,0.3);
+      border-radius: 8px;
+      font-size: 16px;
+      font-family: 'Noto Sans KR', sans-serif;
+      transition: border-color 0.2s;
+    }
+
+    .input-group input:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 0 2px rgba(201,168,76,0.1);
+    }
+
+    .quote-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .quote-tab {
+      background: white;
+      border: 1px solid rgba(0,0,0,0.1);
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .quote-tab.active {
+      background: var(--gold);
+      color: var(--ink);
+      border-color: var(--gold);
+    }
+
+    .quote-tab:hover {
+      border-color: var(--gold);
+    }
+
+    .quotes-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .quotes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .quote-card {
+      background: white;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 12px;
+      padding: 24px 22px 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      color: var(--ink);
+      text-align: center;
+      font-family: 'Nanum Brush Script', cursive;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .quote-card:hover {
+      border-color: var(--gold);
+      box-shadow: 0 4px 12px rgba(201,168,76,0.2);
+      transform: translateY(-2px);
+    }
+
+    .quote-card.selected {
+      background: linear-gradient(135deg, var(--pastel-blue), rgba(184,218,232,0.2));
+      border-color: var(--gold);
+      border-width: 2px;
+    }
+
+    .quote-card.featured {
+      border-color: var(--gold);
+      border-width: 2px;
+      background: linear-gradient(135deg, #fffdf5, #fff);
+    }
+
+    .quote-card.featured::after {
+      content: '★ 추천';
+      position: absolute;
+      top: -1px;
+      right: 16px;
+      font-size: 11px;
+      color: var(--gold);
+      background: var(--paper);
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+
+    .quote-text {
+      font-family: 'Nanum Brush Script', cursive;
+      font-size: 18px;
+      line-height: 1.5;
+      color: var(--ink);
+      flex: 1;
+    }
+
+    .quote-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-top: auto;
+    }
+
+    .quote-source {
+      font-size: 12px;
+      color: #999;
+      font-style: italic;
+    }
+
+    .quote-chars {
+      font-size: 11px;
+      background: var(--cream);
+      color: #999;
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+
+    .tshirt-preview {
+      position: relative;
+      width: 200px;
+      height: 240px;
+      margin: 0 auto 20px;
+    }
+
+    .tshirt-svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));
+    }
+
+    .tshirt-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 70%;
+      text-align: center;
+      font-family: 'Nanum Brush Script', cursive;
+      font-size: 18px;
+      color: white;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      line-height: 1.4;
+      word-break: keep-all;
+      pointer-events: none;
+    }
+
+    /* ═══ PETS SECTION ═══ */
+    .pet-image {
+      width: 180px;
+      height: 200px;
+      background: var(--warm-beige);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 80px;
+      margin: 0 auto 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    /* ═══ SENIORS SECTION ═══ */
+    .sepia-text {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 20px;
+      line-height: 1.8;
+      color: var(--sepia);
+      margin: 30px 0;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .memory-quotes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 40px 0;
+    }
+
+    .memory-card {
+      background: rgba(250,248,243,0.4);
+      border-left: 4px solid var(--gold);
+      padding: 24px;
+      border-radius: 8px;
+      font-family: 'Noto Serif KR', serif;
+      font-size: 18px;
+      line-height: 1.6;
+      color: var(--ink);
+    }
+
+    /* ═══ TEAM SECTION ═══ */
+    .motto-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .motto-input {
+      background: white;
+      border: 2px dashed rgba(201,168,76,0.3);
+      border-radius: 10px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .motto-input input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid rgba(201,168,76,0.3);
+      border-radius: 8px;
+      font-size: 16px;
+      font-family: 'Noto Serif KR', serif;
+      text-align: center;
+    }
+
+    .motto-preview {
+      background: rgba(250,248,243,0.6);
+      border: 2px solid var(--gold);
+      border-radius: 10px;
+      padding: 30px;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .motto-preview-text {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 24px;
+      color: var(--ink);
+      font-weight: 600;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      word-break: keep-all;
+    }
+
+    /* ═══ HOW TO ORDER SECTION ═══ */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 30px;
+      margin-bottom: 50px;
+    }
+
+    .step {
+      text-align: center;
+    }
+
+    .step-num {
+      width: 60px;
+      height: 60px;
+      background: var(--gold);
+      color: var(--ink);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0 auto 16px;
+      font-family: 'Noto Serif KR', serif;
+    }
+
+    .step h3 {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .step p {
+      font-size: 14px;
+      color: rgba(0,0,0,0.6);
+    }
+
+    .kakao-button {
+      background: #ffe812;
+      color: #381c15;
+      padding: 14px 32px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+      display: inline-block;
+      margin: 0 8px;
+    }
+
+    .kakao-button:hover {
+      background: #ffed4e;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(255,232,18,0.3);
+    }
+
+    /* ═══ FOOTER ═══ */
+    footer {
+      background: var(--ink);
+      color: var(--paper);
+      padding: 50px 40px;
+      text-align: center;
+      border-top: 2px solid var(--gold);
+    }
+
+    footer .logo {
+      font-family: 'Nanum Brush Script', cursive;
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: var(--gold-light);
+    }
+
+    footer .links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+
+    footer a {
+      color: var(--gold-light);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+
+    footer a:hover {
+      color: var(--paper);
+    }
+
+    footer p {
+      font-size: 12px;
+      color: rgba(250,248,243,0.5);
+      margin-top: 20px;
+    }
+
+    /* ═══ RESPONSIVE ═══ */
+    @media (max-width: 768px) {
+      section { padding: 60px 24px; }
+      .hero { padding: 80px 24px; }
+
+      .children-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+
+      .section-header h2 {
+        font-size: 32px;
+      }
+
+      .memory-quotes {
+        grid-template-columns: 1fr;
+      }
+
+      .steps {
+        grid-template-columns: 1fr;
+      }
+
+      footer .links {
+        flex-direction: column;
+        gap: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<div class="hero">
+  <div class="hero-content">
+    <h1>세상에 하나뿐인<br/>이야기를 입다</h1>
+    <p class="tagline">기억과 추억, 사랑과 꿈을 옷에 담다</p>
+    <p>태어난 날의 띠와 이름, 별자리부터 소중한 분과의 추억까지.<br/>우리는 당신의 이야기를 가장 아름다운 형태로 만들어드립니다.</p>
+    <a href="#children" class="cta-primary">지금 시작하기</a>
+  </div>
+  <div class="scroll-hint">↓</div>
+</div>
+
+<!-- ═══ CHILDREN SECTION ═══ -->
+<section id="children">
+  <div class="section-header">
+    <span class="emoji">🎂</span>
+    <h2>아이의 첫 기억</h2>
+    <p class="subtitle">세상에 딱 하나뿐인 기념복으로 특별한 날을 기록하세요</p>
+  </div>
+
+  <div class="story-text">
+    태어난 날의 띠와 이름, 출생년도를 앞면에 새기고,<br/>별자리와 그 별자리의 의미를 뒷면에 담은 기념복입니다.<br/>세상에 하나뿐인 아이의 이야기를 입혀주세요.
+  </div>
+
+  <div class="children-grid">
+    <div class="input-group" style="grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+      <div>
+        <label>아이 이름</label>
+        <input type="text" id="childName" placeholder="예: 지훈" onchange="updateChildPreview()">
+      </div>
+      <div>
+        <label>출생년도</label>
+        <input type="number" id="birthYear" placeholder="2020" min="1900" max="2100" onchange="updateChildPreview()">
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px;">
+      <!-- 앞면 미리보기 -->
+      <div class="preview-area">
+        <h3 style="margin-bottom: 20px;">👕 앞면 미리보기</h3>
+        <div style="background: #1a1a2e; border-radius: 12px; padding: 40px 20px; text-align: center; position: relative; aspect-ratio: 3/4;">
+          <!-- 12간지 캐릭터 -->
+          <div id="zodiacEmoji" style="font-size: 80px; margin-bottom: 12px;">🐭</div>
+          <!-- 이름 -->
+          <div id="childNameDisplay" style="font-family: 'Nanum Brush Script', cursive; font-size: 32px; color: var(--gold); margin: 16px 0;">지훈</div>
+          <!-- 출생년도 -->
+          <div id="birthYearDisplay" style="font-family: 'Noto Serif KR', serif; font-size: 18px; color: #faf8f3; margin-bottom: 12px;">2020년</div>
+          <!-- 띠 이름 -->
+          <div id="zodiacAnimalName" style="font-family: 'Noto Serif KR', serif; font-size: 14px; color: var(--gold-light); letter-spacing: 2px;">쥐띠</div>
+        </div>
+      </div>
+
+      <!-- 뒷면 미리보기 -->
+      <div class="preview-area">
+        <h3 style="margin-bottom: 20px;">✨ 뒷면 미리보기</h3>
+        <div style="background: #1a1a2e; border-radius: 12px; padding: 40px 20px; text-align: center; position: relative; aspect-ratio: 3/4; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+          <!-- 별자리 라인아트 -->
+          <svg id="constellationSVG" width="100" height="100" viewBox="0 0 100 100" style="margin-bottom: 16px;">
+            <g stroke="var(--gold-light)" stroke-width="2" fill="none">
+              <!-- 물고기자리 기본 -->
+              <circle cx="25" cy="35" r="4"/>
+              <circle cx="40" cy="30" r="4"/>
+              <circle cx="55" cy="32" r="4"/>
+              <circle cx="70" cy="38" r="4"/>
+              <circle cx="32" cy="55" r="4"/>
+              <circle cx="48" cy="60" r="4"/>
+              <circle cx="65" cy="65" r="4"/>
+              <line x1="25" y1="35" x2="40" y2="30"/>
+              <line x1="40" y1="30" x2="55" y2="32"/>
+              <line x1="55" y1="32" x2="70" y2="38"/>
+              <line x1="32" y1="55" x2="48" y2="60"/>
+              <line x1="48" y1="60" x2="65" y2="65"/>
+              <line x1="40" y1="30" x2="32" y2="55"/>
+            </g>
+          </svg>
+          <!-- 별자리 이름 -->
+          <div id="constellationName" style="font-family: 'Noto Serif KR', serif; font-size: 20px; color: var(--gold); margin-bottom: 8px; font-weight: 600;">물고기자리</div>
+          <!-- 별자리 의미 -->
+          <div id="constellationMeaning" style="font-size: 13px; color: #faf8f3; line-height: 1.6; max-width: 280px;">당신의 꿈은 누군가의 희망이 될 거예요</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align: center; margin-top: 40px;">
+    <a href="https://open.kakao.com/o/gx5nTyAi" class="cta-primary">우리 아이 기념복 만들기</a>
+  </div>
+</section>
+
+<!-- ═══ PETS SECTION ═══ -->
+<section id="pets">
+  <div class="section-header">
+    <span class="emoji">🐾</span>
+    <h2>소중한 반려동물</h2>
+    <p class="subtitle">가족의 이름을 새긴 특별한 의류</p>
+  </div>
+
+  <div class="story-text">
+    반려동물의 이름, 종류, 생일을 옷에 담아<br/>우리 가족의 특별한 순간을 영구히 기록하세요.
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px; max-width: 900px; margin-left: auto; margin-right: auto;">
+    <!-- 입력 영역 -->
+    <div class="input-group" style="display: flex; flex-direction: column; gap: 16px;">
+      <div>
+        <label>반려동물 이름</label>
+        <input type="text" id="petName" placeholder="예: 뽀삐" onchange="updatePetPreview()">
+      </div>
+      <div>
+        <label>종류 선택</label>
+        <select id="petType" onchange="updatePetTypeBreeds()" style="width: 100%; padding: 12px 16px; border: 1px solid rgba(201,168,76,0.3); border-radius: 8px; font-size: 16px; font-family: 'Noto Sans KR', sans-serif;">
+          <option value="dog">🐕 강아지</option>
+          <option value="cat">🐱 고양이</option>
+        </select>
+      </div>
+      <div>
+        <label>품종 선택</label>
+        <select id="petBreed" onchange="updatePetPreview()" style="width: 100%; padding: 12px 16px; border: 1px solid rgba(201,168,76,0.3); border-radius: 8px; font-size: 16px; font-family: 'Noto Sans KR', sans-serif;">
+          <option value="goldenRetriever">Golden Retriever</option>
+          <option value="labrador">Labrador</option>
+          <option value="poodle">Poodle</option>
+          <option value="maltese">Maltese</option>
+          <option value="bulldog">Bulldog</option>
+        </select>
+      </div>
+      <div>
+        <label>생일 (선택사항)</label>
+        <input type="date" id="petBirthday" onchange="updatePetPreview()">
+      </div>
+    </div>
+
+    <!-- 미리보기 -->
+    <div class="preview-area">
+      <h3>앞면 미리보기</h3>
+      <div style="background: var(--warm-beige); border-radius: 12px; padding: 40px 20px; text-align: center; position: relative; aspect-ratio: 3/4; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <div id="petEmoji" style="font-size: 80px; margin-bottom: 12px;">🐕</div>
+        <div id="petNameDisplay" style="font-family: 'Nanum Brush Script', cursive; font-size: 32px; color: var(--ink); margin: 16px 0;">뽀삐</div>
+        <div id="petTypeDisplay" style="font-family: 'Noto Serif KR', serif; font-size: 16px; color: var(--sepia); margin-bottom: 12px;">Golden Retriever</div>
+        <div id="petBirthdayDisplay" style="font-size: 13px; color: var(--sepia); letter-spacing: 1px;">2020.03.15</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align: center; margin-top: 40px;">
+    <a href="https://open.kakao.com/o/gx5nTyAi" class="cta-primary">반려동물 의상 만들기</a>
+  </div>
+</section>
+
+<!-- ═══ EVERYDAY QUOTES SECTION ═══ -->
+<section id="quotes">
+  <div class="section-header">
+    <span class="emoji">💬</span>
+    <h2>당신의 이야기를 등에 새기다</h2>
+    <p class="subtitle">나를 표현하는 문구로 옷을 완성하세요</p>
+  </div>
+
+  <div class="story-text">
+    사랑, 도전, 행운, 우정, 성공, 행복.<br/>당신이 지향하는 가치를 캘리그래피로 담아냅니다.
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px; max-width: 1000px; margin-left: auto; margin-right: auto;">
+    <!-- 왼쪽: 카테고리 + 명언 선택 -->
+    <div>
+      <h3 style="font-size: 16px; margin-bottom: 12px; font-weight: 600;">카테고리 선택</h3>
+      <div class="quote-tabs" style="margin-bottom: 24px;">
+        <button class="quote-tab active" onclick="filterQuotes('love')">사랑</button>
+        <button class="quote-tab" onclick="filterQuotes('challenge')">도전</button>
+        <button class="quote-tab" onclick="filterQuotes('success')">성공</button>
+        <button class="quote-tab" onclick="filterQuotes('friend')">우정</button>
+        <button class="quote-tab" onclick="filterQuotes('happy')">행복</button>
+      </div>
+      <div id="quotesDisplay" class="quotes-row"></div>
+    </div>
+
+    <!-- 오른쪽: 티셔츠 미리보기 -->
+    <div class="preview-area">
+      <h3>뒷면 미리보기</h3>
+      <div class="tshirt-preview" style="display: block; margin: 20px auto;">
+        <svg class="tshirt-svg" viewBox="0 0 220 240" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="shirtGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#2c2c4a"/>
+              <stop offset="100%" stop-color="#1a1a32"/>
+            </linearGradient>
+            <filter id="shadow">
+              <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="rgba(0,0,0,0.3)"/>
+            </filter>
+          </defs>
+          <path d="M60,20 L10,60 L35,70 L35,220 L185,220 L185,70 L210,60 L160,20 L140,36 Q110,50 80,36 Z"
+                fill="url(#shirtGrad)" filter="url(#shadow)"/>
+          <path d="M60,20 L80,36 Q110,50 140,36 L160,20" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
+        </svg>
+        <div class="tshirt-text" id="tshirtText">문구를 선택하세요</div>
+      </div>
+      <div style="text-align: center; font-size: 12px; color: var(--sepia); margin-top: 12px;">
+        위의 문구를 클릭하여 미리보기를 확인하세요
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align: center; margin-top: 40px;">
+    <a href="https://open.kakao.com/o/gx5nTyAi" class="cta-primary">나만의 문구 주문하기</a>
+  </div>
+</section>
+
+<!-- ═══ SENIORS SECTION ═══ -->
+<section id="seniors">
+  <div class="section-header">
+    <span class="emoji">👴</span>
+    <h2>기억을 되살리는 옷</h2>
+    <p class="subtitle">잊혀지지 않도록, 기억을 옷에 새기다</p>
+  </div>
+
+  <p class="sepia-text">
+    치매로 잃어가는 순간들을 추억으로 만들어 드립니다.<br/>
+    인생 최고의 행복한 순간들을 옷에 담아,<br/>
+    그 감정을 언제나 가슴에 안을 수 있도록.
+  </p>
+
+  <!-- 추억 명언 카드 (quotes.html 스타일) -->
+  <div class="quotes-grid" id="grid-memory-shop" style="max-width: 900px; margin: 40px auto;"></div>
+
+  <div style="text-align: center; margin-top: 40px;">
+    <a href="https://open.kakao.com/o/gx5nTyAi" class="cta-primary">소중한 분께 선물하기</a>
+  </div>
+
+  <!-- 기억을 되살리는 옷 - 팝업 미리보기 -->
+  <div id="memoryPreviewOverlay" style="display: none; position: fixed; inset: 0; background: rgba(26,26,46,0.85); z-index: 1000; align-items: center; justify-content: center; padding: 24px; backdrop-filter: blur(6px);" onclick="closeMemoryPreview(event)">
+    <div class="preview-box" style="background: var(--paper); border-radius: 16px; max-width: 520px; width: 100%; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.4);">
+      <div style="background: var(--ink); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="color: var(--gold); font-size: 13px; letter-spacing: 1px;">👕 기억을 담은 옷</span>
+        <button class="close-btn" onclick="closeMemoryPreview()" style="background: none; border: none; color: rgba(250,248,243,0.6); font-size: 22px; cursor: pointer; line-height: 1; transition: color 0.2s;">×</button>
+      </div>
+
+      <div style="padding: 36px 24px; display: flex; flex-direction: column; align-items: center; gap: 24px; background: var(--cream);">
+        <!-- 티셔츠 SVG -->
+        <div style="position: relative; width: 220px;">
+          <svg viewBox="0 0 220 240" xmlns="http://www.w3.org/2000/svg" style="width: 100%; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));">
+            <defs>
+              <linearGradient id="memoryShirtGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#2c2c4a"/>
+                <stop offset="100%" stop-color="#1a1a32"/>
+              </linearGradient>
+              <filter id="memoryShadow">
+                <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="rgba(0,0,0,0.3)"/>
+              </filter>
+            </defs>
+            <path d="M60,20 L10,60 L35,70 L35,220 L185,220 L185,70 L210,60 L160,20 L140,36 Q110,50 80,36 Z"
+                  fill="url(#memoryShirtGrad)" filter="url(#memoryShadow)"/>
+            <path d="M60,20 L80,36 Q110,50 140,36 L160,20" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
+          </svg>
+          <div id="memoryTshirtText" style="position: absolute; top: 54%; left: 50%; transform: translate(-50%, -50%); width: 60%; text-align: center; font-family: 'Noto Serif KR', serif; font-size: 16px; line-height: 1.5; color: #ffffff; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.55), 0 0 2px rgba(0, 0, 0, 0.75); -webkit-text-stroke: 0.2px rgba(0, 0, 0, 0.35); word-break: keep-all; pointer-events: none;">함께한 시간이 가장 큰 행복이었습니다</div>
+        </div>
+      </div>
+
+      <div style="padding: 20px 28px 28px; border-top: 1px solid rgba(201,168,76,0.3);">
+        <div id="memoryQuoteFull" style="font-family: 'Noto Serif KR', serif; font-size: 20px; font-weight: 600; color: var(--ink); margin-bottom: 8px; line-height: 1.6;">함께한 시간이 가장 큰 행복이었습니다</div>
+        <div style="font-size: 13px; color: var(--warm-gray); margin-bottom: 16px;">노인 맞춤복용</div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <span style="font-size: 11px; padding: 4px 12px; border-radius: 20px; background: var(--ink); color: var(--gold);">👴 추억</span>
+          <span id="memoryCharCount" style="font-size: 11px; padding: 4px 12px; border-radius: 20px; background: var(--cream); color: var(--warm-gray);">20자</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TEAM SECTION ═══ -->
+<section id="team">
+  <div class="section-header">
+    <span class="emoji">🏢</span>
+    <h2>우리 모두의 이야기</h2>
+    <p class="subtitle">하나의 팀, 하나의 이야기</p>
+  </div>
+
+  <div class="story-text">
+    어린이집, 회사, 스포츠팀의 이야기를 담은 단체복입니다.<br/>앞면에는 개인의 정보를 새기고,<br/>뒷면에는 팀의 사훈과 기관명을 담아냅니다.
+  </div>
+
+  <!-- 팀 유형 탭 -->
+  <div style="text-align: center; margin: 40px 0;">
+    <div class="quote-tabs" style="justify-content: center; margin-bottom: 40px;">
+      <button class="quote-tab active" onclick="switchTeamType('children')" style="font-size: 14px; padding: 10px 20px;">👧 어린이집</button>
+      <button class="quote-tab" onclick="switchTeamType('company')" style="font-size: 14px; padding: 10px 20px;">🏢 회사</button>
+      <button class="quote-tab" onclick="switchTeamType('sports')" style="font-size: 14px; padding: 10px 20px;">⚽ 스포츠팀</button>
+    </div>
+  </div>
+
+  <!-- 어린이집 -->
+  <div id="childrenTeam" style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px; max-width: 900px; margin-left: auto; margin-right: auto;">
+    <div class="input-group" style="display: flex; flex-direction: column; gap: 16px;">
+      <div>
+        <label>아이 이름</label>
+        <input type="text" id="childTeamName" placeholder="예: 지훈" onchange="updateChildrenTeamPreview()">
+      </div>
+      <div>
+        <label>출생년도</label>
+        <input type="number" id="childTeamBirthYear" placeholder="2020" min="1900" max="2100" onchange="updateChildrenTeamPreview()">
+      </div>
+      <div>
+        <label>어린이집 이름</label>
+        <input type="text" id="kindergartenName" placeholder="예: 드래곤 어린이집" onchange="updateChildrenTeamPreview()">
+      </div>
+    </div>
+    <div>
+      <div style="margin-bottom: 24px;">
+        <h3 style="font-size: 13px; margin-bottom: 12px; color: var(--sepia); font-weight: 600;">앞면 미리보기</h3>
+        <div style="background: #1a1a2e; border-radius: 12px; padding: 40px 20px; text-align: center; aspect-ratio: 3/4; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+          <div id="childTeamEmoji" style="font-size: 60px; margin-bottom: 16px;">🐭</div>
+          <div id="childTeamNameDisplay" style="font-family: 'Nanum Brush Script', cursive; font-size: 28px; color: var(--gold); margin: 12px 0;">지훈</div>
+          <div id="childTeamYearDisplay" style="font-family: 'Noto Serif KR', serif; font-size: 14px; color: #faf8f3; margin: 8px 0;">2020년</div>
+        </div>
+      </div>
+      <div>
+        <h3 style="font-size: 13px; margin-bottom: 12px; color: var(--sepia); font-weight: 600;">뒷면 미리보기</h3>
+        <div style="background: #1a1a2e; border-radius: 12px; padding: 40px 20px; text-align: center; aspect-ratio: 3/4; display: flex; align-items: center; justify-content: center;">
+          <div id="kindergartenDisplay" style="font-family: 'Noto Serif KR', serif; font-size: 20px; color: var(--gold-light);">드래곤 어린이집</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 회사 -->
+  <div id="companyTeam" style="display: none; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px; max-width: 900px; margin-left: auto; margin-right: auto;">
+    <div class="input-group" style="display: flex; flex-direction: column; gap: 16px;">
+      <div>
+        <label>팀/부서명</label>
+        <input type="text" id="companyTeamName" placeholder="예: 드래곤팀" onchange="updateCompanyTeamPreview()">
+      </div>
+      <div>
+        <label>개인 이름</label>
+        <input type="text" id="companyMemberName" placeholder="예: 김지훈" onchange="updateCompanyTeamPreview()">
+      </div>
+      <div>
+        <label>팀 사훈</label>
+        <input type="text" id="companyMotto" placeholder="예: 함께 성장한다" onchange="updateCompanyTeamPreview()">
+      </div>
+    </div>
+    <div>
+      <div style="margin-bottom: 24px;">
+        <h3 style="font-size: 13px; margin-bottom: 12px; color: var(--sepia); font-weight: 600;">앞면 미리보기</h3>
+        <div style="background: #1a1a2e; border-radius: 12px; padding: 40px 20px; text-align: center; aspect-ratio: 3/4; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+          <div id="companyTeamNameDisplay" style="font-family: 'Noto Serif KR', serif; font-size: 22px; color: var(--gold); margin-bottom: 20px; font-weight: 600;">드래곤팀</div>
+          <div style="height: 1px; width: 80%; background: var(--gold-light); margin-bottom: 20px;"></div>
+          <div id="companyMemberDisplay" style="font-family: 'Nanum Brush Script', cursive; font-size: 28px; color: var(--gold);">김지훈</div>
+        </div>
+      </div>
+      <div>
+        <h3 style="font-size: 13px; margin-bottom: 12px; color: var(--sepia); font-weight: 600;">뒷면 미리보기</h3>
+        <div style="background: #1a1a2e; border-radius: 12px; padding: 40px 20px; text-align: center; aspect-ratio: 3/4; display: flex; align-items: center; justify-content: center;">
+          <div id="companyMottoDisplay" style="font-family: 'Noto Serif KR', serif; font-size: 24px; color: var(--gold-light); font-weight: 600;">함께 성장한다</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 스포츠팀 -->
+  <div id="sportsTeam" style="display: none; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px; max-width: 900px; margin-left: auto; margin-right: auto;">
+    <div class="input-group" style="display: flex; flex-direction: column; gap: 16px;">
+      <div>
+        <label>팀 이름</label>
+        <input type="text" id="sportsTeamName" placeholder="예: 드래곤팀" onchange="updateSportsTeamPreview()">
+      </div>
+      <div>
+        <label>개인 이름</label>
+        <input type="text" id="sportsMemberName" placeholder="예: 김지훈" onchange="updateSportsTeamPreview()">
+      </div>
+      <div>
+        <label>스포츠 문구 선택</label>
+        <select id="sportsPhrase" onchange="updateSportsTeamPreview()" style="width: 100%; padding: 12px 16px; border: 1px solid rgba(201,168,76,0.3); border-radius: 8px; font-size: 16px; font-family: 'Noto Sans KR', sans-serif;">
+          <option value="victory">승리를 향해 한마음으로</option>
+          <option value="challenge">끝까지 도전한다</option>
+          <option value="teamwork">함께라면 불가능은 없다</option>
+          <option value="passion">열정으로 경기한다</option>
+          <option value="spirit">하나의 팀, 하나의 정신</option>
+          <option value="glory">영광을 향해 나아가자</option>
+        </select>
+      </div>
+    </div>
+    <div>
+      <div style="margin-bottom: 24px;">
+        <h3 style="font-size: 13px; margin-bottom: 12px; color: var(--sepia); font-weight: 600;">앞면 미리보기</h3>
+        <div style="background: #1a1a2e; border-radius: 12px; padding: 40px 20px; text-align: center; aspect-ratio: 3/4; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+          <div id="sportsTeamNameDisplay" style="font-family: 'Noto Serif KR', serif; font-size: 22px; color: var(--gold); margin-bottom: 20px; font-weight: 600;">드래곤팀</div>
+          <div style="height: 1px; width: 80%; background: var(--gold-light); margin-bottom: 20px;"></div>
+          <div id="sportsMemberDisplay" style="font-family: 'Nanum Brush Script', cursive; font-size: 28px; color: var(--gold);">김지훈</div>
+        </div>
+      </div>
+      <div>
+        <h3 style="font-size: 13px; margin-bottom: 12px; color: var(--sepia); font-weight: 600;">뒷면 미리보기</h3>
+        <div style="background: #1a1a2e; border-radius: 12px; padding: 40px 20px; text-align: center; aspect-ratio: 3/4; display: flex; align-items: center; justify-content: center;">
+          <div id="sportsPhraseDisplay" style="font-family: 'Noto Serif KR', serif; font-size: 22px; color: var(--gold-light); font-weight: 600;">승리를 향해 한마음으로</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align: center; margin-top: 40px;">
+    <a href="https://open.kakao.com/o/gx5nTyAi" class="cta-primary">단체 주문 문의하기</a>
+  </div>
+</section>
+
+<!-- ═══ HOW TO ORDER ═══ -->
+<section id="order-guide" style="background: var(--cream);">
+  <div class="section-header">
+    <span class="emoji">📋</span>
+    <h2>주문하는 3가지 방법</h2>
+    <p class="subtitle">간단하고 쉽게 주문하세요</p>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">①</div>
+      <h3>카테고리 선택</h3>
+      <p>아이, 반려동물, 개인,<br/>어르신, 단체복 중 선택</p>
+    </div>
+    <div class="step">
+      <div class="step-num">②</div>
+      <h3>정보 입력</h3>
+      <p>이름, 생일, 사훈 등<br/>필요한 정보 입력</p>
+    </div>
+    <div class="step">
+      <div class="step-num">③</div>
+      <h3>카카오톡 주문</h3>
+      <p>카카오톡 채널로<br/>주문 내용 전달</p>
+    </div>
+  </div>
+
+  <div style="text-align: center; margin-top: 50px;">
+    <a href="https://open.kakao.com/o/gx5nTyAi" class="kakao-button">💬 카카오톡 채널 열기</a>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="logo">뉴욕꼬맹이</div>
+  <p style="font-size: 14px; margin-bottom: 24px;">세상에 하나뿐인 이야기를 옷에 담다</p>
+
+  <div class="links">
+    <a href="https://open.kakao.com/o/gx5nTyAi">💬 카카오톡</a>
+    <a href="https://instagram.com">📷 인스타그램</a>
+    <a href="tel:010-0000-0000">☎️ 전화 문의</a>
+  </div>
+
+  <p>© 2026 뉴욕꼬맹이. 모든 권리 보유.</p>
+</footer>
+
+<script>
+// ─── 12간지 데이터 ───
+const ZODIAC_ANIMALS = ['쥐','소','호랑이','토끼','용','뱀','말','양','원숭이','닭','개','돼지'];
+const ZODIAC_EMOJIS = ['🐭','🐂','🐯','🐰','🐉','🐍','🐴','🐑','🐵','🐔','🐕','🐷'];
+
+const ZODIAC_MEANINGS = {
+  0: { name: '쥐띠', meaning: '현명하고 영리한 아이로 자라날 거예요' },
+  1: { name: '소띠', meaning: '천천히 가도 괜찮아. 당신은 누구보다 단단하게 자라고 있어' },
+  2: { name: '호랑이띠', meaning: '강하고 용감한 마음을 가진 아이가 될 거예요' },
+  3: { name: '토끼띠', meaning: '온화하고 따뜻한 마음의 아이로 자라날 거예요' },
+  4: { name: '용띠', meaning: '당신은 큰 꿈을 이룰 운명이 있어요' },
+  5: { name: '뱀띠', meaning: '지혜롭고 영특한 아이로 자라날 거예요' },
+  6: { name: '말띠', meaning: '자유롭고 활발한 영혼으로 자라날 거예요' },
+  7: { name: '양띠', meaning: '착하고 부드러운 마음의 아이가 될 거예요' },
+  8: { name: '원숭이띠', meaning: '똑똑하고 재미있는 아이로 자라날 거예요' },
+  9: { name: '닭띠', meaning: '정직하고 성실한 아이로 자라날 거예요' },
+  10: { name: '개띠', meaning: '충성스럽고 든든한 마음의 아이가 될 거예요' },
+  11: { name: '돼지띠', meaning: '너그럽고 따뜻한 아이로 자라날 거예요' }
+};
+
+// 월별 별자리 데이터
+const CONSTELLATIONS_BY_MONTH = {
+  1: { name: '염소자리', meaning: '도전하지 않은 꿈은 언제나 너의 마음속에 남습니다' },
+  2: { name: '물병자리', meaning: '특별함은 언제나 새로운 별이 됩니다' },
+  3: { name: '물고기자리', meaning: '당신의 꿈은 누군가의 희망이 될 거예요' },
+  4: { name: '양자리', meaning: '두려움보다 꿈이 더 크다면 세상은 항상 당신의 편입니다' },
+  5: { name: '황소자리', meaning: '천천히 가도 괜찮아. 당신은 누구보다 단단합니다' },
+  6: { name: '쌍둥이자리', meaning: '호기심은 세상을 밝히는 작은 별빛입니다' },
+  7: { name: '게자리', meaning: '따뜻한 마음을 가진 사람은 어디서든 사랑받습니다' },
+  8: { name: '사자자리', meaning: '내 안의 빛을 숨기지 마. 세상은 당신이 빛나길 기다립니다' },
+  9: { name: '처녀자리', meaning: '작은 노력 하나가 당신만의 별자리를 만듭니다' },
+  10: { name: '천칭자리', meaning: '사람을 이해하는 마음은 가장 아름다운 재능입니다' },
+  11: { name: '전갈자리', meaning: '넘어져도 괜찮아. 당신은 언제나 더 강하게 빛날 거예요' },
+  12: { name: '사수자리', meaning: '꿈꾸는 사람만이 보이지 않는 길을 발견합니다' }
+};
+
+const QUOTES_DATA = {
+  love: [
+    '사랑은 모든 것을 이긴다',
+    '사랑은 주는 것이다',
+    '사랑은 눈으로 보지 않고 마음으로 본다',
+    '사랑이 없는 곳에 사랑을 심어라',
+    '사랑은 모든 언어를 안다',
+    '사랑하라, 한 번도 상처받지 않은 것처럼'
+  ],
+  challenge: [
+    '하면 된다',
+    '불가능은 없다',
+    '피할 수 없으면 즐겨라',
+    '천 리 길도 한 걸음부터',
+    '도전하지 않으면 아무것도 얻지 못한다',
+    '시작이 반이다'
+  ],
+  success: [
+    '성공은 준비와 기회의 만남이다',
+    '1%의 영감과 99%의 노력',
+    '포기하지 않는 자가 이긴다',
+    '실패는 성공의 어머니다',
+    '지금 하지 않으면 언제 하겠는가',
+    '작은 습관이 위대함을 만든다'
+  ],
+  friend: [
+    '친구는 제2의 자신이다',
+    '진정한 친구는 어둠 속에서 빛난다',
+    '우정은 천천히 자라는 식물이다',
+    '함께라면 더 멀리 갈 수 있다',
+    '우정은 사랑보다 오래간다',
+    '행복은 나눌수록 커진다'
+  ],
+  happy: [
+    '행복은 습관이다',
+    '삶이 있는 한 희망은 있다',
+    '웃어라, 세상이 웃는다',
+    '오늘은 선물이다',
+    '너 자신을 알라',
+    '꿈은 이루어진다',
+    '오늘을 살아라'
+  ],
+  memory: [
+    '함께한 시간이 가장 큰 행복이었습니다',
+    '그 시절 우리는 참 아름다웠다',
+    '인생 최고의 순간들이 옆에 있었습니다',
+    '지나간 날들이 모두 보석입니다',
+    '지나간 날들, 모두 아름다웠습니다',
+    '당신이 있어 행복했습니다'
+  ]
+};
+
+let currentCategory = 'love';
+
+// ═══ 아동복 미리보기 업데이트 ═══
+function updateChildPreview() {
+  const year = parseInt(document.getElementById('birthYear').value);
+  const name = document.getElementById('childName').value || '아이 이름';
+
+  if (year > 0 && year >= 1900 && year <= 2100) {
+    // 띠 계산: 1900년 = 쥐띠 (인덱스 0)
+    const zodiacIndex = (year - 1900) % 12;
+    const animal = ZODIAC_ANIMALS[zodiacIndex];
+    const emoji = ZODIAC_EMOJIS[zodiacIndex];
+    const meaning = ZODIAC_MEANINGS[zodiacIndex];
+
+    // 앞면 업데이트
+    document.getElementById('zodiacEmoji').textContent = emoji;
+    document.getElementById('childNameDisplay').textContent = name;
+    document.getElementById('birthYearDisplay').textContent = year + '년';
+    document.getElementById('zodiacAnimalName').textContent = meaning.name;
+
+    // 뒷면: 기본값은 물고기자리 (3월) - 나중에 월 선택 기능 추가 가능
+    const defaultMonth = 3;
+    const constellation = CONSTELLATIONS_BY_MONTH[defaultMonth];
+    document.getElementById('constellationName').textContent = constellation.name;
+    document.getElementById('constellationMeaning').textContent = constellation.meaning;
+  } else {
+    // 기본값 표시
+    document.getElementById('childNameDisplay').textContent = '아이 이름';
+    document.getElementById('birthYearDisplay').textContent = '출생년도';
+    document.getElementById('zodiacAnimalName').textContent = '띠';
+  }
+}
+
+// ═══ 반려동물 미리보기 ═══
+const PET_EMOJIS = {
+  dog: '🐕',
+  cat: '🐱'
+};
+
+const PET_BREEDS = {
+  dog: ['Golden Retriever', 'Labrador', 'Poodle', 'Maltese', 'Bulldog'],
+  cat: ['Russian Blue', 'Siamese', 'Persian', 'Bengal', 'Scottish Fold']
+};
+
+function updatePetTypeBreeds() {
+  const type = document.getElementById('petType').value;
+  const breedSelect = document.getElementById('petBreed');
+  breedSelect.innerHTML = PET_BREEDS[type].map(breed => `<option value="${breed}">${breed}</option>`).join('');
+  updatePetPreview();
+}
+
+function updatePetPreview() {
+  const name = document.getElementById('petName').value || '뽀삐';
+  const type = document.getElementById('petType').value || 'dog';
+  const breed = document.getElementById('petBreed').value || PET_BREEDS[type][0];
+  const birthday = document.getElementById('petBirthday').value;
+
+  document.getElementById('petEmoji').textContent = PET_EMOJIS[type];
+  document.getElementById('petNameDisplay').textContent = name;
+  document.getElementById('petTypeDisplay').textContent = breed;
+
+  if (birthday) {
+    const date = new Date(birthday);
+    const formatted = date.toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').replace(/\.$/, '');
+    document.getElementById('petBirthdayDisplay').textContent = formatted;
+  } else {
+    document.getElementById('petBirthdayDisplay').textContent = '생일 미정';
+  }
+}
+
+// ═══ 기억 명언 미리보기 ═══
+const MEMORY_QUOTES_LIST = [
+  '함께한 시간이 가장 큰 행복이었습니다',
+  '그 시절 우리는 참 아름다웠다',
+  '인생 최고의 순간들이 옆에 있었습니다',
+  '세월이 흘렀어도 변하지 않는 사랑',
+  '아이들 웃음이 내 인생입니다',
+  '우리 집이 세상의 전부였습니다',
+  '지나간 날들, 모두 아름다웠습니다',
+  '당신이 있어 행복했습니다',
+  '작은 것들이 전부였던 그 시간들',
+  '함께 늙어가는 것도 행복입니다',
+  '저는 충분히 행복한 인생을 살았습니다',
+  '돌이켜보면 우리는 잘했습니다',
+  '이 세상 최고의 선물은 당신들입니다',
+  '지나간 날들이 모두 보석입니다',
+  '이제 천천히 걸어도 괜찮습니다',
+  '할 만큼 하고, 사랑할 만큼 사랑했습니다',
+  '우리 가족의 역사를 자랑합니다',
+  '우리의 이야기는 계속됩니다',
+  '기억하고 있겠습니다, 당신을',
+  '살아온 날들을 자랑스러워합니다',
+  '당신의 손을 잡고 싶습니다',
+  '우리가 함께한 시간이 가장 큰 자산입니다',
+  '늙음도 아름답다는 것을 알았습니다',
+  '마지막 순간까지 사랑하겠습니다',
+  '이 세상에서 가장 소중한 순간들'
+];
+
+function initMemoryQuotes() {
+  const container = document.getElementById('memoryQuotesDisplay');
+  container.innerHTML = MEMORY_QUOTES_LIST.map((quote, idx) =>
+    `<div class="quote-card" style="background: rgba(250,248,243,0.1); border: 1px solid rgba(201,168,76,0.3); color: var(--paper);" onclick="selectMemoryQuote(this, '${quote}')">${quote}</div>`
+  ).join('');
+}
+
+function selectMemoryQuote(element, quote) {
+  document.querySelectorAll('#memoryQuotesDisplay .quote-card').forEach(card => card.style.borderColor = 'rgba(201,168,76,0.3)');
+  element.style.borderColor = 'var(--gold)';
+  document.getElementById('memoryQuoteDisplay').textContent = quote;
+}
+
+// ═══ 단체복 미리보기 - 팀 유형 전환 ═══
+function switchTeamType(type) {
+  document.querySelectorAll('#team .quote-tab').forEach(tab => tab.classList.remove('active'));
+  if (event && event.target) {
+    event.target.classList.add('active');
+  }
+
+  document.getElementById('childrenTeam').style.display = 'none';
+  document.getElementById('companyTeam').style.display = 'none';
+  document.getElementById('sportsTeam').style.display = 'none';
+
+  if (type === 'children') {
+    document.getElementById('childrenTeam').style.display = 'grid';
+    updateChildrenTeamPreview();
+  } else if (type === 'company') {
+    document.getElementById('companyTeam').style.display = 'grid';
+    updateCompanyTeamPreview();
+  } else if (type === 'sports') {
+    document.getElementById('sportsTeam').style.display = 'grid';
+    updateSportsTeamPreview();
+  }
+}
+
+// 어린이집 미리보기
+function updateChildrenTeamPreview() {
+  const name = document.getElementById('childTeamName').value || '지훈';
+  const year = parseInt(document.getElementById('childTeamBirthYear').value);
+  const kindergarten = document.getElementById('kindergartenName').value || '어린이집 이름';
+
+  let emoji = '🐭';
+  if (year > 0) {
+    const zodiacIndex = (year - 1900) % 12;
+    emoji = ZODIAC_EMOJIS[zodiacIndex];
+  }
+
+  document.getElementById('childTeamEmoji').textContent = emoji;
+  document.getElementById('childTeamNameDisplay').textContent = name;
+  document.getElementById('childTeamYearDisplay').textContent = (year > 0 ? year + '년' : '출생년도');
+  document.getElementById('kindergartenDisplay').textContent = kindergarten;
+}
+
+// 회사 미리보기
+function updateCompanyTeamPreview() {
+  const teamName = document.getElementById('companyTeamName').value || '팀명';
+  const memberName = document.getElementById('companyMemberName').value || '이름';
+  const motto = document.getElementById('companyMotto').value || '사훈';
+
+  document.getElementById('companyTeamNameDisplay').textContent = teamName;
+  document.getElementById('companyMemberDisplay').textContent = memberName;
+  document.getElementById('companyMottoDisplay').textContent = motto;
+}
+
+// 스포츠팀 미리보기
+function updateSportsTeamPreview() {
+  const teamName = document.getElementById('sportsTeamName').value || '팀명';
+  const memberName = document.getElementById('sportsMemberName').value || '이름';
+  const phrase = document.getElementById('sportsPhrase').value || '승리를 향해 한마음으로';
+
+  document.getElementById('sportsTeamNameDisplay').textContent = teamName;
+  document.getElementById('sportsMemberDisplay').textContent = memberName;
+  document.getElementById('sportsPhraseDisplay').textContent = phrase;
+}
+
+// ═══ 문구 선택 섹션 ═══
+function filterQuotes(category) {
+  currentCategory = category;
+  document.querySelectorAll('.quote-tab').forEach(tab => tab.classList.remove('active'));
+  if (event && event.target) {
+    event.target.classList.add('active');
+  }
+
+  const quotes = QUOTES_DATA[category];
+  const html = quotes.map(q => `<div class="quote-card" onclick="selectQuote(this, '${q}')">${q}</div>`).join('');
+  document.getElementById('quotesDisplay').innerHTML = html;
+  document.getElementById('tshirtText').textContent = '문구를 선택하세요';
+}
+
+function selectQuote(element, quote) {
+  document.querySelectorAll('.quote-card').forEach(card => card.classList.remove('selected'));
+  element.classList.add('selected');
+  document.getElementById('tshirtText').textContent = quote;
+}
+
+// ═══ 기억을 되살리는 옷 - quotes.html 스타일 구현 ═══
+function initMemoryQuotesGrid() {
+  const grid = document.getElementById('grid-memory-shop');
+  MEMORY_QUOTES_LIST.forEach((quote, idx) => {
+    const card = document.createElement('div');
+    card.className = 'quote-card';
+    if (idx === 0) card.classList.add('featured');
+    card.textContent = quote;
+    card.onclick = () => openMemoryPreview(quote);
+    grid.appendChild(card);
+  });
+}
+
+function openMemoryPreview(quote) {
+  document.getElementById('memoryTshirtText').textContent = quote;
+  document.getElementById('memoryQuoteFull').textContent = quote;
+  const charCount = quote.replace(/\s+/g, '').length;
+  document.getElementById('memoryCharCount').textContent = charCount + '자';
+  document.getElementById('memoryPreviewOverlay').style.display = 'flex';
+}
+
+function closeMemoryPreview(e) {
+  if (!e || e.target.id === 'memoryPreviewOverlay' || e.target.classList.contains('close-btn')) {
+    document.getElementById('memoryPreviewOverlay').style.display = 'none';
+  }
+}
+
+// 초기 로드
+filterQuotes('love');
+updateChildPreview();
+updatePetTypeBreeds();
+updatePetPreview();
+initMemoryQuotesGrid();
+updateChildrenTeamPreview();
+</script>
+
+</body>
+</html>
